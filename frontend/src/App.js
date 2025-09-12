@@ -611,24 +611,38 @@ const AdminPanel = ({ isOpen, onClose, products, setProducts }) => {
 };
 
 const Home = () => {
-  const [products, setProducts] = useState(sampleProducts);
+  const [products, setProducts] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('todos');
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [showAdmin, setShowAdmin] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Test backend connection
-    const testApi = async () => {
+    // Load products from backend
+    const loadProducts = async () => {
       try {
-        const response = await axios.get(`${API}/`);
-        console.log('Backend connected:', response.data.message);
+        setLoading(true);
+        const response = await axios.get(`${API}/products`);
+        console.log('Products loaded from backend:', response.data.length);
+        
+        // If no products in backend, use sample data
+        if (response.data.length === 0) {
+          console.log('No products in backend, using sample data');
+          setProducts(sampleProducts);
+        } else {
+          setProducts(response.data);
+        }
       } catch (e) {
-        console.error('Backend connection failed:', e);
+        console.error('Failed to load products, using sample data:', e);
+        setProducts(sampleProducts);
+      } finally {
+        setLoading(false);
       }
     };
-    testApi();
+    
+    loadProducts();
   }, []);
 
   const filteredProducts = selectedCategory === 'todos' 
