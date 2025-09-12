@@ -713,16 +713,27 @@ const Home = () => {
             </div>
             
             <div className="products-grid">
-              {filteredProducts.map(product => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  onView={openProductModal}
-                  isAdmin={isAdmin}
-                  onEdit={handleEditProduct}
-                  onDelete={handleDeleteProduct}
-                />
-              ))}
+              {loading ? (
+                <div className="loading-message">
+                  <div className="loading"></div>
+                  <p>Cargando productos...</p>
+                </div>
+              ) : filteredProducts.length === 0 ? (
+                <div className="no-products">
+                  <p>No hay productos en esta categoría</p>
+                </div>
+              ) : (
+                filteredProducts.map(product => (
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    onView={openProductModal}
+                    isAdmin={isAdmin}
+                    onEdit={handleEditProduct}
+                    onDelete={handleDeleteProduct}
+                  />
+                ))
+              )}
             </div>
           </div>
         </section>
