@@ -7,7 +7,7 @@ import os
 import logging
 from pathlib import Path
 from pydantic import BaseModel, Field, EmailStr
-from typing import List, Optional
+from typing import List, Optional, Dict
 import uuid
 from datetime import datetime, timedelta
 import hashlib
@@ -25,7 +25,7 @@ client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
 # Create the main app without a prefix
-app = FastAPI(title="HANNU CLOTHES API", description="E-commerce API for women's clothing")
+app = FastAPI(title="HANNU CLOTHES CATALOG API", description="Professional catalog system for women's clothing")
 
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
@@ -33,79 +33,56 @@ api_router = APIRouter(prefix="/api")
 # Security
 security = HTTPBearer()
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-SECRET_KEY = os.getenv("JWT_SECRET_KEY", "hannu-clothes-secret-key-2024")
+SECRET_KEY = os.getenv("JWT_SECRET_KEY", "hannu-clothes-catalog-secret-key-2024")
 
 # Models
 class Product(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     name: str
     description: str
-    price: int  # Price in COP cents
-    category: str  # dresses, tops, bottoms, accessories
+    retail_price: int  # Price in COP cents for retail customers
+    wholesale_price: int  # Price in COP cents for wholesale customers
+    category: str  # vestidos, enterizos, conjuntos, blusas, faldas, pantalones
     image: str
+    specifications: str
     composition: str
     care: str
+    shipping_policy: str
+    exchange_policy: str
     sizes: List[str]
-    stock: dict = Field(default_factory=dict)  # size -> quantity
+    stock: Dict[str, int] = Field(default_factory=dict)  # size -> quantity
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
 class ProductCreate(BaseModel):
     name: str
     description: str
-    price: int
+    retail_price: int
+    wholesale_price: int
     category: str
     image: str
+    specifications: str
     composition: str
     care: str
+    shipping_policy: str
+    exchange_policy: str
     sizes: List[str]
-    stock: dict = Field(default_factory=dict)
+    stock: Dict[str, int] = Field(default_factory=dict)
 
 class ProductUpdate(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
-    price: Optional[int] = None
+    retail_price: Optional[int] = None
+    wholesale_price: Optional[int] = None
     category: Optional[str] = None
     image: Optional[str] = None
+    specifications: Optional[str] = None
     composition: Optional[str] = None
     care: Optional[str] = None
+    shipping_policy: Optional[str] = None
+    exchange_policy: Optional[str] = None
     sizes: Optional[List[str]] = None
-    stock: Optional[dict] = None
-
-class CartItem(BaseModel):
-    product_id: str
-    name: str
-    price: int
-    size: str
-    quantity: int
-    image: str
-
-class Order(BaseModel):
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    customer_name: str
-    customer_email: EmailStr
-    customer_phone: str
-    document_type: str  # CC, CE, TI, PP, NIT
-    document_number: str
-    items: List[CartItem]
-    subtotal: int
-    shipping: int
-    total: int
-    status: str = "pending"  # pending, paid, processing, shipped, delivered, cancelled
-    payment_method: Optional[str] = None
-    payment_reference: Optional[str] = None
-    shipping_address: dict
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
-
-class OrderCreate(BaseModel):
-    customer_name: str
-    customer_email: EmailStr
-    customer_phone: str
-    document_type: str
-    document_number: str
-    items: List[CartItem]
-    shipping_address: dict
+    stock: Optional[Dict[str, int]] = None
 
 class Admin(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
@@ -127,6 +104,17 @@ class AdminLogin(BaseModel):
 class Token(BaseModel):
     access_token: str
     token_type: str
+
+class CatalogStats(BaseModel):
+    total_products: int
+    products_by_category: Dict[str, int]
+    total_stock_value_retail: int
+    total_stock_value_wholesale: int
+    low_stock_products: List[str]
+
+class StockUpdate(BaseModel):
+    size: str
+    quantity: int
 
 # Helper functions
 def hash_password(password: str) -> str:
@@ -162,34 +150,17 @@ async def get_current_admin(credentials: HTTPAuthorizationCredentials = Depends(
     
     return Admin(**admin)
 
-def validate_colombian_document(document_type: str, document_number: str) -> bool:
-    """Validate Colombian identification documents"""
-    document_number = re.sub(r'[^\d]', '', document_number)
-    
-    if document_type == "CC":  # Cédula de Ciudadanía
-        return 6 <= len(document_number) <= 10 and document_number.isdigit()
-    elif document_type == "CE":  # Cédula de Extranjería
-        return 6 <= len(document_number) <= 12 and document_number.isdigit()
-    elif document_type == "TI":  # Tarjeta de Identidad
-        return 8 <= len(document_number) <= 11 and document_number.isdigit()
-    elif document_type == "PP":  # Pasaporte
-        return 6 <= len(document_number) <= 20
-    elif document_type == "NIT":  # Número de Identificación Tributaria
-        return 8 <= len(document_number) <= 15 and document_number.isdigit()
-    
-    return False
-
 # Routes
 @api_router.get("/")
 async def root():
-    return {"message": "HANNU CLOTHES API - Fashion for the modern woman"}
+    return {"message": "HANNU CLOTHES CATALOG API - Professional catalog system for women's fashion"}
 
 # Product routes
 @api_router.get("/products", response_model=List[Product])
-async def get_products(category: Optional[str] = None, limit: int = 50):
+async def get_products(category: Optional[str] = None, limit: int = 100):
     """Get all products or filter by category"""
     query = {}
-    if category and category != "all":
+    if category and category != "todos":
         query["category"] = category
     
     products = await db.products.find(query).limit(limit).to_list(limit)
@@ -207,6 +178,15 @@ async def get_product(product_id: str):
 @api_router.post("/products", response_model=Product)
 async def create_product(product: ProductCreate, admin: Admin = Depends(get_current_admin)):
     """Create a new product (admin only)"""
+    # Validate category
+    valid_categories = ["vestidos", "enterizos", "conjuntos", "blusas", "faldas", "pantalones"]
+    if product.category not in valid_categories:
+        raise HTTPException(status_code=400, detail="Invalid category")
+    
+    # Validate prices
+    if product.wholesale_price >= product.retail_price:
+        raise HTTPException(status_code=400, detail="Wholesale price must be less than retail price")
+    
     product_dict = product.dict()
     product_obj = Product(**product_dict)
     
@@ -223,6 +203,18 @@ async def update_product(product_id: str, product_update: ProductUpdate, admin: 
     update_data = {k: v for k, v in product_update.dict().items() if v is not None}
     update_data["updated_at"] = datetime.utcnow()
     
+    # Validate category if provided
+    if "category" in update_data:
+        valid_categories = ["vestidos", "enterizos", "conjuntos", "blusas", "faldas", "pantalones"]
+        if update_data["category"] not in valid_categories:
+            raise HTTPException(status_code=400, detail="Invalid category")
+    
+    # Validate prices if provided
+    retail_price = update_data.get("retail_price", existing_product["retail_price"])
+    wholesale_price = update_data.get("wholesale_price", existing_product["wholesale_price"])
+    if wholesale_price >= retail_price:
+        raise HTTPException(status_code=400, detail="Wholesale price must be less than retail price")
+    
     await db.products.update_one({"id": product_id}, {"$set": update_data})
     
     updated_product = await db.products.find_one({"id": product_id})
@@ -237,63 +229,18 @@ async def delete_product(product_id: str, admin: Admin = Depends(get_current_adm
     
     return {"message": "Product deleted successfully"}
 
-# Order routes
-@api_router.post("/orders", response_model=Order)
-async def create_order(order_data: OrderCreate):
-    """Create a new order"""
-    # Validate Colombian document
-    if not validate_colombian_document(order_data.document_type, order_data.document_number):
-        raise HTTPException(status_code=400, detail="Invalid Colombian document")
+@api_router.put("/products/{product_id}/stock/{size}")
+async def update_stock(product_id: str, size: str, stock_update: StockUpdate, admin: Admin = Depends(get_current_admin)):
+    """Update stock for a specific product size (admin only)"""
+    product = await db.products.find_one({"id": product_id})
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
     
-    # Calculate totals
-    subtotal = sum(item.price * item.quantity for item in order_data.items)
-    shipping = 0 if subtotal >= 150000 else 15000  # Free shipping over 150,000 COP
-    total = subtotal + shipping
+    # Update stock for the specific size
+    update_query = {f"stock.{size}": stock_update.quantity, "updated_at": datetime.utcnow()}
+    await db.products.update_one({"id": product_id}, {"$set": update_query})
     
-    # Create order
-    order_dict = order_data.dict()
-    order_dict.update({
-        "subtotal": subtotal,
-        "shipping": shipping,
-        "total": total
-    })
-    
-    order_obj = Order(**order_dict)
-    await db.orders.insert_one(order_obj.dict())
-    
-    return order_obj
-
-@api_router.get("/orders/{order_id}", response_model=Order)
-async def get_order(order_id: str):
-    """Get order details"""
-    order = await db.orders.find_one({"id": order_id})
-    if not order:
-        raise HTTPException(status_code=404, detail="Order not found")
-    
-    return Order(**order)
-
-@api_router.get("/orders", response_model=List[Order])
-async def get_orders(admin: Admin = Depends(get_current_admin), limit: int = 50):
-    """Get all orders (admin only)"""
-    orders = await db.orders.find().sort("created_at", -1).limit(limit).to_list(limit)
-    return [Order(**order) for order in orders]
-
-@api_router.put("/orders/{order_id}/status")
-async def update_order_status(order_id: str, status: str, admin: Admin = Depends(get_current_admin)):
-    """Update order status (admin only)"""
-    valid_statuses = ["pending", "paid", "processing", "shipped", "delivered", "cancelled"]
-    if status not in valid_statuses:
-        raise HTTPException(status_code=400, detail="Invalid status")
-    
-    result = await db.orders.update_one(
-        {"id": order_id}, 
-        {"$set": {"status": status, "updated_at": datetime.utcnow()}}
-    )
-    
-    if result.matched_count == 0:
-        raise HTTPException(status_code=404, detail="Order not found")
-    
-    return {"message": "Order status updated successfully"}
+    return {"message": f"Stock updated for size {size}"}
 
 # Admin routes
 @api_router.post("/admin/register", response_model=dict)
@@ -346,35 +293,129 @@ async def get_admin_profile(admin: Admin = Depends(get_current_admin)):
 async def get_categories():
     """Get product categories"""
     return [
-        {"id": "all", "name": "Todo"},
-        {"id": "dresses", "name": "Vestidos"},
-        {"id": "tops", "name": "Blusas"},
-        {"id": "bottoms", "name": "Pantalones"},
-        {"id": "accessories", "name": "Accesorios"}
+        {"id": "todos", "name": "Todos"},
+        {"id": "vestidos", "name": "Vestidos"},
+        {"id": "enterizos", "name": "Enterizos"},
+        {"id": "conjuntos", "name": "Conjuntos"},
+        {"id": "blusas", "name": "Blusas"},
+        {"id": "faldas", "name": "Faldas"},
+        {"id": "pantalones", "name": "Pantalones"}
     ]
 
-# Analytics routes (admin only)
-@api_router.get("/analytics/overview")
-async def get_analytics_overview(admin: Admin = Depends(get_current_admin)):
-    """Get basic analytics overview"""
-    total_products = await db.products.count_documents({})
-    total_orders = await db.orders.count_documents({})
-    pending_orders = await db.orders.count_documents({"status": "pending"})
+# Catalog Analytics routes (admin only)
+@api_router.get("/catalog/stats", response_model=CatalogStats)
+async def get_catalog_stats(admin: Admin = Depends(get_current_admin)):
+    """Get comprehensive catalog statistics"""
     
-    # Calculate total revenue (from paid orders)
-    pipeline = [
-        {"$match": {"status": {"$in": ["paid", "processing", "shipped", "delivered"]}}},
-        {"$group": {"_id": None, "total_revenue": {"$sum": "$total"}}}
-    ]
-    revenue_result = await db.orders.aggregate(pipeline).to_list(1)
-    total_revenue = revenue_result[0]["total_revenue"] if revenue_result else 0
+    # Get all products
+    products = await db.products.find().to_list(length=None)
+    
+    # Basic stats
+    total_products = len(products)
+    
+    # Products by category
+    products_by_category = {}
+    categories = ["vestidos", "enterizos", "conjuntos", "blusas", "faldas", "pantalones"]
+    
+    for category in categories:
+        count = len([p for p in products if p.get("category") == category])
+        products_by_category[category] = count
+    
+    # Calculate total stock values
+    total_stock_value_retail = 0
+    total_stock_value_wholesale = 0
+    low_stock_products = []
+    
+    for product in products:
+        stock = product.get("stock", {})
+        total_stock = sum(stock.values())
+        
+        # Calculate stock values
+        total_stock_value_retail += total_stock * product.get("retail_price", 0)
+        total_stock_value_wholesale += total_stock * product.get("wholesale_price", 0)
+        
+        # Check for low stock (less than 5 total units)
+        if total_stock < 5:
+            low_stock_products.append(product.get("name", "Unknown"))
+    
+    return CatalogStats(
+        total_products=total_products,
+        products_by_category=products_by_category,
+        total_stock_value_retail=total_stock_value_retail,
+        total_stock_value_wholesale=total_stock_value_wholesale,
+        low_stock_products=low_stock_products
+    )
+
+@api_router.get("/catalog/low-stock")
+async def get_low_stock_products(admin: Admin = Depends(get_current_admin), threshold: int = 5):
+    """Get products with low stock"""
+    products = await db.products.find().to_list(length=None)
+    
+    low_stock_products = []
+    for product in products:
+        stock = product.get("stock", {})
+        total_stock = sum(stock.values())
+        
+        if total_stock <= threshold:
+            low_stock_products.append({
+                "id": product.get("id"),
+                "name": product.get("name"),
+                "category": product.get("category"),
+                "total_stock": total_stock,
+                "stock_by_size": stock
+            })
+    
+    return low_stock_products
+
+@api_router.get("/catalog/export")
+async def export_catalog(admin: Admin = Depends(get_current_admin), format: str = "json"):
+    """Export catalog data"""
+    products = await db.products.find().to_list(length=None)
+    
+    # Remove internal MongoDB fields and convert to export format
+    export_data = []
+    for product in products:
+        export_product = {
+            "id": product.get("id"),
+            "name": product.get("name"),
+            "description": product.get("description"),
+            "retail_price": product.get("retail_price"),
+            "wholesale_price": product.get("wholesale_price"),
+            "category": product.get("category"),
+            "specifications": product.get("specifications"),
+            "composition": product.get("composition"),
+            "care": product.get("care"),
+            "sizes": product.get("sizes", []),
+            "stock": product.get("stock", {}),
+            "total_stock": sum(product.get("stock", {}).values()),
+            "created_at": product.get("created_at"),
+            "updated_at": product.get("updated_at")
+        }
+        export_data.append(export_product)
     
     return {
-        "total_products": total_products,
-        "total_orders": total_orders,
-        "pending_orders": pending_orders,
-        "total_revenue": total_revenue
+        "format": format,
+        "export_date": datetime.utcnow(),
+        "total_products": len(export_data),
+        "products": export_data
     }
+
+@api_router.get("/catalog/search")
+async def search_products(query: str, category: Optional[str] = None, limit: int = 50):
+    """Search products by name or description"""
+    search_filter = {
+        "$or": [
+            {"name": {"$regex": query, "$options": "i"}},
+            {"description": {"$regex": query, "$options": "i"}},
+            {"specifications": {"$regex": query, "$options": "i"}}
+        ]
+    }
+    
+    if category and category != "todos":
+        search_filter["category"] = category
+    
+    products = await db.products.find(search_filter).limit(limit).to_list(limit)
+    return [Product(**product) for product in products]
 
 # Include the router in the main app
 app.include_router(api_router)
@@ -396,7 +437,7 @@ logger = logging.getLogger(__name__)
 
 @app.on_event("startup")
 async def startup_event():
-    logger.info("HANNU CLOTHES API starting up...")
+    logger.info("HANNU CLOTHES CATALOG API starting up...")
     
     # Create default admin if none exists
     admin_count = await db.admins.count_documents({})
@@ -408,6 +449,35 @@ async def startup_event():
         )
         await db.admins.insert_one(default_admin.dict())
         logger.info("Default admin created: username=admin, password=admin123")
+    
+    # Create sample products if none exist
+    product_count = await db.products.count_documents({})
+    if product_count == 0:
+        sample_products = [
+            {
+                "id": str(uuid.uuid4()),
+                "name": "Vestido Rosa Elegante",
+                "description": "Vestido elegante perfecto para ocasiones especiales. Confeccionado en tela de alta calidad con acabados refinados.",
+                "retail_price": 150000,
+                "wholesale_price": 105000,
+                "category": "vestidos",
+                "image": "https://images.unsplash.com/photo-1633077705107-8f53a004218f?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Nzd8MHwxfHNlYXJjaHwyfHx3b21lbiUyMGRyZXNzZXN8ZW58MHx8fHwxNzU2OTk5NjU1fDA&ixlib=rb-4.1.0&q=85",
+                "specifications": "Vestido de corte A, manga corta, cuello redondo, cierre posterior invisible",
+                "composition": "95% Algodón, 5% Elastano",
+                "care": "Lavar a máquina en agua fría, no usar blanqueador, planchar a temperatura media",
+                "shipping_policy": "Envío nacional 2-5 días hábiles. Envío gratis en compras superiores a $200.000",
+                "exchange_policy": "Cambios y devoluciones hasta 15 días después de la compra. El producto debe estar en perfectas condiciones.",
+                "sizes": ["XS", "S", "M", "L", "XL"],
+                "stock": {"XS": 5, "S": 8, "M": 12, "L": 10, "XL": 6},
+                "created_at": datetime.utcnow(),
+                "updated_at": datetime.utcnow()
+            }
+        ]
+        
+        for product in sample_products:
+            await db.products.insert_one(product)
+        
+        logger.info(f"Created {len(sample_products)} sample products")
 
 @app.on_event("shutdown")
 async def shutdown_db_client():

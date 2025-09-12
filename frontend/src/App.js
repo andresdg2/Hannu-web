@@ -2,70 +2,123 @@ import React, { useState, useEffect } from "react";
 import "./App.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import axios from "axios";
-import { ShoppingCart, User, Search, Menu, X, Heart, Star, ArrowRight, Check, Phone, Mail, MapPin } from "lucide-react";
+import { ShoppingCart, User, Search, Menu, X, Heart, Star, ArrowRight, Check, Phone, Mail, MapPin, Plus, Edit, Trash2, Upload, Save, Eye } from "lucide-react";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
-// Sample product data (will be replaced with API data)
+// Sample product data with dual pricing
 const sampleProducts = [
   {
     id: 1,
-    name: "Elegant Rose Dress",
-    price: 150000,
-    category: "dresses",
+    name: "Vestido Rosa Elegante",
+    description: "Vestido elegante perfecto para ocasiones especiales. Confeccionado en tela de alta calidad con acabados refinados.",
+    retail_price: 150000,
+    wholesale_price: 105000,
+    category: "vestidos",
     image: "https://images.unsplash.com/photo-1633077705107-8f53a004218f?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Nzd8MHwxfHNlYXJjaHwyfHx3b21lbiUyMGRyZXNzZXN8ZW58MHx8fHwxNzU2OTk5NjU1fDA&ixlib=rb-4.1.0&q=85",
-    description: "Vestido elegante perfecto para ocasiones especiales. Confeccionado en tela de alta calidad.",
+    specifications: "Vestido de corte A, manga corta, cuello redondo, cierre posterior invisible",
     composition: "95% Algodón, 5% Elastano",
-    care: "Lavar a máquina en agua fría, no usar blanqueador",
-    sizes: ["XS", "S", "M", "L", "XL"]
+    care: "Lavar a máquina en agua fría, no usar blanqueador, planchar a temperatura media",
+    shipping_policy: "Envío nacional 2-5 días hábiles. Envío gratis en compras superiores a $200.000",
+    exchange_policy: "Cambios y devoluciones hasta 15 días después de la compra. El producto debe estar en perfectas condiciones.",
+    sizes: ["XS", "S", "M", "L", "XL"],
+    stock: {"XS": 5, "S": 8, "M": 12, "L": 10, "XL": 6}
   },
   {
     id: 2,
-    name: "Striped Essential Top",
-    price: 75000,
-    category: "tops",
+    name: "Blusa Rayas Esencial",
+    description: "Blusa de rayas clásica que combina con todo. Ideal para el día a día con un toque elegante y versátil.",
+    retail_price: 75000,
+    wholesale_price: 52500,
+    category: "blusas",
     image: "https://images.unsplash.com/photo-1530981785497-a62037228fe9?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Nzd8MHwxfHNlYXJjaHwxfHx3b21lbiUyMHRvcHN8ZW58MHx8fHwxNzU2OTk5NjYwfDA&ixlib=rb-4.1.0&q=85",
-    description: "Top de rayas clásico que combina con todo. Ideal para el día a día con un toque elegante.",
+    specifications: "Blusa de rayas horizontales, manga larga, cuello camisero, botones frontales",
     composition: "100% Algodón orgánico",
-    care: "Lavar a máquina en agua tibia, secar al aire",
-    sizes: ["XS", "S", "M", "L", "XL"]
+    care: "Lavar a máquina en agua tibia, secar al aire, planchar del revés",
+    shipping_policy: "Envío nacional 2-5 días hábiles. Envío gratis en compras superiores a $200.000",
+    exchange_policy: "Cambios y devoluciones hasta 15 días después de la compra. El producto debe estar en perfectas condiciones.",
+    sizes: ["XS", "S", "M", "L", "XL"],
+    stock: {"XS": 3, "S": 6, "M": 8, "L": 7, "XL": 4}
   },
   {
     id: 3,
-    name: "Premium Denim",
-    price: 120000,
-    category: "bottoms",
+    name: "Pantalón Denim Premium",
+    description: "Pantalón de mezclilla de corte perfecto con acabado premium. Comodidad y estilo en una sola prenda.",
+    retail_price: 120000,
+    wholesale_price: 84000,
+    category: "pantalones",
     image: "https://images.unsplash.com/photo-1597544004999-11b0390e0cc5?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Njl8MHwxfHNlYXJjaHwxfHx3b21lbiUyMGJvdHRvbXN8ZW58MHx8fHwxNzU2OTk5NjY2fDA&ixlib=rb-4.1.0&q=85",
-    description: "Jeans de corte perfecto con acabado premium. Comodidad y estilo en una sola prenda.",
+    specifications: "Pantalón de mezclilla, corte recto, tiro medio, cinco bolsillos",
     composition: "82% Algodón, 16% Poliéster, 2% Elastano",
-    care: "Lavar del revés en agua fría, no usar blanqueador",
-    sizes: ["26", "28", "30", "32", "34", "36"]
+    care: "Lavar del revés en agua fría, no usar blanqueador, secar colgado",
+    shipping_policy: "Envío nacional 2-5 días hábiles. Envío gratis en compras superiores a $200.000",
+    exchange_policy: "Cambios y devoluciones hasta 15 días después de la compra. El producto debe estar en perfectas condiciones.",
+    sizes: ["26", "28", "30", "32", "34", "36"],
+    stock: {"26": 4, "28": 7, "30": 9, "32": 8, "34": 6, "36": 3}
   },
   {
     id: 4,
-    name: "Leather Crossbody Bag",
-    price: 95000,
-    category: "accessories",
-    image: "https://images.unsplash.com/photo-1559563458-527698bf5295?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NzB8MHwxfHNlYXJjaHwxfHx3b21lbiUyMGFjY2Vzc29yaWVzfGVufDB8fHx8MTc1Njk5OTY3Mnww&ixlib=rb-4.1.0&q=85",
-    description: "Bolso cruzado de cuero genuino con diseño minimalista. El accesorio perfecto para cualquier outfit.",
-    composition: "100% Cuero genuino, forro de algodón",
-    care: "Limpiar con paño húmedo, aplicar acondicionador de cuero ocasionalmente",
-    sizes: ["Único"]
+    name: "Enterizo Elegante",
+    description: "Enterizo sofisticado perfecto para eventos especiales. Diseño moderno con corte favorecedor.",
+    retail_price: 185000,
+    wholesale_price: 129500,
+    category: "enterizos",
+    image: "https://images.unsplash.com/photo-1633077705107-8f53a004218f?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Nzd8MHwxfHNlYXJjaHwyfHx3b21lbiUyMGRyZXNzZXN8ZW58MHx8fHwxNzU2OTk5NjU1fDA&ixlib=rb-4.1.0&q=85",
+    specifications: "Enterizo de pierna ancha, tirantes ajustables, cintura marcada, bolsillos laterales",
+    composition: "88% Poliéster, 12% Elastano",
+    care: "Lavar a máquina en agua fría, no usar blanqueador, planchar a temperatura baja",
+    shipping_policy: "Envío nacional 2-5 días hábiles. Envío gratis en compras superiores a $200.000",
+    exchange_policy: "Cambios y devoluciones hasta 15 días después de la compra. El producto debe estar en perfectas condiciones.",
+    sizes: ["XS", "S", "M", "L", "XL"],
+    stock: {"XS": 2, "S": 5, "M": 7, "L": 6, "XL": 3}
+  },
+  {
+    id: 5,
+    name: "Falda Midi Clásica",
+    description: "Falda midi de corte clásico, perfecta para looks profesionales y casuales elegantes.",
+    retail_price: 95000,
+    wholesale_price: 66500,
+    category: "faldas",
+    image: "https://images.unsplash.com/photo-1597544004999-11b0390e0cc5?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Njl8MHwxfHNlYXJjaHwxfHx3b21lbiUyMGJvdHRvbXN8ZW58MHx8fHwxNzU2OTk5NjY2fDA&ixlib=rb-4.1.0&q=85",
+    specifications: "Falda midi, corte A, pretina alta, cierre lateral invisible",
+    composition: "90% Poliéster, 10% Elastano",
+    care: "Lavar a máquina en agua fría, secar colgado, planchar a temperatura media",
+    shipping_policy: "Envío nacional 2-5 días hábiles. Envío gratis en compras superiores a $200.000",
+    exchange_policy: "Cambios y devoluciones hasta 15 días después de la compra. El producto debe estar en perfectas condiciones.",
+    sizes: ["XS", "S", "M", "L", "XL"],
+    stock: {"XS": 6, "S": 8, "M": 10, "L": 7, "XL": 4}
+  },
+  {
+    id: 6,
+    name: "Conjunto Coordinado",
+    description: "Conjunto de dos piezas coordinadas, perfecto para un look completo y sofisticado.",
+    retail_price: 220000,
+    wholesale_price: 154000,
+    category: "conjuntos",
+    image: "https://images.unsplash.com/photo-1530981785497-a62037228fe9?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Nzd8MHwxfHNlYXJjaHwxfHx3b21lbiUyMHRvcHN8ZW58MHx8fHwxNzU2OTk5NjYwfDA&ixlib=rb-4.1.0&q=85",
+    specifications: "Conjunto de blusa y pantalón a juego, blusa con manga 3/4, pantalón de tiro alto",
+    composition: "85% Viscosa, 15% Elastano",
+    care: "Lavar a máquina en agua fría, no usar blanqueador, planchar a temperatura baja",
+    shipping_policy: "Envío nacional 2-5 días hábiles. Envío gratis en compras superiores a $200.000",
+    exchange_policy: "Cambios y devoluciones hasta 15 días después de la compra. El producto debe estar en perfectas condiciones.",
+    sizes: ["XS", "S", "M", "L", "XL"],
+    stock: {"XS": 3, "S": 5, "M": 8, "L": 6, "XL": 2}
   }
 ];
 
 const categories = [
-  { id: "all", name: "Todo", image: null },
-  { id: "dresses", name: "Vestidos", image: "https://images.unsplash.com/photo-1633077705107-8f53a004218f?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Nzd8MHwxfHNlYXJjaHwyfHx3b21lbiUyMGRyZXNzZXN8ZW58MHx8fHwxNzU2OTk5NjU1fDA&ixlib=rb-4.1.0&q=85" },
-  { id: "tops", name: "Blusas", image: "https://images.unsplash.com/photo-1530981785497-a62037228fe9?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Nzd8MHwxfHNlYXJjaHwxfHx3b21lbiUyMHRvcHN8ZW58MHx8fHwxNzU2OTk5NjYwfDA&ixlib=rb-4.1.0&q=85" },
-  { id: "bottoms", name: "Pantalones", image: "https://images.unsplash.com/photo-1597544004999-11b0390e0cc5?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Njl8MHwxfHNlYXJjaHwxfHx3b21lbiUyMGJvdHRvbXN8ZW58MHx8fHwxNzU2OTk5NjY2fDA&ixlib=rb-4.1.0&q=85" },
-  { id: "accessories", name: "Accesorios", image: "https://images.unsplash.com/photo-1559563458-527698bf5295?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NzB8MHwxfHNlYXJjaHwxfHx3b21lbiUyMGFjY2Vzc29yaWVzfGVufDB8fHx8MTc1Njk5OTY3Mnww&ixlib=rb-4.1.0&q=85" }
+  { id: "todos", name: "Todos", image: null },
+  { id: "vestidos", name: "Vestidos", image: "https://images.unsplash.com/photo-1633077705107-8f53a004218f?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Nzd8MHwxfHNlYXJjaHwyfHx3b21lbiUyMGRyZXNzZXN8ZW58MHx8fHwxNzU2OTk5NjU1fDA&ixlib=rb-4.1.0&q=85" },
+  { id: "enterizos", name: "Enterizos", image: "https://images.unsplash.com/photo-1633077705107-8f53a004218f?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Nzd8MHwxfHNlYXJjaHwyfHx3b21lbiUyMGRyZXNzZXN8ZW58MHx8fHwxNzU2OTk5NjU1fDA&ixlib=rb-4.1.0&q=85" },
+  { id: "conjuntos", name: "Conjuntos", image: "https://images.unsplash.com/photo-1530981785497-a62037228fe9?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Nzd8MHwxfHNlYXJjaHwxfHx3b21lbiUyMHRvcHN8ZW58MHx8fHwxNzU2OTk5NjYwfDA&ixlib=rb-4.1.0&q=85" },
+  { id: "blusas", name: "Blusas", image: "https://images.unsplash.com/photo-1530981785497-a62037228fe9?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Nzd8MHwxfHNlYXJjaHwxfHx3b21lbiUyMHRvcHN8ZW58MHx8fHwxNzU2OTk5NjYwfDA&ixlib=rb-4.1.0&q=85" },
+  { id: "faldas", name: "Faldas & Pantalones", image: "https://images.unsplash.com/photo-1597544004999-11b0390e0cc5?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Njl8MHwxfHNlYXJjaHwxfHx3b21lbiUyMGJvdHRvbXN8ZW58MHx8fHwxNzU2OTk5NjY2fDA&ixlib=rb-4.1.0&q=85" },
+  { id: "pantalones", name: "Pantalones", image: "https://images.unsplash.com/photo-1597544004999-11b0390e0cc5?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Njl8MHwxfHNlYXJjaHwxfHx3b21lbiUyMGJvdHRvbXN8ZW58MHx8fHwxNzU2OTk5NjY2fDA&ixlib=rb-4.1.0&q=85" }
 ];
 
-const Header = ({ cart, toggleCart, selectedCategory, setSelectedCategory }) => {
+const Header = ({ selectedCategory, setSelectedCategory, showAdmin, setShowAdmin, isAdmin, setIsAdmin }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const cartItemsCount = cart.reduce((total, item) => total + item.quantity, 0);
 
   return (
     <header className="header">
@@ -73,6 +126,7 @@ const Header = ({ cart, toggleCart, selectedCategory, setSelectedCategory }) => 
         <div className="header-content">
           <div className="logo">
             <img src="https://customer-assets.emergentagent.com/job_7ac0f3ca-81b2-49ce-a27b-bd65357f766a/artifacts/d670l3hu_Logo%20Hannu%20Clothes.jpeg" alt="HANNU CLOTHES" />
+            <span className="logo-text">Catálogo Profesional</span>
           </div>
           
           <nav className={`nav ${isMenuOpen ? 'nav-open' : ''}`}>
@@ -94,9 +148,12 @@ const Header = ({ cart, toggleCart, selectedCategory, setSelectedCategory }) => 
             <button className="action-btn">
               <Search size={20} />
             </button>
-            <button className="action-btn" onClick={toggleCart}>
-              <ShoppingCart size={20} />
-              {cartItemsCount > 0 && <span className="cart-badge">{cartItemsCount}</span>}
+            <button 
+              className={`admin-btn ${showAdmin ? 'active' : ''}`}
+              onClick={() => setShowAdmin(!showAdmin)}
+            >
+              <User size={20} />
+              {isAdmin ? 'Admin' : 'Acceso'}
             </button>
             <button className="menu-toggle" onClick={() => setIsMenuOpen(!isMenuOpen)}>
               {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
@@ -113,12 +170,22 @@ const Hero = () => {
     <section className="hero">
       <div className="hero-content">
         <div className="hero-text">
-          <h1>Elegancia<br />Femenina</h1>
-          <p>Descubre nuestra colección exclusiva de prendas diseñadas para la mujer moderna que valora la elegancia y la calidad.</p>
-          <button className="cta-button">
-            Explorar Colección
-            <ArrowRight size={20} />
-          </button>
+          <h1>HANNU CLOTHES<br />Catálogo Profesional</h1>
+          <p>Descubre nuestra colección exclusiva de prendas femeninas. Sistema profesional de inventario con precios mayoristas y al por menor.</p>
+          <div className="hero-features">
+            <div className="feature">
+              <Check size={20} />
+              <span>Precios Mayorista y Detal</span>
+            </div>
+            <div className="feature">
+              <Check size={20} />
+              <span>Inventario en Tiempo Real</span>
+            </div>
+            <div className="feature">
+              <Check size={20} />
+              <span>Gestión Completa de Productos</span>
+            </div>
+          </div>
         </div>
         <div className="hero-image">
           <img src="https://images.unsplash.com/photo-1678637803384-947954f11c10?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDQ2MzR8MHwxfHNlYXJjaHwxfHxlbGVnYW50JTIwd29tZW4lMjBmYXNoaW9ufGVufDB8fHx8MTc1Njk5OTYxOHww&ixlib=rb-4.1.0&q=85" alt="Elegant Fashion" />
@@ -128,8 +195,8 @@ const Hero = () => {
   );
 };
 
-const ProductCard = ({ product, onAddToCart }) => {
-  const [isLiked, setIsLiked] = useState(false);
+const ProductCard = ({ product, onView, isAdmin, onEdit, onDelete }) => {
+  const [showPrices, setShowPrices] = useState('retail');
 
   const formatPrice = (price) => {
     return new Intl.NumberFormat('es-CO', {
@@ -139,35 +206,66 @@ const ProductCard = ({ product, onAddToCart }) => {
     }).format(price);
   };
 
+  const getTotalStock = () => {
+    return Object.values(product.stock || {}).reduce((total, qty) => total + qty, 0);
+  };
+
   return (
     <div className="product-card">
       <div className="product-image">
         <img src={product.image} alt={product.name} />
-        <button 
-          className={`wishlist-btn ${isLiked ? 'liked' : ''}`}
-          onClick={() => setIsLiked(!isLiked)}
-        >
-          <Heart size={18} fill={isLiked ? 'currentColor' : 'none'} />
-        </button>
+        {isAdmin && (
+          <div className="admin-controls">
+            <button className="control-btn edit" onClick={() => onEdit(product)}>
+              <Edit size={16} />
+            </button>
+            <button className="control-btn delete" onClick={() => onDelete(product.id)}>
+              <Trash2 size={16} />
+            </button>
+          </div>
+        )}
+        <div className="stock-badge">
+          Stock: {getTotalStock()}
+        </div>
       </div>
       <div className="product-info">
         <h3>{product.name}</h3>
-        <p className="product-price">{formatPrice(product.price)}</p>
-        <div className="product-actions">
+        <div className="price-toggle">
           <button 
-            className="add-to-cart-btn"
-            onClick={() => onAddToCart(product)}
+            className={`price-btn ${showPrices === 'retail' ? 'active' : ''}`}
+            onClick={() => setShowPrices('retail')}
           >
-            Añadir al Carrito
+            Detal
+          </button>
+          <button 
+            className={`price-btn ${showPrices === 'wholesale' ? 'active' : ''}`}
+            onClick={() => setShowPrices('wholesale')}
+          >
+            Mayorista
           </button>
         </div>
+        <div className="prices">
+          <p className="price current">
+            {showPrices === 'retail' ? formatPrice(product.retail_price) : formatPrice(product.wholesale_price)}
+          </p>
+          <p className="price-label">
+            {showPrices === 'retail' ? 'Precio al Detal' : 'Precio Mayorista'}
+          </p>
+        </div>
+        <button 
+          className="view-details-btn"
+          onClick={() => onView(product)}
+        >
+          <Eye size={16} />
+          Ver Detalles
+        </button>
       </div>
     </div>
   );
 };
 
-const ProductModal = ({ product, isOpen, onClose, onAddToCart }) => {
-  const [selectedSize, setSelectedSize] = useState('');
+const ProductModal = ({ product, isOpen, onClose }) => {
+  const [showPrices, setShowPrices] = useState('retail');
 
   const formatPrice = (price) => {
     return new Intl.NumberFormat('es-CO', {
@@ -179,16 +277,9 @@ const ProductModal = ({ product, isOpen, onClose, onAddToCart }) => {
 
   if (!isOpen || !product) return null;
 
-  const handleAddToCart = () => {
-    if (selectedSize) {
-      onAddToCart({...product, selectedSize});
-      onClose();
-    }
-  };
-
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="product-modal" onClick={e => e.stopPropagation()}>
+      <div className="product-modal large" onClick={e => e.stopPropagation()}>
         <button className="modal-close" onClick={onClose}>
           <X size={24} />
         </button>
@@ -200,10 +291,39 @@ const ProductModal = ({ product, isOpen, onClose, onAddToCart }) => {
           
           <div className="modal-info">
             <h2>{product.name}</h2>
-            <p className="modal-price">{formatPrice(product.price)}</p>
+            
+            <div className="price-section">
+              <div className="price-toggle">
+                <button 
+                  className={`price-btn ${showPrices === 'retail' ? 'active' : ''}`}
+                  onClick={() => setShowPrices('retail')}
+                >
+                  Precio Detal
+                </button>
+                <button 
+                  className={`price-btn ${showPrices === 'wholesale' ? 'active' : ''}`}
+                  onClick={() => setShowPrices('wholesale')}
+                >
+                  Precio Mayorista
+                </button>
+              </div>
+              <p className="modal-price">
+                {showPrices === 'retail' ? formatPrice(product.retail_price) : formatPrice(product.wholesale_price)}
+              </p>
+              <div className="both-prices">
+                <span>Detal: {formatPrice(product.retail_price)}</span>
+                <span>Mayorista: {formatPrice(product.wholesale_price)}</span>
+              </div>
+            </div>
+            
             <p className="product-description">{product.description}</p>
             
             <div className="product-details">
+              <div className="detail-section">
+                <h4>Especificaciones</h4>
+                <p>{product.specifications}</p>
+              </div>
+              
               <div className="detail-section">
                 <h4>Composición</h4>
                 <p>{product.composition}</p>
@@ -215,37 +335,25 @@ const ProductModal = ({ product, isOpen, onClose, onAddToCart }) => {
               </div>
               
               <div className="detail-section">
-                <h4>Talla</h4>
-                <div className="size-selector">
+                <h4>Política de Envíos</h4>
+                <p>{product.shipping_policy}</p>
+              </div>
+              
+              <div className="detail-section">
+                <h4>Política de Cambios</h4>
+                <p>{product.exchange_policy}</p>
+              </div>
+              
+              <div className="detail-section">
+                <h4>Tallas Disponibles</h4>
+                <div className="size-stock-grid">
                   {product.sizes.map(size => (
-                    <button
-                      key={size}
-                      className={`size-btn ${selectedSize === size ? 'selected' : ''}`}
-                      onClick={() => setSelectedSize(size)}
-                    >
-                      {size}
-                    </button>
+                    <div key={size} className="size-stock-item">
+                      <span className="size">{size}</span>
+                      <span className="stock">Stock: {product.stock[size] || 0}</span>
+                    </div>
                   ))}
                 </div>
-              </div>
-            </div>
-            
-            <button 
-              className="add-to-cart-btn large"
-              onClick={handleAddToCart}
-              disabled={!selectedSize}
-            >
-              Añadir al Carrito - {formatPrice(product.price)}
-            </button>
-            
-            <div className="shipping-info">
-              <div className="shipping-item">
-                <Check size={16} />
-                <span>Envío gratis en compras superiores a $150.000</span>
-              </div>
-              <div className="shipping-item">
-                <Check size={16} />
-                <span>Cambios y devoluciones hasta 30 días</span>
               </div>
             </div>
           </div>
@@ -255,214 +363,260 @@ const ProductModal = ({ product, isOpen, onClose, onAddToCart }) => {
   );
 };
 
-const Cart = ({ cart, isOpen, onClose, onUpdateQuantity, onRemoveItem }) => {
-  const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+const AdminPanel = ({ isOpen, onClose, products, setProducts }) => {
+  const [editingProduct, setEditingProduct] = useState(null);
+  const [formData, setFormData] = useState({
+    name: '',
+    description: '',
+    retail_price: '',
+    wholesale_price: '',
+    category: 'vestidos',
+    image: '',
+    specifications: '',
+    composition: '',
+    care: '',
+    shipping_policy: '',
+    exchange_policy: '',
+    sizes: [],
+    stock: {}
+  });
 
-  const formatPrice = (price) => {
-    return new Intl.NumberFormat('es-CO', {
-      style: 'currency',
-      currency: 'COP',
-      minimumFractionDigits: 0
-    }).format(price);
+  const resetForm = () => {
+    setFormData({
+      name: '',
+      description: '',
+      retail_price: '',
+      wholesale_price: '',
+      category: 'vestidos',
+      image: '',
+      specifications: '',
+      composition: '',
+      care: '',
+      shipping_policy: '',
+      exchange_policy: '',
+      sizes: [],
+      stock: {}
+    });
+    setEditingProduct(null);
+  };
+
+  const handleEdit = (product) => {
+    setEditingProduct(product);
+    setFormData({
+      name: product.name,
+      description: product.description,
+      retail_price: product.retail_price,
+      wholesale_price: product.wholesale_price,
+      category: product.category,
+      image: product.image,
+      specifications: product.specifications,
+      composition: product.composition,
+      care: product.care,
+      shipping_policy: product.shipping_policy,
+      exchange_policy: product.exchange_policy,
+      sizes: product.sizes,
+      stock: product.stock
+    });
+  };
+
+  const handleSave = () => {
+    if (editingProduct) {
+      // Update existing product
+      setProducts(products.map(p => 
+        p.id === editingProduct.id 
+          ? { ...editingProduct, ...formData }
+          : p
+      ));
+    } else {
+      // Add new product
+      const newProduct = {
+        id: Date.now(),
+        ...formData,
+        retail_price: parseInt(formData.retail_price),
+        wholesale_price: parseInt(formData.wholesale_price)
+      };
+      setProducts([...products, newProduct]);
+    }
+    resetForm();
+  };
+
+  const handleDelete = (productId) => {
+    if (window.confirm('¿Estás seguro de que quieres eliminar este producto?')) {
+      setProducts(products.filter(p => p.id !== productId));
+    }
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="cart-overlay" onClick={onClose}>
-      <div className="cart-sidebar" onClick={e => e.stopPropagation()}>
-        <div className="cart-header">
-          <h3>Carrito de Compras</h3>
-          <button className="cart-close" onClick={onClose}>
+    <div className="admin-panel-overlay">
+      <div className="admin-panel">
+        <div className="admin-header">
+          <h2>Panel de Administración - HANNU CLOTHES</h2>
+          <button className="admin-close" onClick={onClose}>
             <X size={24} />
           </button>
         </div>
         
-        <div className="cart-items">
-          {cart.length === 0 ? (
-            <div className="empty-cart">
-              <ShoppingCart size={48} />
-              <p>Tu carrito está vacío</p>
+        <div className="admin-content">
+          <div className="admin-form">
+            <h3>{editingProduct ? 'Editar Producto' : 'Nuevo Producto'}</h3>
+            
+            <div className="form-grid">
+              <div className="form-group">
+                <label>Nombre del Producto</label>
+                <input
+                  type="text"
+                  value={formData.name}
+                  onChange={(e) => setFormData({...formData, name: e.target.value})}
+                />
+              </div>
+              
+              <div className="form-group">
+                <label>Categoría</label>
+                <select
+                  value={formData.category}
+                  onChange={(e) => setFormData({...formData, category: e.target.value})}
+                >
+                  <option value="vestidos">Vestidos</option>
+                  <option value="enterizos">Enterizos</option>
+                  <option value="conjuntos">Conjuntos</option>
+                  <option value="blusas">Blusas</option>
+                  <option value="faldas">Faldas</option>
+                  <option value="pantalones">Pantalones</option>
+                </select>
+              </div>
+              
+              <div className="form-group">
+                <label>Precio al Detal (COP)</label>
+                <input
+                  type="number"
+                  value={formData.retail_price}
+                  onChange={(e) => setFormData({...formData, retail_price: e.target.value})}
+                />
+              </div>
+              
+              <div className="form-group">
+                <label>Precio Mayorista (COP)</label>
+                <input
+                  type="number"
+                  value={formData.wholesale_price}
+                  onChange={(e) => setFormData({...formData, wholesale_price: e.target.value})}
+                />
+              </div>
+              
+              <div className="form-group full-width">
+                <label>URL de Imagen</label>
+                <input
+                  type="url"
+                  value={formData.image}
+                  onChange={(e) => setFormData({...formData, image: e.target.value})}
+                />
+              </div>
+              
+              <div className="form-group full-width">
+                <label>Descripción</label>
+                <textarea
+                  value={formData.description}
+                  onChange={(e) => setFormData({...formData, description: e.target.value})}
+                  rows="3"
+                />
+              </div>
+              
+              <div className="form-group full-width">
+                <label>Especificaciones</label>
+                <textarea
+                  value={formData.specifications}
+                  onChange={(e) => setFormData({...formData, specifications: e.target.value})}
+                  rows="2"
+                />
+              </div>
+              
+              <div className="form-group">
+                <label>Composición</label>
+                <input
+                  type="text"
+                  value={formData.composition}
+                  onChange={(e) => setFormData({...formData, composition: e.target.value})}
+                />
+              </div>
+              
+              <div className="form-group">
+                <label>Instrucciones de Cuidado</label>
+                <input
+                  type="text"
+                  value={formData.care}
+                  onChange={(e) => setFormData({...formData, care: e.target.value})}
+                />
+              </div>
+              
+              <div className="form-group full-width">
+                <label>Política de Envíos</label>
+                <textarea
+                  value={formData.shipping_policy}
+                  onChange={(e) => setFormData({...formData, shipping_policy: e.target.value})}
+                  rows="2"
+                />
+              </div>
+              
+              <div className="form-group full-width">
+                <label>Política de Cambios</label>
+                <textarea
+                  value={formData.exchange_policy}
+                  onChange={(e) => setFormData({...formData, exchange_policy: e.target.value})}
+                  rows="2"
+                />
+              </div>
             </div>
-          ) : (
-            cart.map(item => (
-              <div key={`${item.id}-${item.selectedSize}`} className="cart-item">
-                <img src={item.image} alt={item.name} />
-                <div className="cart-item-info">
-                  <h4>{item.name}</h4>
-                  <p>Talla: {item.selectedSize}</p>
-                  <p className="cart-item-price">{formatPrice(item.price)}</p>
-                  <div className="quantity-controls">
-                    <button onClick={() => onUpdateQuantity(item.id, item.selectedSize, item.quantity - 1)}>-</button>
-                    <span>{item.quantity}</span>
-                    <button onClick={() => onUpdateQuantity(item.id, item.selectedSize, item.quantity + 1)}>+</button>
+            
+            <div className="form-actions">
+              <button className="save-btn" onClick={handleSave}>
+                <Save size={16} />
+                {editingProduct ? 'Actualizar' : 'Guardar'} Producto
+              </button>
+              <button className="cancel-btn" onClick={resetForm}>
+                Cancelar
+              </button>
+            </div>
+          </div>
+          
+          <div className="admin-product-list">
+            <h3>Productos Actuales ({products.length})</h3>
+            <div className="product-list">
+              {products.map(product => (
+                <div key={product.id} className="admin-product-item">
+                  <img src={product.image} alt={product.name} />
+                  <div className="product-info">
+                    <h4>{product.name}</h4>
+                    <p>Detal: ${product.retail_price.toLocaleString()}</p>
+                    <p>Mayorista: ${product.wholesale_price.toLocaleString()}</p>
+                    <span className="category">{product.category}</span>
+                  </div>
+                  <div className="product-actions">
+                    <button onClick={() => handleEdit(product)}>
+                      <Edit size={16} />
+                    </button>
+                    <button onClick={() => handleDelete(product.id)}>
+                      <Trash2 size={16} />
+                    </button>
                   </div>
                 </div>
-                <button 
-                  className="remove-item"
-                  onClick={() => onRemoveItem(item.id, item.selectedSize)}
-                >
-                  <X size={16} />
-                </button>
-              </div>
-            ))
-          )}
-        </div>
-        
-        {cart.length > 0 && (
-          <div className="cart-footer">
-            <div className="cart-total">
-              <strong>Total: {formatPrice(total)}</strong>
+              ))}
             </div>
-            <button className="checkout-btn">
-              Proceder al Pago
-            </button>
           </div>
-        )}
+        </div>
       </div>
     </div>
   );
 };
 
-const About = () => {
-  return (
-    <section className="about">
-      <div className="container">
-        <div className="about-content">
-          <div className="about-text">
-            <h2>Nuestra Historia</h2>
-            <p>
-              HANNU CLOTHES nace del amor por la moda femenina y la pasión por crear prendas que realcen la belleza natural de cada mujer. 
-              Cada pieza es cuidadosamente seleccionada pensando en la mujer moderna que valora la calidad, el estilo y la comodidad.
-            </p>
-            <p>
-              Creemos que la ropa es una forma de expresión personal, y por eso ofrecemos una colección diversa que se adapta a diferentes 
-              momentos y estilos de vida, siempre manteniendo la elegancia como nuestro sello distintivo.
-            </p>
-          </div>
-          <div className="about-image">
-            <img src="https://images.pexels.com/photos/33751207/pexels-photo-33751207.jpeg" alt="Our Story" />
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-};
-
-const Testimonials = () => {
-  const testimonials = [
-    {
-      name: "María González",
-      text: "La calidad de las prendas es excepcional. Mi vestido HANNU se ha convertido en mi favorito para ocasiones especiales.",
-      rating: 5,
-      image: "https://images.unsplash.com/photo-1553984658-d17e19aa281a"
-    },
-    {
-      name: "Andrea Rodríguez", 
-      text: "Excelente servicio al cliente y prendas hermosas. Definitivamente volveré a comprar.",
-      rating: 5,
-      image: "https://images.unsplash.com/photo-1553984658-d17e19aa281a"
-    },
-    {
-      name: "Carolina Martínez",
-      text: "Me encanta la elegancia y feminidad de cada pieza. HANNU CLOTHES entiende perfectamente el estilo femenino.",
-      rating: 5,
-      image: "https://images.unsplash.com/photo-1553984658-d17e19aa281a"
-    }
-  ];
-
-  return (
-    <section className="testimonials">
-      <div className="container">
-        <h2>Lo que Dicen Nuestras Clientas</h2>
-        <div className="testimonials-grid">
-          {testimonials.map((testimonial, index) => (
-            <div key={index} className="testimonial-card">
-              <div className="stars">
-                {[...Array(testimonial.rating)].map((_, i) => (
-                  <Star key={i} size={16} fill="currentColor" />
-                ))}
-              </div>
-              <p>"{testimonial.text}"</p>
-              <div className="testimonial-author">
-                <img src={testimonial.image} alt={testimonial.name} />
-                <span>{testimonial.name}</span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-};
-
-const Footer = () => {
-  return (
-    <footer className="footer">
-      <div className="container">
-        <div className="footer-content">
-          <div className="footer-section">
-            <h4>HANNU CLOTHES</h4>
-            <p>Elegancia y estilo para la mujer moderna.</p>
-            <div className="footer-logo">
-              <img src="https://customer-assets.emergentagent.com/job_7ac0f3ca-81b2-49ce-a27b-bd65357f766a/artifacts/d670l3hu_Logo%20Hannu%20Clothes.jpeg" alt="HANNU CLOTHES" />
-            </div>
-          </div>
-          
-          <div className="footer-section">
-            <h4>Información</h4>
-            <ul>
-              <li><a href="#shipping">Envíos</a></li>
-              <li><a href="#returns">Cambios y Devoluciones</a></li>
-              <li><a href="#size-guide">Guía de Tallas</a></li>
-              <li><a href="#care">Cuidado de Prendas</a></li>
-            </ul>
-          </div>
-          
-          <div className="footer-section">
-            <h4>Políticas</h4>
-            <ul>
-              <li><a href="#shipping-policy">Política de Envíos</a></li>
-              <li><a href="#return-policy">Política de Cambios</a></li>
-              <li><a href="#privacy">Privacidad</a></li>
-              <li><a href="#terms">Términos y Condiciones</a></li>
-            </ul>
-          </div>
-          
-          <div className="footer-section">
-            <h4>Contacto</h4>
-            <div className="contact-info">
-              <div className="contact-item">
-                <Phone size={16} />
-                <span>+57 300 123 4567</span>
-              </div>
-              <div className="contact-item">
-                <Mail size={16} />
-                <span>info@hannuclothes.com</span>
-              </div>
-              <div className="contact-item">
-                <MapPin size={16} />
-                <span>Bogotá, Colombia</span>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <div className="footer-bottom">
-          <p>&copy; 2024 HANNU CLOTHES. Todos los derechos reservados.</p>
-        </div>
-      </div>
-    </footer>
-  );
-};
-
 const Home = () => {
   const [products, setProducts] = useState(sampleProducts);
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [cart, setCart] = useState([]);
-  const [isCartOpen, setIsCartOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState('todos');
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
+  const [showAdmin, setShowAdmin] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     // Test backend connection
@@ -477,65 +631,58 @@ const Home = () => {
     testApi();
   }, []);
 
-  const filteredProducts = selectedCategory === 'all' 
+  const filteredProducts = selectedCategory === 'todos' 
     ? products 
     : products.filter(product => product.category === selectedCategory);
-
-  const addToCart = (product) => {
-    const existingItem = cart.find(item => 
-      item.id === product.id && item.selectedSize === product.selectedSize
-    );
-    
-    if (existingItem) {
-      setCart(cart.map(item =>
-        item.id === product.id && item.selectedSize === product.selectedSize
-          ? { ...item, quantity: item.quantity + 1 }
-          : item
-      ));
-    } else {
-      setCart([...cart, { ...product, quantity: 1 }]);
-    }
-  };
-
-  const updateQuantity = (id, size, newQuantity) => {
-    if (newQuantity <= 0) {
-      removeFromCart(id, size);
-      return;
-    }
-    
-    setCart(cart.map(item =>
-      item.id === id && item.selectedSize === size
-        ? { ...item, quantity: newQuantity }
-        : item
-    ));
-  };
-
-  const removeFromCart = (id, size) => {
-    setCart(cart.filter(item => 
-      !(item.id === id && item.selectedSize === size)
-    ));
-  };
 
   const openProductModal = (product) => {
     setSelectedProduct(product);
     setIsProductModalOpen(true);
   };
 
+  const handleEditProduct = (product) => {
+    setShowAdmin(true);
+    setIsAdmin(true);
+  };
+
+  const handleDeleteProduct = (productId) => {
+    if (window.confirm('¿Estás seguro de que quieres eliminar este producto?')) {
+      setProducts(products.filter(p => p.id !== productId));
+    }
+  };
+
   return (
     <div className="app">
       <Header 
-        cart={cart}
-        toggleCart={() => setIsCartOpen(!isCartOpen)}
         selectedCategory={selectedCategory}
         setSelectedCategory={setSelectedCategory}
+        showAdmin={showAdmin}
+        setShowAdmin={setShowAdmin}
+        isAdmin={isAdmin}
+        setIsAdmin={setIsAdmin}
       />
       
       <main>
         <Hero />
         
-        <section className="products">
+        <section className="products catalog">
           <div className="container">
-            <h2>Nuestra Colección</h2>
+            <h2>Catálogo de Productos</h2>
+            <div className="catalog-stats">
+              <div className="stat">
+                <span className="stat-number">{products.length}</span>
+                <span className="stat-label">Productos Total</span>
+              </div>
+              <div className="stat">
+                <span className="stat-number">{filteredProducts.length}</span>
+                <span className="stat-label">Mostrando</span>
+              </div>
+              <div className="stat">
+                <span className="stat-number">{categories.length - 1}</span>
+                <span className="stat-label">Categorías</span>
+              </div>
+            </div>
+            
             <div className="category-tabs">
               {categories.map(category => (
                 <button
@@ -550,36 +697,89 @@ const Home = () => {
             
             <div className="products-grid">
               {filteredProducts.map(product => (
-                <div key={product.id} onClick={() => openProductModal(product)}>
-                  <ProductCard
-                    product={product}
-                    onAddToCart={addToCart}
-                  />
-                </div>
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  onView={openProductModal}
+                  isAdmin={isAdmin}
+                  onEdit={handleEditProduct}
+                  onDelete={handleDeleteProduct}
+                />
               ))}
             </div>
           </div>
         </section>
-        
-        <About />
-        <Testimonials />
       </main>
       
-      <Footer />
-      
-      <Cart
-        cart={cart}
-        isOpen={isCartOpen}
-        onClose={() => setIsCartOpen(false)}
-        onUpdateQuantity={updateQuantity}
-        onRemoveItem={removeFromCart}
-      />
+      <footer className="footer">
+        <div className="container">
+          <div className="footer-content">
+            <div className="footer-section">
+              <h4>HANNU CLOTHES</h4>
+              <p>Sistema profesional de catálogo para moda femenina.</p>
+              <div className="footer-logo">
+                <img src="https://customer-assets.emergentagent.com/job_7ac0f3ca-81b2-49ce-a27b-bd65357f766a/artifacts/d670l3hu_Logo%20Hannu%20Clothes.jpeg" alt="HANNU CLOTHES" />
+              </div>
+            </div>
+            
+            <div className="footer-section">
+              <h4>Categorías</h4>
+              <ul>
+                <li>Vestidos</li>
+                <li>Enterizos</li>
+                <li>Conjuntos</li>
+                <li>Blusas</li>
+                <li>Faldas & Pantalones</li>
+              </ul>
+            </div>
+            
+            <div className="footer-section">
+              <h4>Información</h4>
+              <ul>
+                <li>Precios Mayorista</li>
+                <li>Precios al Detal</li>
+                <li>Gestión de Inventario</li>
+                <li>Políticas de Envío</li>
+                <li>Políticas de Cambio</li>
+              </ul>
+            </div>
+            
+            <div className="footer-section">
+              <h4>Contacto</h4>
+              <div className="contact-info">
+                <div className="contact-item">
+                  <Phone size={16} />
+                  <span>+57 300 123 4567</span>
+                </div>
+                <div className="contact-item">
+                  <Mail size={16} />
+                  <span>catalogo@hannuclothes.com</span>
+                </div>
+                <div className="contact-item">
+                  <MapPin size={16} />
+                  <span>Bogotá, Colombia</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div className="footer-bottom">
+            <p>&copy; 2024 HANNU CLOTHES - Sistema de Catálogo Profesional. Todos los derechos reservados.</p>
+          </div>
+        </div>
+      </footer>
       
       <ProductModal
         product={selectedProduct}
         isOpen={isProductModalOpen}
         onClose={() => setIsProductModalOpen(false)}
-        onAddToCart={addToCart}
+      />
+      
+      <AdminPanel
+        isOpen={showAdmin && isAdmin}
+        onClose={() => setShowAdmin(false)}
+        products={products}
+        setProducts={setProducts}
       />
     </div>
   );
