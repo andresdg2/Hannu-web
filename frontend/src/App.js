@@ -150,7 +150,10 @@ const Header = ({ selectedCategory, setSelectedCategory, showAdmin, setShowAdmin
             </button>
             <button 
               className={`admin-btn ${showAdmin ? 'active' : ''}`}
-              onClick={() => setShowAdmin(!showAdmin)}
+              onClick={() => {
+                setShowAdmin(!showAdmin);
+                setIsAdmin(true); // Fix: Enable admin mode when accessing admin panel
+              }}
             >
               <User size={20} />
               {isAdmin ? 'Admin' : 'Acceso'}
