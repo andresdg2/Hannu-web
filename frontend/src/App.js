@@ -738,6 +738,53 @@ const Home = () => {
           </div>
         </section>
         
+        <section className="policies">
+          <div className="container">
+            <h2>Políticas de la Empresa</h2>
+            <div className="policies-grid">
+              
+              <div className="policy-card">
+                <h3>💳 Métodos de Pago</h3>
+                <ul>
+                  <li><strong>En Medellín:</strong> Contra entrega 🏡</li>
+                  <li><strong>Para el resto del país 🇨🇴:</strong> Pago anticipado por medio de Bancolombia o Davivienda</li>
+                </ul>
+              </div>
+
+              <div className="policy-card">
+                <h3>💕 Política de Envío</h3>
+                <p>
+                  Nuestros envíos se realizan al día hábil siguiente de realizar tu compra 
+                  (tener en cuenta que la transportadora tarda 1 a 2 días hábiles aproximadamente).
+                </p>
+              </div>
+
+              <div className="policy-card">
+                <h3>🤍 Política de Cambio</h3>
+                <p><strong>Para los cambios solo se dan 2 días.</strong></p>
+                <ul>
+                  <li>Solo se hacen cambios en vestidos, blusas, pantalones, faldas y shorts</li>
+                  <li>Siempre y cuando la prenda esté en buen estado</li>
+                  <li><strong>Bodys NO tienen cambio</strong> (son prendas íntimas)</li>
+                  <li><strong>Prendas blancas NO tienen cambio</strong></li>
+                  <li>No se corre con gastos de envío, estos los debe asumir el cliente</li>
+                  <li>Se debe cambiar por algo de igual o mayor valor (no se reembolsa dinero ni se usa la diferencia para pagar domicilio)</li>
+                </ul>
+              </div>
+
+              <div className="policy-card">
+                <h3>🛍 Política de Ventas al Por Mayor</h3>
+                <ul>
+                  <li><strong>Primera compra:</strong> Mínimo 6 prendas (pueden ser surtidas)</li>
+                  <li><strong>Compras siguientes:</strong> Mínimo 3 prendas</li>
+                  <li><strong>Importante:</strong> Si pasa más de un mes sin comprar, deben ser nuevamente 6 prendas para obtener precio al por mayor</li>
+                </ul>
+              </div>
+
+            </div>
+          </div>
+        </section>
+        
         <section className="featured-product">
           <div className="container">
             <div className="featured-content">
