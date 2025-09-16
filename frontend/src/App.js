@@ -738,6 +738,28 @@ const Home = () => {
           </div>
         </section>
         
+        <section className="featured-product">
+          <div className="container">
+            <div className="featured-content">
+              <div className="featured-text">
+                <h2>Nuestra Pasión por la Moda</h2>
+                <p>
+                  En HANNU CLOTHES, cada prenda refleja nuestra dedicación por la elegancia y la calidad. 
+                  Creamos piezas únicas que realzan la belleza natural de cada mujer, combinando tendencias 
+                  actuales con diseños atemporales.
+                </p>
+                <p>
+                  Nuestro compromiso es ofrecer un catálogo profesional que facilite la gestión de inventario 
+                  mientras mantenemos los más altos estándares de calidad y servicio.
+                </p>
+              </div>
+              <div className="featured-image">
+                <img src="https://customer-assets.emergentagent.com/job_hannu-clothing/artifacts/rvmnvnxx_Vestido%20Sorelle%20Rosado.jpeg" alt="HANNU CLOTHES - Vestido Sorelle Rosado" />
+              </div>
+            </div>
+          </div>
+        </section>
+        
         <section className="policies">
           <div className="container">
             <h2>Políticas de la Empresa</h2>
@@ -781,28 +803,6 @@ const Home = () => {
                 </ul>
               </div>
 
-            </div>
-          </div>
-        </section>
-        
-        <section className="featured-product">
-          <div className="container">
-            <div className="featured-content">
-              <div className="featured-text">
-                <h2>Nuestra Pasión por la Moda</h2>
-                <p>
-                  En HANNU CLOTHES, cada prenda refleja nuestra dedicación por la elegancia y la calidad. 
-                  Creamos piezas únicas que realzan la belleza natural de cada mujer, combinando tendencias 
-                  actuales con diseños atemporales.
-                </p>
-                <p>
-                  Nuestro compromiso es ofrecer un catálogo profesional que facilite la gestión de inventario 
-                  mientras mantenemos los más altos estándares de calidad y servicio.
-                </p>
-              </div>
-              <div className="featured-image">
-                <img src="https://customer-assets.emergentagent.com/job_hannu-clothing/artifacts/rvmnvnxx_Vestido%20Sorelle%20Rosado.jpeg" alt="HANNU CLOTHES - Vestido Sorelle Rosado" />
-              </div>
             </div>
           </div>
         </section>
