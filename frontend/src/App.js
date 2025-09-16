@@ -799,15 +799,12 @@ const Home = () => {
               <div className="contact-info">
                 <div className="contact-item">
                   <Phone size={16} />
-                  <span>+57 300 123 4567</span>
-                </div>
-                <div className="contact-item">
-                  <Mail size={16} />
-                  <span>catalogo@hannuclothes.com</span>
+                  <span>+57 305 451 2482</span>
+                  <small>(WhatsApp Business)</small>
                 </div>
                 <div className="contact-item">
                   <MapPin size={16} />
-                  <span>Bogotá, Colombia</span>
+                  <span>Medellín, Colombia</span>
                 </div>
               </div>
             </div>
