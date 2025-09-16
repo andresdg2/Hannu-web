@@ -889,6 +889,93 @@ body {
   transform: scale(1.1);
 }
 
+/* Policies Section */
+.policies {
+  padding: var(--spacing-xxl) 0;
+  background: var(--warm-white);
+}
+
+.policies h2 {
+  font-family: var(--font-heading);
+  font-size: 2.8rem;
+  text-align: center;
+  margin-bottom: var(--spacing-xl);
+  color: var(--charcoal);
+}
+
+.policies-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--spacing-lg);
+  margin-top: var(--spacing-xl);
+}
+
+.policy-card {
+  background: white;
+  padding: var(--spacing-xl);
+  border-radius: 20px;
+  box-shadow: var(--shadow-soft);
+  transition: all 0.3s ease;
+  border: 1px solid var(--secondary-pink);
+}
+
+.policy-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-strong);
+}
+
+.policy-card h3 {
+  font-family: var(--font-heading);
+  font-size: 1.4rem;
+  margin-bottom: var(--spacing-md);
+  color: var(--deep-pink);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.policy-card p {
+  color: var(--dark-gray);
+  line-height: 1.7;
+  margin-bottom: var(--spacing-sm);
+}
+
+.policy-card ul {
+  list-style: none;
+  padding: 0;
+}
+
+.policy-card ul li {
+  color: var(--dark-gray);
+  margin-bottom: var(--spacing-sm);
+  padding-left: var(--spacing-md);
+  position: relative;
+  line-height: 1.6;
+}
+
+.policy-card ul li::before {
+  content: '•';
+  color: var(--deep-pink);
+  position: absolute;
+  left: 0;
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+
+.policy-card ul li strong {
+  color: var(--charcoal);
+  font-weight: 600;
+}
+
+/* Contact Info Updates */
+.contact-item small {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--medium-gray);
+  margin-top: 2px;
+  font-style: italic;
+}
+
 /* Featured Product Section */
 .featured-product {
   padding: var(--spacing-xxl) 0;
