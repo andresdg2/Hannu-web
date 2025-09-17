@@ -139,7 +139,7 @@ body {
   gap: var(--spacing-sm);
 }
 
-.action-btn, .admin-btn {
+.action-btn, .admin-btn, .whatsapp-btn {
   background: none;
   border: none;
   padding: var(--spacing-xs);
@@ -153,6 +153,23 @@ body {
   justify-content: center;
   transition: all 0.3s ease;
   position: relative;
+  text-decoration: none;
+}
+
+.whatsapp-btn {
+  background: #25D366;
+  color: white;
+  border-radius: 20px;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  width: auto;
+  gap: var(--spacing-xs);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.whatsapp-btn:hover {
+  background: #20BA5A;
+  transform: scale(1.05);
 }
 
 .admin-btn {
@@ -173,6 +190,36 @@ body {
   background: var(--soft-rose);
   color: var(--deep-pink);
   transform: scale(1.1);
+}
+
+.admin-btn:hover {
+  transform: scale(1.05);
+}
+
+/* Social Links */
+.social-links {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-md);
+}
+
+.social-link {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  color: var(--medium-gray);
+  text-decoration: none;
+  transition: color 0.3s ease;
+  font-size: 0.9rem;
+}
+
+.social-link:hover {
+  color: var(--secondary-pink);
+}
+
+.social-link svg {
+  color: var(--secondary-pink);
 }
 
 .menu-toggle {
