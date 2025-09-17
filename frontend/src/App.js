@@ -546,14 +546,23 @@ const AdminPanel = ({ isOpen, onClose, products, setProducts }) => {
                   placeholder="Pega aquí tu enlace de imagen"
                 />
                 <div className="image-helper">
-                  <button 
-                    type="button" 
-                    className="convert-btn"
-                    onClick={() => convertGoogleDriveLink()}
-                  >
-                    🔄 Convertir enlace de Google Drive
-                  </button>
-                  <small>Si usas Google Drive, pega el enlace y haz clic en "Convertir"</small>
+                  <div className="helper-buttons">
+                    <button 
+                      type="button" 
+                      className="convert-btn"
+                      onClick={() => convertGoogleDriveLink()}
+                    >
+                      🔄 Convertir enlace de Google Drive
+                    </button>
+                    <button 
+                      type="button" 
+                      className="test-btn"
+                      onClick={() => testImageUrl()}
+                    >
+                      🧪 Probar URL de imagen
+                    </button>
+                  </div>
+                  <small>Si usas Google Drive, pega el enlace y haz clic en "Convertir". Usa "Probar URL" para verificar que funcione.</small>
                 </div>
                 {formData.image && (
                   <div className="image-preview">
