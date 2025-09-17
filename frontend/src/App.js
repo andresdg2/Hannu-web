@@ -535,48 +535,12 @@ const AdminPanel = ({ isOpen, onClose, products, setProducts }) => {
                 />
               </div>
               
-              <div className="form-group full-width">
-                <label>Especificaciones</label>
-                <textarea
-                  value={formData.specifications}
-                  onChange={(e) => setFormData({...formData, specifications: e.target.value})}
-                  rows="2"
-                />
-              </div>
-              
               <div className="form-group">
                 <label>Composición</label>
                 <input
                   type="text"
                   value={formData.composition}
                   onChange={(e) => setFormData({...formData, composition: e.target.value})}
-                />
-              </div>
-              
-              <div className="form-group">
-                <label>Instrucciones de Cuidado</label>
-                <input
-                  type="text"
-                  value={formData.care}
-                  onChange={(e) => setFormData({...formData, care: e.target.value})}
-                />
-              </div>
-              
-              <div className="form-group full-width">
-                <label>Política de Envíos</label>
-                <textarea
-                  value={formData.shipping_policy}
-                  onChange={(e) => setFormData({...formData, shipping_policy: e.target.value})}
-                  rows="2"
-                />
-              </div>
-              
-              <div className="form-group full-width">
-                <label>Política de Cambios</label>
-                <textarea
-                  value={formData.exchange_policy}
-                  onChange={(e) => setFormData({...formData, exchange_policy: e.target.value})}
-                  rows="2"
                 />
               </div>
             </div>
