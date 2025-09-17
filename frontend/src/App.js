@@ -562,7 +562,18 @@ const AdminPanel = ({ isOpen, onClose, products, setProducts }) => {
                       🧪 Probar URL de imagen
                     </button>
                   </div>
-                  <small>Si usas Google Drive, pega el enlace y haz clic en "Convertir". Usa "Probar URL" para verificar que funcione.</small>
+                  <div className="image-solutions">
+                    <div className="solution-box">
+                      <h4>💡 Soluciones Recomendadas:</h4>
+                      <ul>
+                        <li><strong>ImgBB</strong> (imgbb.com) - Gratis, arrastra la imagen</li>
+                        <li><strong>Postimages</strong> (postimages.org) - Gratis, funciona siempre</li>
+                        <li><strong>ImageShack</strong> (imageshack.com) - Confiable</li>
+                      </ul>
+                      <p className="tip">💡 <strong>Tip:</strong> Estos servicios generan URLs que siempre funcionan en catálogos.</p>
+                    </div>
+                  </div>
+                  <small>Si Google Drive no funciona, usa los servicios recomendados arriba para garantizar que las imágenes se muestren.</small>
                 </div>
                 {formData.image && (
                   <div className="image-preview">
@@ -579,9 +590,9 @@ const AdminPanel = ({ isOpen, onClose, products, setProducts }) => {
                       }}
                     />
                     <div className="image-error" style={{display: 'none'}}>
-                      ⚠️ No se puede mostrar la vista previa. Verifica que el archivo sea público en Google Drive.
+                      ⚠️ No se puede mostrar la vista previa. 
                       <br />
-                      <small>Tip: En Google Drive, haz clic derecho → Obtener enlace → Cambiar a "Cualquier persona con el enlace"</small>
+                      <strong>Solución:</strong> Usa ImgBB, Postimages o ImageShack para subir tu imagen y obtener una URL que funcione.
                     </div>
                   </div>
                 )}
