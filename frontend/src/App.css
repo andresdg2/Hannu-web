@@ -636,9 +636,12 @@ body {
 
 .modal-image img {
   width: 100%;
-  height: 500px;
-  object-fit: cover;
+  height: auto;
+  min-height: 400px;
+  max-height: 600px;
+  object-fit: contain;
   border-radius: 15px;
+  background: var(--soft-gray);
 }
 
 .modal-info h2 {
