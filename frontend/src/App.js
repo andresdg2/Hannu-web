@@ -392,6 +392,36 @@ const AdminPanel = ({ isOpen, onClose, products, setProducts }) => {
     }
   };
 
+  const testImageUrl = async () => {
+    const url = formData.image;
+    if (!url) {
+      alert('Por favor ingresa una URL de imagen primero.');
+      return;
+    }
+
+    try {
+      // Test if image loads
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      
+      img.onload = () => {
+        alert('✅ ¡La imagen carga correctamente! Si no aparece en el catálogo, puede ser un problema de CORS.');
+        console.log('Image loaded successfully:', url);
+      };
+      
+      img.onerror = () => {
+        alert('❌ Error: No se puede cargar la imagen. Verifica que la URL sea correcta y que el archivo sea público.');
+        console.error('Image failed to load:', url);
+      };
+      
+      img.src = url;
+      
+    } catch (error) {
+      alert('Error al probar la imagen: ' + error.message);
+      console.error('Error testing image:', error);
+    }
+  };
+
   const resetForm = () => {
     setFormData({
       name: '',
