@@ -1130,6 +1130,10 @@ body {
   background: linear-gradient(135deg, #E1306C, #F56040, #FCAF45);
 }
 
+.facebook-card .contact-icon {
+  background: linear-gradient(135deg, #1877F2, #42A5F5);
+}
+
 .contact-card h3 {
   font-family: var(--font-heading);
   font-size: 1.5rem;
