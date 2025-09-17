@@ -191,7 +191,7 @@ const Hero = () => {
           </div>
         </div>
         <div className="hero-image">
-          <img src="https://images.unsplash.com/photo-1678637803384-947954f11c10?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDQ2MzR8MHwxfHNlYXJjaHwxfHxlbGVnYW50JTIwd29tZW4lMjBmYXNoaW9ufGVufDB8fHx8MTc1Njk5OTYxOHww&ixlib=rb-4.1.0&q=85" alt="Elegant Fashion" />
+          <img src="https://customer-assets.emergentagent.com/job_hannu-clothing/artifacts/54sp5pdl_Enterizo%20Suelto.jpeg" alt="HANNU CLOTHES - Enterizo Elegante" />
         </div>
       </div>
     </section>
