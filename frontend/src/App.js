@@ -452,6 +452,36 @@ const AdminPanel = ({ isOpen, onClose, products, setProducts }) => {
     });
   };
 
+  const [adminToken, setAdminToken] = useState(localStorage.getItem('adminToken') || null);
+
+  const loginAdmin = async () => {
+    try {
+      const response = await axios.post(`${API}/admin/login`, {
+        username: 'admin',
+        password: 'admin123'
+      });
+      
+      const token = response.data.access_token;
+      setAdminToken(token);
+      localStorage.setItem('adminToken', token);
+      setIsAdmin(true);
+      alert('✅ Sesión de administrador iniciada correctamente');
+      return token;
+    } catch (error) {
+      console.error('Error logging in as admin:', error);
+      alert('Error al iniciar sesión de administrador');
+      return null;
+    }
+  };
+
+  const ensureAdminAuth = async () => {
+    if (!adminToken) {
+      const token = await loginAdmin();
+      return token;
+    }
+    return adminToken;
+  };
+
   const handleSave = async () => {
     try {
       const productData = {
