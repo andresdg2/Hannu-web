@@ -1306,3 +1306,55 @@ html {
 .retail-badge {
   background: var(--warning);
 }
+
+/* Admin Panel Form Enhancements */
+.image-helper {
+  margin-top: var(--spacing-sm);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.convert-btn {
+  background: var(--info);
+  color: white;
+  border: none;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  align-self: flex-start;
+}
+
+.convert-btn:hover {
+  background: #2563EB;
+  transform: translateY(-1px);
+}
+
+.image-helper small {
+  color: var(--medium-gray);
+  font-style: italic;
+}
+
+.image-preview {
+  margin-top: var(--spacing-sm);
+  border: 2px dashed var(--secondary-pink);
+  border-radius: 8px;
+  padding: var(--spacing-sm);
+  text-align: center;
+}
+
+.image-preview img {
+  max-width: 200px;
+  max-height: 200px;
+  object-fit: cover;
+  border-radius: 8px;
+  box-shadow: var(--shadow-soft);
+}
+
+.image-preview img:not([src]) {
+  display: none;
+}
+
+/* Form Grid Updates */
