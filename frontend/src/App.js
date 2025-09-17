@@ -874,23 +874,20 @@ const Home = () => {
                 <h3>Ubicación</h3>
                 <p className="contact-location">Medellín, Colombia</p>
                 <p className="contact-subtitle">Envíos a todo el país</p>
-                <button className="contact-btn location-btn">
-                  Ver ubicación
-                </button>
               </div>
 
-              <div className="contact-card instagram-card">
+              <div className="contact-card facebook-card">
                 <div className="contact-icon">
-                  <Instagram size={40} />
+                  <Facebook size={40} />
                 </div>
-                <h3>Instagram</h3>
+                <h3>Facebook</h3>
                 <p className="contact-handle">@hannuclothes</p>
-                <p className="contact-subtitle">Síguenos para novedades</p>
+                <p className="contact-subtitle">Síguenos en Facebook</p>
                 <a 
-                  href="https://instagram.com/hannuclothes" 
+                  href="https://facebook.com/hannuclothes" 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="contact-btn instagram-btn"
+                  className="contact-btn facebook-btn"
                 >
                   Seguir
                 </a>
