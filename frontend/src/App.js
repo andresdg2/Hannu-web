@@ -464,7 +464,6 @@ const AdminPanel = ({ isOpen, onClose, products, setProducts }) => {
       const token = response.data.access_token;
       setAdminToken(token);
       localStorage.setItem('adminToken', token);
-      setIsAdmin(true);
       alert('✅ Sesión de administrador iniciada correctamente');
       return token;
     } catch (error) {
