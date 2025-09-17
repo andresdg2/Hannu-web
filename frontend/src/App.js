@@ -389,6 +389,27 @@ const AdminPanel = ({ isOpen, onClose, products, setProducts }) => {
     stock: {}
   });
 
+  const convertGoogleDriveLink = () => {
+    const currentUrl = formData.image;
+    
+    // Check if it's a Google Drive link
+    if (currentUrl.includes('drive.google.com')) {
+      const regex = /\/file\/d\/([a-zA-Z0-9_-]+)\//;
+      const match = currentUrl.match(regex);
+      
+      if (match && match[1]) {
+        const fileId = match[1];
+        const directUrl = `https://drive.google.com/uc?export=view&id=${fileId}`;
+        setFormData({...formData, image: directUrl});
+        alert('¡Enlace convertido exitosamente! Ahora la imagen debería mostrarse correctamente.');
+      } else {
+        alert('No se pudo extraer el ID del archivo. Asegúrate de que sea un enlace válido de Google Drive.');
+      }
+    } else {
+      alert('Este no parece ser un enlace de Google Drive.');
+    }
+  };
+
   const resetForm = () => {
     setFormData({
       name: '',
