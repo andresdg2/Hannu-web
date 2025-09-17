@@ -484,60 +484,82 @@ const AdminPanel = ({ isOpen, onClose, products, setProducts }) => {
 
   const handleSave = async () => {
     try {
+      // Ensure we have admin authentication
+      const token = await ensureAdminAuth();
+      if (!token) {
+        alert('❌ No se pudo autenticar como administrador');
+        return;
+      }
+
       const productData = {
         ...formData,
         retail_price: parseInt(formData.retail_price),
         wholesale_price: parseInt(formData.wholesale_price)
       };
 
+      const config = {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      };
+
       if (editingProduct) {
         // Update existing product
-        const response = await axios.put(`${API}/products/${editingProduct.id}`, productData);
+        const response = await axios.put(`${API}/products/${editingProduct.id}`, productData, config);
         setProducts(products.map(p => 
           p.id === editingProduct.id ? response.data : p
         ));
-        alert('Producto actualizado exitosamente');
+        alert('✅ Producto actualizado exitosamente');
       } else {
         // Add new product
-        const response = await axios.post(`${API}/products`, productData);
+        const response = await axios.post(`${API}/products`, productData, config);
         setProducts([...products, response.data]);
-        alert('Producto creado exitosamente');
+        alert('✅ Producto creado exitosamente');
       }
       resetForm();
     } catch (error) {
       console.error('Error saving product:', error);
-      alert('Error al guardar el producto. Usando datos locales temporalmente.');
       
-      // Fallback to local storage
-      if (editingProduct) {
-        setProducts(products.map(p => 
-          p.id === editingProduct.id 
-            ? { ...editingProduct, ...formData, retail_price: parseInt(formData.retail_price), wholesale_price: parseInt(formData.wholesale_price) }
-            : p
-        ));
+      if (error.response?.status === 401) {
+        // Token expired or invalid, try to login again
+        localStorage.removeItem('adminToken');
+        setAdminToken(null);
+        alert('❌ Sesión expirada. Intenta nuevamente.');
       } else {
-        const newProduct = {
-          id: Date.now(),
-          ...formData,
-          retail_price: parseInt(formData.retail_price),
-          wholesale_price: parseInt(formData.wholesale_price)
-        };
-        setProducts([...products, newProduct]);
+        alert('❌ Error al guardar el producto: ' + (error.response?.data?.detail || error.message));
       }
-      resetForm();
     }
   };
 
   const handleDelete = async (productId) => {
     if (window.confirm('¿Estás seguro de que quieres eliminar este producto?')) {
       try {
-        await axios.delete(`${API}/products/${productId}`);
+        const token = await ensureAdminAuth();
+        if (!token) {
+          alert('❌ No se pudo autenticar como administrador');
+          return;
+        }
+
+        const config = {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        };
+
+        await axios.delete(`${API}/products/${productId}`, config);
         setProducts(products.filter(p => p.id !== productId));
-        alert('Producto eliminado exitosamente');
+        alert('✅ Producto eliminado exitosamente');
       } catch (error) {
         console.error('Error deleting product:', error);
-        alert('Error al eliminar el producto. Eliminando localmente.');
-        setProducts(products.filter(p => p.id !== productId));
+        
+        if (error.response?.status === 401) {
+          localStorage.removeItem('adminToken');
+          setAdminToken(null);
+          alert('❌ Sesión expirada. Intenta nuevamente.');
+        } else {
+          alert('❌ Error al eliminar el producto: ' + (error.response?.data?.detail || error.message));
+        }
       }
     }
   };
