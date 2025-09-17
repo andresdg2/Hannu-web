@@ -1023,6 +1023,169 @@ body {
   font-style: italic;
 }
 
+/* Contact Section */
+.contact-section {
+  padding: var(--spacing-xxl) 0;
+  background: linear-gradient(135deg, #f8f4ff 0%, #fff0f6 100%);
+}
+
+.contact-header {
+  text-align: center;
+  margin-bottom: var(--spacing-xxl);
+}
+
+.contact-header h2 {
+  font-family: var(--font-heading);
+  font-size: 3rem;
+  color: #6B46C1;
+  margin-bottom: var(--spacing-sm);
+  font-weight: 700;
+}
+
+.contact-header p {
+  font-size: 1.2rem;
+  color: var(--medium-gray);
+  margin-bottom: var(--spacing-md);
+}
+
+.contact-header::after {
+  content: '';
+  display: block;
+  width: 60px;
+  height: 4px;
+  background: linear-gradient(90deg, #EC4899, #8B5CF6);
+  margin: var(--spacing-md) auto 0;
+  border-radius: 2px;
+}
+
+.contact-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--spacing-xl);
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.contact-card {
+  background: white;
+  padding: var(--spacing-xxl) var(--spacing-lg);
+  border-radius: 25px;
+  text-align: center;
+  box-shadow: 0 10px 40px rgba(139, 92, 246, 0.1);
+  transition: all 0.3s ease;
+  border: 1px solid rgba(139, 92, 246, 0.1);
+}
+
+.contact-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 20px 60px rgba(139, 92, 246, 0.15);
+}
+
+.contact-icon {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto var(--spacing-lg);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.whatsapp-card .contact-icon {
+  background: linear-gradient(135deg, #25D366, #128C7E);
+}
+
+.location-card .contact-icon {
+  background: linear-gradient(135deg, #8B5CF6, #6B46C1);
+}
+
+.instagram-card .contact-icon {
+  background: linear-gradient(135deg, #E1306C, #F56040, #FCAF45);
+}
+
+.contact-card h3 {
+  font-family: var(--font-heading);
+  font-size: 1.5rem;
+  color: var(--charcoal);
+  margin-bottom: var(--spacing-sm);
+  font-weight: 600;
+}
+
+.contact-number, .contact-location, .contact-handle {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--charcoal);
+  margin-bottom: var(--spacing-xs);
+}
+
+.contact-subtitle {
+  color: var(--medium-gray);
+  margin-bottom: var(--spacing-lg);
+  font-size: 1rem;
+}
+
+.contact-btn {
+  display: inline-block;
+  padding: var(--spacing-md) var(--spacing-xl);
+  border: none;
+  border-radius: 25px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  min-width: 150px;
+}
+
+.whatsapp-btn-large {
+  background: linear-gradient(135deg, #25D366, #128C7E);
+  color: white;
+}
+
+.whatsapp-btn-large:hover {
+  background: linear-gradient(135deg, #128C7E, #25D366);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(37, 211, 102, 0.3);
+}
+
+.location-btn {
+  background: linear-gradient(135deg, #8B5CF6, #6B46C1);
+  color: white;
+}
+
+.location-btn:hover {
+  background: linear-gradient(135deg, #6B46C1, #8B5CF6);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(139, 92, 246, 0.3);
+}
+
+.instagram-btn {
+  background: linear-gradient(135deg, #E1306C, #F56040);
+  color: white;
+}
+
+.instagram-btn:hover {
+  background: linear-gradient(135deg, #F56040, #E1306C);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(225, 48, 108, 0.3);
+}
+
+/* Image Preview Error Styles */
+.image-error {
+  background: #FEF2F2;
+  border: 1px solid #FECACA;
+  border-radius: 8px;
+  padding: var(--spacing-md);
+  color: #DC2626;
+  text-align: center;
+}
+
+.image-error small {
+  color: #7F1D1D;
+  font-style: italic;
+}
+
 /* Featured Product Section */
 .featured-product {
   padding: var(--spacing-xxl) 0;
