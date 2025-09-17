@@ -452,30 +452,63 @@ const AdminPanel = ({ isOpen, onClose, products, setProducts }) => {
     });
   };
 
-  const handleSave = () => {
-    if (editingProduct) {
-      // Update existing product
-      setProducts(products.map(p => 
-        p.id === editingProduct.id 
-          ? { ...editingProduct, ...formData }
-          : p
-      ));
-    } else {
-      // Add new product
-      const newProduct = {
-        id: Date.now(),
+  const handleSave = async () => {
+    try {
+      const productData = {
         ...formData,
         retail_price: parseInt(formData.retail_price),
         wholesale_price: parseInt(formData.wholesale_price)
       };
-      setProducts([...products, newProduct]);
+
+      if (editingProduct) {
+        // Update existing product
+        const response = await axios.put(`${API}/products/${editingProduct.id}`, productData);
+        setProducts(products.map(p => 
+          p.id === editingProduct.id ? response.data : p
+        ));
+        alert('Producto actualizado exitosamente');
+      } else {
+        // Add new product
+        const response = await axios.post(`${API}/products`, productData);
+        setProducts([...products, response.data]);
+        alert('Producto creado exitosamente');
+      }
+      resetForm();
+    } catch (error) {
+      console.error('Error saving product:', error);
+      alert('Error al guardar el producto. Usando datos locales temporalmente.');
+      
+      // Fallback to local storage
+      if (editingProduct) {
+        setProducts(products.map(p => 
+          p.id === editingProduct.id 
+            ? { ...editingProduct, ...formData, retail_price: parseInt(formData.retail_price), wholesale_price: parseInt(formData.wholesale_price) }
+            : p
+        ));
+      } else {
+        const newProduct = {
+          id: Date.now(),
+          ...formData,
+          retail_price: parseInt(formData.retail_price),
+          wholesale_price: parseInt(formData.wholesale_price)
+        };
+        setProducts([...products, newProduct]);
+      }
+      resetForm();
     }
-    resetForm();
   };
 
-  const handleDelete = (productId) => {
+  const handleDelete = async (productId) => {
     if (window.confirm('¿Estás seguro de que quieres eliminar este producto?')) {
-      setProducts(products.filter(p => p.id !== productId));
+      try {
+        await axios.delete(`${API}/products/${productId}`);
+        setProducts(products.filter(p => p.id !== productId));
+        alert('Producto eliminado exitosamente');
+      } catch (error) {
+        console.error('Error deleting product:', error);
+        alert('Error al eliminar el producto. Eliminando localmente.');
+        setProducts(products.filter(p => p.id !== productId));
+      }
     }
   };
 
