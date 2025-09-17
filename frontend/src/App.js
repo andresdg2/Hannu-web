@@ -751,6 +751,65 @@ const Home = () => {
           </div>
         </section>
         
+        <section className="contact-section">
+          <div className="container">
+            <div className="contact-header">
+              <h2>Contáctanos</h2>
+              <p>Estamos aquí para ayudarte</p>
+            </div>
+            
+            <div className="contact-grid">
+              
+              <div className="contact-card whatsapp-card">
+                <div className="contact-icon">
+                  <MessageCircle size={40} />
+                </div>
+                <h3>WhatsApp Business</h3>
+                <p className="contact-number">+57 305 451 2482</p>
+                <p className="contact-subtitle">Atendemos a nuestras clientas</p>
+                <a 
+                  href="https://wa.me/message/MNLVUZAVGCAHH1" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="contact-btn whatsapp-btn-large"
+                >
+                  Escribir ahora
+                </a>
+              </div>
+
+              <div className="contact-card location-card">
+                <div className="contact-icon">
+                  <MapPin size={40} />
+                </div>
+                <h3>Ubicación</h3>
+                <p className="contact-location">Medellín, Colombia</p>
+                <p className="contact-subtitle">Envíos a todo el país</p>
+                <button className="contact-btn location-btn">
+                  Ver ubicación
+                </button>
+              </div>
+
+              <div className="contact-card instagram-card">
+                <div className="contact-icon">
+                  <Instagram size={40} />
+                </div>
+                <h3>Instagram</h3>
+                <p className="contact-handle">@hannuclothes</p>
+                <p className="contact-subtitle">Síguenos para novedades</p>
+                <a 
+                  href="https://instagram.com/hannuclothes" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="contact-btn instagram-btn"
+                >
+                  Seguir
+                </a>
+              </div>
+
+            </div>
+          </div>
+        </section>
+        
         <section className="featured-product">
           <div className="container">
             <div className="featured-content">
