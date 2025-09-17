@@ -887,18 +887,18 @@ const Home = () => {
                 <p className="contact-subtitle">Envíos a todo el país</p>
               </div>
 
-              <div className="contact-card facebook-card">
+              <div className="contact-card instagram-card">
                 <div className="contact-icon">
-                  <Facebook size={40} />
+                  <Instagram size={40} />
                 </div>
-                <h3>Facebook</h3>
+                <h3>Instagram</h3>
                 <p className="contact-handle">@hannuclothes</p>
-                <p className="contact-subtitle">Síguenos en Facebook</p>
+                <p className="contact-subtitle">Síguenos para novedades</p>
                 <a 
-                  href="https://facebook.com/hannuclothes" 
+                  href="https://instagram.com/hannuclothes" 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="contact-btn facebook-btn"
+                  className="contact-btn instagram-btn"
                 >
                   Seguir
                 </a>
