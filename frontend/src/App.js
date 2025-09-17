@@ -413,11 +413,7 @@ const AdminPanel = ({ isOpen, onClose, products, setProducts }) => {
       wholesale_price: product.wholesale_price,
       category: product.category,
       image: product.image,
-      specifications: product.specifications,
       composition: product.composition,
-      care: product.care,
-      shipping_policy: product.shipping_policy,
-      exchange_policy: product.exchange_policy,
       sizes: product.sizes,
       stock: product.stock
     });
