@@ -1383,7 +1383,7 @@ body {
   }
   
   .modal-image img {
-    height: 300px;
+    max-height: 400px;
   }
   
   .admin-content {
@@ -1399,14 +1399,57 @@ body {
     justify-content: flex-start;
     overflow-x: auto;
     padding-bottom: var(--spacing-sm);
+    gap: var(--spacing-xs);
   }
   
   .category-tab {
     white-space: nowrap;
+    flex-shrink: 0;
   }
   
   .form-grid {
     grid-template-columns: 1fr;
+  }
+  
+  .featured-content {
+    grid-template-columns: 1fr;
+    text-align: center;
+    gap: var(--spacing-lg);
+  }
+  
+  .policies-grid {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-md);
+  }
+  
+  .contact-grid {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-lg);
+    max-width: 400px;
+  }
+  
+  .products-grid {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--spacing-lg);
+  }
+  
+  .header-actions {
+    gap: var(--spacing-xs);
+  }
+  
+  .whatsapp-btn span {
+    display: none;
+  }
+  
+  .admin-btn span {
+    display: none;
+  }
+  
+  .whatsapp-btn, .action-btn, .admin-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    padding: var(--spacing-xs);
   }
 }
 
@@ -1427,6 +1470,10 @@ body {
     font-size: 2rem;
   }
   
+  .featured-text h2, .contact-header h2, .policies h2 {
+    font-size: 2rem;
+  }
+  
   .footer-content {
     grid-template-columns: 1fr;
     text-align: center;
@@ -1435,6 +1482,56 @@ body {
   
   .products-grid {
     grid-template-columns: 1fr;
+    gap: var(--spacing-md);
+  }
+  
+  .product-card {
+    max-width: 100%;
+  }
+  
+  .catalog-stats {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .stat {
+    min-width: 140px;
+  }
+  
+  .modal-overlay {
+    padding: var(--spacing-sm);
+  }
+  
+  .product-modal {
+    max-height: 95vh;
+  }
+  
+  .admin-panel {
+    margin: var(--spacing-sm);
+    max-width: calc(100vw - 2rem);
+  }
+  
+  .solution-box ul li {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .hero-text h1 {
+    font-size: 1.8rem;
+  }
+  
+  .products.catalog h2 {
+    font-size: 1.8rem;
+  }
+  
+  .contact-header h2 {
+    font-size: 1.8rem;
+  }
+  
+  .category-tab {
+    font-size: 0.9rem;
+    padding: var(--spacing-xs) var(--spacing-sm);
   }
 }
 
