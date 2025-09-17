@@ -147,6 +147,16 @@ const Header = ({ selectedCategory, setSelectedCategory, showAdmin, setShowAdmin
             <button className="action-btn">
               <Search size={20} />
             </button>
+            <a 
+              href="https://wa.me/message/MNLVUZAVGCAHH1" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="whatsapp-btn"
+              title="¡Bienvenida a Hannuclothes!! ¿Cómo podemos ayudarte?"
+            >
+              <MessageCircle size={20} />
+              <span>WhatsApp</span>
+            </a>
             <button 
               className={`admin-btn ${showAdmin ? 'active' : ''}`}
               onClick={() => {
