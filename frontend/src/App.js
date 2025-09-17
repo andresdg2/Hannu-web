@@ -826,6 +826,16 @@ const Home = () => {
               <div className="footer-logo">
                 <img src="https://customer-assets.emergentagent.com/job_7ac0f3ca-81b2-49ce-a27b-bd65357f766a/artifacts/d670l3hu_Logo%20Hannu%20Clothes.jpeg" alt="HANNU CLOTHES" />
               </div>
+              <div className="social-links">
+                <a href="https://instagram.com/hannuclothes" target="_blank" rel="noopener noreferrer" className="social-link">
+                  <Instagram size={20} />
+                  <span>@hannuclothes</span>
+                </a>
+                <a href="https://facebook.com/hannuclothes" target="_blank" rel="noopener noreferrer" className="social-link">
+                  <Facebook size={20} />
+                  <span>@hannuclothes</span>
+                </a>
+              </div>
             </div>
             
             <div className="footer-section">
