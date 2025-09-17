@@ -384,11 +384,7 @@ const AdminPanel = ({ isOpen, onClose, products, setProducts }) => {
     wholesale_price: '',
     category: 'vestidos',
     image: '',
-    specifications: '',
     composition: '',
-    care: '',
-    shipping_policy: '',
-    exchange_policy: '',
     sizes: [],
     stock: {}
   });
