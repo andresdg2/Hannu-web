@@ -1504,7 +1504,13 @@ html {
   gap: var(--spacing-xs);
 }
 
-.convert-btn {
+.helper-buttons {
+  display: flex;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+
+.convert-btn, .test-btn {
   background: var(--info);
   color: white;
   border: none;
@@ -1513,7 +1519,11 @@ html {
   font-size: 0.9rem;
   cursor: pointer;
   transition: all 0.3s ease;
-  align-self: flex-start;
+  flex-shrink: 0;
+}
+
+.test-btn {
+  background: var(--success);
 }
 
 .convert-btn:hover {
@@ -1521,9 +1531,15 @@ html {
   transform: translateY(-1px);
 }
 
+.test-btn:hover {
+  background: #059669;
+  transform: translateY(-1px);
+}
+
 .image-helper small {
   color: var(--medium-gray);
   font-style: italic;
+  line-height: 1.4;
 }
 
 .image-preview {
