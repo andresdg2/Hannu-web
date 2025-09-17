@@ -483,7 +483,6 @@ const AdminPanel = ({ isOpen, onClose, products, setProducts }) => {
                   <option value="conjuntos">Conjuntos</option>
                   <option value="blusas">Blusas</option>
                   <option value="faldas">Faldas</option>
-                  <option value="pantalones">Pantalones</option>
                 </select>
               </div>
               
