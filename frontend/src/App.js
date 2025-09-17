@@ -777,6 +777,34 @@ const Home = () => {
     loadProducts();
   }, []);
 
+  const loginAdmin = async () => {
+    try {
+      const response = await axios.post(`${API}/admin/login`, {
+        username: 'admin',
+        password: 'admin123'
+      });
+      
+      const token = response.data.access_token;
+      localStorage.setItem('adminToken', token);
+      setIsAdmin(true);
+      alert('✅ Sesión de administrador iniciada correctamente');
+      return token;
+    } catch (error) {
+      console.error('Error logging in as admin:', error);
+      alert('Error al iniciar sesión de administrador');
+      return null;
+    }
+  };
+
+  const ensureAdminAuth = async () => {
+    const storedToken = localStorage.getItem('adminToken');
+    if (!storedToken) {
+      const token = await loginAdmin();
+      return token;
+    }
+    return storedToken;
+  };
+
   const filteredProducts = selectedCategory === 'todos' 
     ? products 
     : products.filter(product => product.category === selectedCategory);
