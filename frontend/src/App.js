@@ -545,7 +545,23 @@ const AdminPanel = ({ isOpen, onClose, products, setProducts }) => {
                 </div>
                 {formData.image && (
                   <div className="image-preview">
-                    <img src={formData.image} alt="Vista previa" />
+                    <img 
+                      src={formData.image} 
+                      alt="Vista previa" 
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                        e.target.nextSibling.style.display = 'block';
+                      }}
+                      onLoad={(e) => {
+                        e.target.style.display = 'block';
+                        e.target.nextSibling.style.display = 'none';
+                      }}
+                    />
+                    <div className="image-error" style={{display: 'none'}}>
+                      ⚠️ No se puede mostrar la vista previa. Verifica que el archivo sea público en Google Drive.
+                      <br />
+                      <small>Tip: En Google Drive, haz clic derecho → Obtener enlace → Cambiar a "Cualquier persona con el enlace"</small>
+                    </div>
                   </div>
                 )}
               </div>
