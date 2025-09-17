@@ -708,12 +708,11 @@ const Home = () => {
         const response = await axios.get(`${API}/products`);
         console.log('Products loaded from backend:', response.data.length);
         
-        // If no products in backend, use sample data
-        if (response.data.length === 0) {
+        if (response.data.length > 0) {
+          setProducts(response.data);
+        } else {
           console.log('No products in backend, using sample data');
           setProducts(sampleProducts);
-        } else {
-          setProducts(response.data);
         }
       } catch (e) {
         console.error('Failed to load products, using sample data:', e);
