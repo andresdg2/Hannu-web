@@ -1519,10 +1519,57 @@ html {
   gap: var(--spacing-xs);
 }
 
+.image-solutions {
+  margin: var(--spacing-sm) 0;
+}
+
+.solution-box {
+  background: linear-gradient(135deg, #F0FDF4, #ECFDF5);
+  border: 1px solid #BBF7D0;
+  border-radius: 8px;
+  padding: var(--spacing-md);
+}
+
+.solution-box h4 {
+  color: #065F46;
+  margin-bottom: var(--spacing-sm);
+  font-size: 1rem;
+}
+
+.solution-box ul {
+  list-style: none;
+  padding: 0;
+  margin-bottom: var(--spacing-sm);
+}
+
+.solution-box ul li {
+  color: #047857;
+  margin-bottom: var(--spacing-xs);
+  padding-left: var(--spacing-sm);
+  position: relative;
+}
+
+.solution-box ul li::before {
+  content: '🌟';
+  position: absolute;
+  left: 0;
+}
+
+.solution-box .tip {
+  color: #065F46;
+  font-size: 0.9rem;
+  margin: 0;
+  font-weight: 500;
+  background: rgba(16, 185, 129, 0.1);
+  padding: var(--spacing-xs);
+  border-radius: 4px;
+}
+
 .helper-buttons {
   display: flex;
   gap: var(--spacing-sm);
   flex-wrap: wrap;
+  margin-bottom: var(--spacing-sm);
 }
 
 .convert-btn, .test-btn {
