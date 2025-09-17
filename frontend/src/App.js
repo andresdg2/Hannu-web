@@ -161,23 +161,53 @@ const Hero = () => {
 
 const ProductCard = ({ product, onView, isAdmin, onEdit, onDelete }) => {
   const [showPrices, setShowPrices] = useState('retail');
+  const [imageError, setImageError] = useState(false);
 
   const formatPrice = (price) => {
+    // Ensure price is a number
+    const numPrice = typeof price === 'number' ? price : parseInt(price) || 0;
     return new Intl.NumberFormat('es-CO', {
       style: 'currency',
       currency: 'COP',
       minimumFractionDigits: 0
-    }).format(price);
+    }).format(numPrice);
   };
 
   const getTotalStock = () => {
-    return Object.values(product.stock || {}).reduce((total, qty) => total + qty, 0);
+    if (!product.stock || typeof product.stock !== 'object') return 0;
+    return Object.values(product.stock).reduce((total, qty) => {
+      const num = typeof qty === 'number' ? qty : parseInt(qty) || 0;
+      return total + num;
+    }, 0);
+  };
+
+  const handleImageError = () => {
+    setImageError(true);
+  };
+
+  const handleImageLoad = () => {
+    setImageError(false);
   };
 
   return (
     <div className="product-card">
       <div className="product-image">
-        <img src={product.image} alt={product.name} />
+        {!imageError ? (
+          <img 
+            src={product.image} 
+            alt={product.name}
+            onError={handleImageError}
+            onLoad={handleImageLoad}
+            crossOrigin="anonymous"
+          />
+        ) : (
+          <div className="image-placeholder">
+            <div className="placeholder-content">
+              <span>📷</span>
+              <p>Imagen no disponible</p>
+            </div>
+          </div>
+        )}
         {isAdmin && (
           <div className="admin-controls">
             <button className="control-btn edit" onClick={() => onEdit(product)}>
