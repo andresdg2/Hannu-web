@@ -129,30 +129,28 @@ class HannuClothesAPITester:
             200
         )
 
-    def test_create_product(self):
-        """Test creating a new product (requires auth)"""
+    def test_create_product_with_images_colors(self):
+        """Test creating a new product with images and colors arrays (requires auth)"""
         if not self.token:
             print("❌ Skipping create product test - no token available")
             return False
         
+        # Test the exact data format from the review request
         test_product = {
-            "name": "Test Vestido API",
-            "description": "Vestido de prueba creado via API",
-            "retail_price": 100000,
-            "wholesale_price": 70000,
+            "name": "Vestido de Prueba",
+            "description": "Vestido para probar funcionalidad",
+            "retail_price": 95000,
+            "wholesale_price": 65000,
             "category": "vestidos",
-            "image": "https://images.unsplash.com/photo-1633077705107-8f53a004218f?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Nzd8MHwxfHNlYXJjaHwyfHx3b21lbiUyMGRyZXNzZXN8ZW58MHx8fHwxNzU2OTk5NjU1fDA&ixlib=rb-4.1.0&q=85",
-            "specifications": "Vestido de prueba con especificaciones básicas",
-            "composition": "100% Algodón",
-            "care": "Lavar a máquina en agua fría",
-            "shipping_policy": "Envío estándar 2-5 días hábiles",
-            "exchange_policy": "Cambios hasta 15 días",
+            "images": ["https://example.com/image1.jpg", "https://example.com/image2.jpg"],
+            "colors": ["Rojo", "Azul", "Verde"],
+            "composition": "95% Algodón, 5% Elastano",
             "sizes": ["S", "M", "L"],
             "stock": {"S": 5, "M": 10, "L": 8}
         }
         
         success, response = self.run_test(
-            "Create Test Product",
+            "Create Product with Images/Colors Arrays",
             "POST",
             "products",
             200,
@@ -162,6 +160,110 @@ class HannuClothesAPITester:
         if success and isinstance(response, dict) and 'id' in response:
             self.test_product_id = response['id']
             print(f"   ✅ Product created with ID: {self.test_product_id}")
+            
+            # Verify the response contains the arrays
+            if 'images' in response and 'colors' in response:
+                print(f"   ✅ Response contains images array: {response['images']}")
+                print(f"   ✅ Response contains colors array: {response['colors']}")
+                
+                # Check backward compatibility - should have 'image' field set to first image
+                if 'image' in response and response['image'] == test_product['images'][0]:
+                    print(f"   ✅ Backward compatibility maintained - image field set correctly")
+                else:
+                    print(f"   ⚠️  Backward compatibility issue - image field: {response.get('image')}")
+                
+                return True
+            else:
+                print(f"   ❌ Response missing images or colors arrays")
+                return False
+        return False
+
+    def test_create_product_legacy_format(self):
+        """Test creating product with legacy single image format"""
+        if not self.token:
+            print("❌ Skipping legacy product test - no token available")
+            return False
+        
+        test_product = {
+            "name": "Legacy Test Product",
+            "description": "Testing backward compatibility",
+            "retail_price": 80000,
+            "wholesale_price": 56000,
+            "category": "blusas",
+            "image": "https://example.com/legacy-image.jpg",
+            "composition": "100% Algodón",
+            "sizes": ["S", "M"],
+            "stock": {"S": 3, "M": 5}
+        }
+        
+        success, response = self.run_test(
+            "Create Product with Legacy Format",
+            "POST",
+            "products",
+            200,
+            data=test_product
+        )
+        
+        if success and isinstance(response, dict) and 'id' in response:
+            self.legacy_product_id = response['id']
+            print(f"   ✅ Legacy product created with ID: {self.legacy_product_id}")
+            
+            # Verify backward compatibility - should create images array from single image
+            if 'images' in response and response['images'] == [test_product['image']]:
+                print(f"   ✅ Legacy compatibility - images array created from single image")
+                return True
+            else:
+                print(f"   ❌ Legacy compatibility issue - images array: {response.get('images')}")
+                return False
+        return False
+
+    def test_data_validation(self):
+        """Test data validation for arrays with empty strings"""
+        if not self.token:
+            print("❌ Skipping validation test - no token available")
+            return False
+        
+        test_product = {
+            "name": "Validation Test Product",
+            "description": "Testing empty string filtering",
+            "retail_price": 75000,
+            "wholesale_price": 52500,
+            "category": "faldas",
+            "images": ["https://example.com/valid.jpg", "", "https://example.com/valid2.jpg", "   "],
+            "colors": ["Azul", "", "Rojo", "   ", "Verde"],
+            "composition": "90% Algodón, 10% Elastano",
+            "sizes": ["M", "L"],
+            "stock": {"M": 4, "L": 6}
+        }
+        
+        success, response = self.run_test(
+            "Create Product with Empty Strings in Arrays",
+            "POST",
+            "products",
+            200,
+            data=test_product
+        )
+        
+        if success and isinstance(response, dict) and 'id' in response:
+            self.validation_product_id = response['id']
+            print(f"   ✅ Validation product created with ID: {self.validation_product_id}")
+            
+            # Check that empty strings were filtered out
+            expected_images = ["https://example.com/valid.jpg", "https://example.com/valid2.jpg"]
+            expected_colors = ["Azul", "Rojo", "Verde"]
+            
+            if response.get('images') == expected_images:
+                print(f"   ✅ Empty strings filtered from images array correctly")
+            else:
+                print(f"   ❌ Images filtering failed. Expected: {expected_images}, Got: {response.get('images')}")
+                return False
+                
+            if response.get('colors') == expected_colors:
+                print(f"   ✅ Empty strings filtered from colors array correctly")
+            else:
+                print(f"   ❌ Colors filtering failed. Expected: {expected_colors}, Got: {response.get('colors')}")
+                return False
+                
             return True
         return False
 
