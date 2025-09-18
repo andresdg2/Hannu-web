@@ -770,28 +770,12 @@ const AdminPanel = ({ isOpen, onClose, products, setProducts, productToEdit }) =
               
               <div className="form-group full-width">
                 <label>Colores Disponibles</label>
-                {formData.colors.map((color, index) => (
-                  <div key={index} className="color-input-group">
-                    <input
-                      type="text"
-                      value={color}
-                      onChange={(e) => updateColor(index, e.target.value)}
-                      placeholder={`Color ${index + 1}`}
-                    />
-                    {formData.colors.length > 1 && (
-                      <button 
-                        type="button" 
-                        className="remove-btn"
-                        onClick={() => removeColorField(index)}
-                      >
-                        ❌
-                      </button>
-                    )}
-                  </div>
-                ))}
-                <button type="button" className="add-btn" onClick={addColorField}>
-                  ➕ Agregar Color
-                </button>
+                <input
+                  type="text"
+                  value={formData.colors}
+                  onChange={(e) => setFormData({...formData, colors: e.target.value})}
+                  placeholder="Ej: Rosa, Azul, Negro (separados por comas)"
+                />
               </div>
               
               <div className="form-group full-width">
