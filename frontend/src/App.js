@@ -424,62 +424,11 @@ const AdminPanel = ({ isOpen, onClose, products, setProducts }) => {
     retail_price: '',
     wholesale_price: '',
     category: 'vestidos',
-    image: '',
+    images: [''],
+    colors: [''],
     composition: '',
-    sizes: [],
-    stock: {}
+    sizes: []
   });
-
-  const convertGoogleDriveLink = () => {
-    const currentUrl = formData.image;
-    
-    // Check if it's a Google Drive link
-    if (currentUrl.includes('drive.google.com')) {
-      const regex = /\/file\/d\/([a-zA-Z0-9_-]+)\//;
-      const match = currentUrl.match(regex);
-      
-      if (match && match[1]) {
-        const fileId = match[1];
-        const directUrl = `https://drive.google.com/uc?export=view&id=${fileId}`;
-        setFormData({...formData, image: directUrl});
-        alert('¡Enlace convertido exitosamente! Ahora la imagen debería mostrarse correctamente.');
-      } else {
-        alert('No se pudo extraer el ID del archivo. Asegúrate de que sea un enlace válido de Google Drive.');
-      }
-    } else {
-      alert('Este no parece ser un enlace de Google Drive.');
-    }
-  };
-
-  const testImageUrl = async () => {
-    const url = formData.image;
-    if (!url) {
-      alert('Por favor ingresa una URL de imagen primero.');
-      return;
-    }
-
-    try {
-      // Test if image loads
-      const img = new Image();
-      img.crossOrigin = 'anonymous';
-      
-      img.onload = () => {
-        alert('✅ ¡La imagen carga correctamente! Si no aparece en el catálogo, puede ser un problema de CORS.');
-        console.log('Image loaded successfully:', url);
-      };
-      
-      img.onerror = () => {
-        alert('❌ Error: No se puede cargar la imagen. Verifica que la URL sea correcta y que el archivo sea público.');
-        console.error('Image failed to load:', url);
-      };
-      
-      img.src = url;
-      
-    } catch (error) {
-      alert('Error al probar la imagen: ' + error.message);
-      console.error('Error testing image:', error);
-    }
-  };
 
   const resetForm = () => {
     setFormData({
@@ -488,10 +437,10 @@ const AdminPanel = ({ isOpen, onClose, products, setProducts }) => {
       retail_price: '',
       wholesale_price: '',
       category: 'vestidos',
-      image: '',
+      images: [''],
+      colors: [''],
       composition: '',
-      sizes: [],
-      stock: {}
+      sizes: []
     });
     setEditingProduct(null);
   };
@@ -504,121 +453,82 @@ const AdminPanel = ({ isOpen, onClose, products, setProducts }) => {
       retail_price: product.retail_price,
       wholesale_price: product.wholesale_price,
       category: product.category,
-      image: product.image,
+      images: product.images && product.images.length > 0 ? product.images : [product.image || ''],
+      colors: product.colors || [''],
       composition: product.composition,
-      sizes: product.sizes,
-      stock: product.stock
+      sizes: product.sizes || []
     });
   };
 
-  const [adminToken, setAdminToken] = useState(localStorage.getItem('adminToken') || null);
+  const addImageField = () => {
+    setFormData({...formData, images: [...formData.images, '']});
+  };
 
-  const loginAdmin = async () => {
-    try {
-      const response = await axios.post(`${API}/admin/login`, {
-        username: 'admin',
-        password: 'admin123'
-      });
+  const removeImageField = (index) => {
+    if (formData.images.length > 1) {
+      const newImages = formData.images.filter((_, i) => i !== index);
+      setFormData({...formData, images: newImages});
+    }
+  };
+
+  const updateImage = (index, value) => {
+    const newImages = [...formData.images];
+    newImages[index] = value;
+    setFormData({...formData, images: newImages});
+  };
+
+  const addColorField = () => {
+    setFormData({...formData, colors: [...formData.colors, '']});
+  };
+
+  const removeColorField = (index) => {
+    if (formData.colors.length > 1) {
+      const newColors = formData.colors.filter((_, i) => i !== index);
+      setFormData({...formData, colors: newColors});
+    }
+  };
+
+  const updateColor = (index, value) => {
+    const newColors = [...formData.colors];
+    newColors[index] = value;
+    setFormData({...formData, colors: newColors});
+  };
+
+  const convertGoogleDriveLink = (imageUrl) => {
+    if (imageUrl.includes('drive.google.com')) {
+      const regex = /\/file\/d\/([a-zA-Z0-9_-]+)\//;
+      const match = imageUrl.match(regex);
       
-      const token = response.data.access_token;
-      setAdminToken(token);
-      localStorage.setItem('adminToken', token);
-      alert('✅ Sesión de administrador iniciada correctamente');
-      return token;
-    } catch (error) {
-      console.error('Error logging in as admin:', error);
-      alert('Error al iniciar sesión de administrador');
-      return null;
+      if (match && match[1]) {
+        const fileId = match[1];
+        return `https://drive.google.com/uc?export=view&id=${fileId}`;
+      }
     }
+    return imageUrl;
   };
 
-  const ensureAdminAuth = async () => {
-    if (!adminToken) {
-      const token = await loginAdmin();
-      return token;
+  const testImageUrl = async (url) => {
+    if (!url) {
+      alert('URL vacía');
+      return;
     }
-    return adminToken;
-  };
 
-  const handleSave = async () => {
     try {
-      // Ensure we have admin authentication
-      const token = await ensureAdminAuth();
-      if (!token) {
-        alert('❌ No se pudo autenticar como administrador');
-        return;
-      }
-
-      const productData = {
-        ...formData,
-        retail_price: parseInt(formData.retail_price),
-        wholesale_price: parseInt(formData.wholesale_price)
-      };
-
-      const config = {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      };
-
-      if (editingProduct) {
-        // Update existing product
-        const response = await axios.put(`${API}/products/${editingProduct.id}`, productData, config);
-        setProducts(products.map(p => 
-          p.id === editingProduct.id ? response.data : p
-        ));
-        alert('✅ Producto actualizado exitosamente');
-      } else {
-        // Add new product
-        const response = await axios.post(`${API}/products`, productData, config);
-        setProducts([...products, response.data]);
-        alert('✅ Producto creado exitosamente');
-      }
-      resetForm();
-    } catch (error) {
-      console.error('Error saving product:', error);
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
       
-      if (error.response?.status === 401) {
-        // Token expired or invalid, try to login again
-        localStorage.removeItem('adminToken');
-        setAdminToken(null);
-        alert('❌ Sesión expirada. Intenta nuevamente.');
-      } else {
-        alert('❌ Error al guardar el producto: ' + (error.response?.data?.detail || error.message));
-      }
-    }
-  };
-
-  const handleDelete = async (productId) => {
-    if (window.confirm('¿Estás seguro de que quieres eliminar este producto?')) {
-      try {
-        const token = await ensureAdminAuth();
-        if (!token) {
-          alert('❌ No se pudo autenticar como administrador');
-          return;
-        }
-
-        const config = {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        };
-
-        await axios.delete(`${API}/products/${productId}`, config);
-        setProducts(products.filter(p => p.id !== productId));
-        alert('✅ Producto eliminado exitosamente');
-      } catch (error) {
-        console.error('Error deleting product:', error);
-        
-        if (error.response?.status === 401) {
-          localStorage.removeItem('adminToken');
-          setAdminToken(null);
-          alert('❌ Sesión expirada. Intenta nuevamente.');
-        } else {
-          alert('❌ Error al eliminar el producto: ' + (error.response?.data?.detail || error.message));
-        }
-      }
+      img.onload = () => {
+        alert('✅ ¡La imagen carga correctamente!');
+      };
+      
+      img.onerror = () => {
+        alert('❌ Error: No se puede cargar la imagen.');
+      };
+      
+      img.src = url;
+      
+    } catch (error) {
+      alert('Error al probar la imagen: ' + error.message);
     }
   };
 
@@ -681,67 +591,6 @@ const AdminPanel = ({ isOpen, onClose, products, setProducts }) => {
               </div>
               
               <div className="form-group full-width">
-                <label>URL de Imagen</label>
-                <input
-                  type="url"
-                  value={formData.image}
-                  onChange={(e) => setFormData({...formData, image: e.target.value})}
-                  placeholder="Pega aquí tu enlace de imagen"
-                />
-                <div className="image-helper">
-                  <div className="helper-buttons">
-                    <button 
-                      type="button" 
-                      className="convert-btn"
-                      onClick={() => convertGoogleDriveLink()}
-                    >
-                      🔄 Convertir enlace de Google Drive
-                    </button>
-                    <button 
-                      type="button" 
-                      className="test-btn"
-                      onClick={() => testImageUrl()}
-                    >
-                      🧪 Probar URL de imagen
-                    </button>
-                  </div>
-                  <div className="image-solutions">
-                    <div className="solution-box">
-                      <h4>💡 Soluciones Recomendadas:</h4>
-                      <ul>
-                        <li><strong>ImgBB</strong> (imgbb.com) - Gratis, arrastra la imagen</li>
-                        <li><strong>Postimages</strong> (postimages.org) - Gratis, funciona siempre</li>
-                        <li><strong>ImageShack</strong> (imageshack.com) - Confiable</li>
-                      </ul>
-                      <p className="tip">💡 <strong>Tip:</strong> Estos servicios generan URLs que siempre funcionan en catálogos.</p>
-                    </div>
-                  </div>
-                  <small>Si Google Drive no funciona, usa los servicios recomendados arriba para garantizar que las imágenes se muestren.</small>
-                </div>
-                {formData.image && (
-                  <div className="image-preview">
-                    <img 
-                      src={formData.image} 
-                      alt="Vista previa" 
-                      onError={(e) => {
-                        e.target.style.display = 'none';
-                        e.target.nextSibling.style.display = 'block';
-                      }}
-                      onLoad={(e) => {
-                        e.target.style.display = 'block';
-                        e.target.nextSibling.style.display = 'none';
-                      }}
-                    />
-                    <div className="image-error" style={{display: 'none'}}>
-                      ⚠️ No se puede mostrar la vista previa. 
-                      <br />
-                      <strong>Solución:</strong> Usa ImgBB, Postimages o ImageShack para subir tu imagen y obtener una URL que funcione.
-                    </div>
-                  </div>
-                )}
-              </div>
-              
-              <div className="form-group full-width">
                 <label>Descripción</label>
                 <textarea
                   value={formData.description}
@@ -758,41 +607,89 @@ const AdminPanel = ({ isOpen, onClose, products, setProducts }) => {
                   onChange={(e) => setFormData({...formData, composition: e.target.value})}
                 />
               </div>
+              
+              <div className="form-group full-width">
+                <label>Imágenes del Producto</label>
+                {formData.images.map((image, index) => (
+                  <div key={index} className="image-input-group">
+                    <input
+                      type="url"
+                      value={image}
+                      onChange={(e) => updateImage(index, e.target.value)}
+                      placeholder={`URL de imagen ${index + 1}`}
+                    />
+                    <div className="image-controls">
+                      <button 
+                        type="button" 
+                        className="convert-btn-small"
+                        onClick={() => updateImage(index, convertGoogleDriveLink(image))}
+                      >
+                        🔄
+                      </button>
+                      <button 
+                        type="button" 
+                        className="test-btn-small"
+                        onClick={() => testImageUrl(image)}
+                      >
+                        🧪
+                      </button>
+                      {formData.images.length > 1 && (
+                        <button 
+                          type="button" 
+                          className="remove-btn"
+                          onClick={() => removeImageField(index)}
+                        >
+                          ❌
+                        </button>
+                      )}
+                    </div>
+                    {image && (
+                      <div className="mini-preview">
+                        <img src={image} alt={`Preview ${index + 1}`} onError={(e) => e.target.style.display = 'none'} />
+                      </div>
+                    )}
+                  </div>
+                ))}
+                <button type="button" className="add-btn" onClick={addImageField}>
+                  ➕ Agregar Imagen
+                </button>
+              </div>
+              
+              <div className="form-group full-width">
+                <label>Colores Disponibles</label>
+                {formData.colors.map((color, index) => (
+                  <div key={index} className="color-input-group">
+                    <input
+                      type="text"
+                      value={color}
+                      onChange={(e) => updateColor(index, e.target.value)}
+                      placeholder={`Color ${index + 1}`}
+                    />
+                    {formData.colors.length > 1 && (
+                      <button 
+                        type="button" 
+                        className="remove-btn"
+                        onClick={() => removeColorField(index)}
+                      >
+                        ❌
+                      </button>
+                    )}
+                  </div>
+                ))}
+                <button type="button" className="add-btn" onClick={addColorField}>
+                  ➕ Agregar Color
+                </button>
+              </div>
             </div>
             
             <div className="form-actions">
-              <button className="save-btn" onClick={handleSave}>
+              <button className="save-btn" onClick={() => {}}>
                 <Save size={16} />
                 {editingProduct ? 'Actualizar' : 'Guardar'} Producto
               </button>
               <button className="cancel-btn" onClick={resetForm}>
                 Cancelar
               </button>
-            </div>
-          </div>
-          
-          <div className="admin-product-list">
-            <h3>Productos Actuales ({products.length})</h3>
-            <div className="product-list">
-              {products.map(product => (
-                <div key={product.id} className="admin-product-item">
-                  <img src={product.image} alt={product.name} />
-                  <div className="product-info">
-                    <h4>{product.name}</h4>
-                    <p>Detal: ${product.retail_price.toLocaleString()}</p>
-                    <p>Mayorista: ${product.wholesale_price.toLocaleString()}</p>
-                    <span className="category">{product.category}</span>
-                  </div>
-                  <div className="product-actions">
-                    <button onClick={() => handleEdit(product)}>
-                      <Edit size={16} />
-                    </button>
-                    <button onClick={() => handleDelete(product.id)}>
-                      <Trash2 size={16} />
-                    </button>
-                  </div>
-                </div>
-              ))}
             </div>
           </div>
         </div>
