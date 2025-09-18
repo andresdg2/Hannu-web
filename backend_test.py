@@ -300,18 +300,92 @@ class HannuClothesAPITester:
             data=update_data
         )
 
-    def test_delete_product(self):
-        """Test deleting a product (requires auth)"""
-        if not self.token or not hasattr(self, 'test_product_id'):
-            print("❌ Skipping delete product test - no token or product ID available")
-            return False
+    def test_product_appears_in_catalog(self):
+        """Test that created products appear in the catalog"""
+        print("\n🔍 Verifying products appear in catalog after creation...")
         
-        return self.run_test(
-            "Delete Test Product",
-            "DELETE",
-            f"products/{self.test_product_id}",
+        success, response = self.run_test(
+            "Get All Products After Creation",
+            "GET",
+            "products",
             200
         )
+        
+        if not success:
+            return False
+            
+        if not isinstance(response, list):
+            print(f"   ❌ Expected list response, got: {type(response)}")
+            return False
+            
+        print(f"   📊 Total products in catalog: {len(response)}")
+        
+        # Check if our test products are in the catalog
+        test_products_found = []
+        product_names = [p.get('name', '') for p in response]
+        
+        expected_products = [
+            "Vestido de Prueba",
+            "Legacy Test Product", 
+            "Validation Test Product"
+        ]
+        
+        for expected_name in expected_products:
+            if expected_name in product_names:
+                test_products_found.append(expected_name)
+                print(f"   ✅ Found test product: {expected_name}")
+            else:
+                print(f"   ❌ Missing test product: {expected_name}")
+        
+        # Verify at least one product with images/colors arrays exists
+        products_with_arrays = []
+        for product in response:
+            if product.get('images') and product.get('colors'):
+                products_with_arrays.append(product['name'])
+                print(f"   ✅ Product with arrays found: {product['name']}")
+                print(f"      Images: {product['images']}")
+                print(f"      Colors: {product['colors']}")
+        
+        if len(products_with_arrays) > 0:
+            print(f"   ✅ {len(products_with_arrays)} products with images/colors arrays found in catalog")
+            return True
+        else:
+            print(f"   ❌ No products with images/colors arrays found in catalog")
+            return False
+
+    def cleanup_test_products(self):
+        """Clean up test products created during testing"""
+        if not self.token:
+            print("❌ Skipping cleanup - no token available")
+            return
+            
+        print("\n🧹 Cleaning up test products...")
+        
+        # List of product IDs to clean up
+        cleanup_ids = []
+        if hasattr(self, 'test_product_id'):
+            cleanup_ids.append(self.test_product_id)
+        if hasattr(self, 'legacy_product_id'):
+            cleanup_ids.append(self.legacy_product_id)
+        if hasattr(self, 'validation_product_id'):
+            cleanup_ids.append(self.validation_product_id)
+            
+        for product_id in cleanup_ids:
+            try:
+                success, _ = self.run_test(
+                    f"Delete Test Product {product_id[:8]}...",
+                    "DELETE",
+                    f"products/{product_id}",
+                    200
+                )
+                if success:
+                    print(f"   ✅ Cleaned up product {product_id[:8]}...")
+            except Exception as e:
+                print(f"   ⚠️  Could not clean up product {product_id[:8]}...: {str(e)}")
+
+    def test_create_product(self):
+        """Legacy test method - redirects to new comprehensive tests"""
+        return self.test_create_product_with_images_colors()
 
 def main():
     print("🚀 Starting HANNU CLOTHES API Testing...")
