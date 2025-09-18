@@ -238,6 +238,18 @@ async def update_product(product_id: str, product_update: ProductUpdate, admin: 
     if wholesale_price >= retail_price:
         raise HTTPException(status_code=400, detail="Wholesale price must be less than retail price")
     
+    # Handle backward compatibility for images
+    if "images" in update_data and update_data["images"]:
+        # Filter out empty strings
+        update_data["images"] = [img for img in update_data["images"] if img.strip()]
+        # Set first image as main image for backward compatibility  
+        if update_data["images"]:
+            update_data["image"] = update_data["images"][0]
+    
+    # Filter out empty strings from colors
+    if "colors" in update_data and update_data["colors"]:
+        update_data["colors"] = [color for color in update_data["colors"] if color.strip()]
+    
     await db.products.update_one({"id": product_id}, {"$set": update_data})
     
     updated_product = await db.products.find_one({"id": product_id})
