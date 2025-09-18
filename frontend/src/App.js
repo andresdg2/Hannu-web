@@ -486,32 +486,26 @@ const AdminPanel = ({ isOpen, onClose, products, setProducts, productToEdit }) =
   };
 
   const saveProduct = async () => {
+    console.log('🚀 INICIANDO GUARDADO DE PRODUCTO');
     setSaving(true);
+    
     try {
-      console.log('Starting save process...');
-      
-      // Get admin token
-      let token = localStorage.getItem('adminToken');
-      console.log('Token found:', !!token);
-      
+      // Forzar nueva autenticación cada vez
+      console.log('🔐 Iniciando sesión de administrador...');
+      const token = await loginAdmin();
       if (!token) {
-        console.log('No token found, attempting login...');
-        token = await loginAdmin();
-        if (!token) {
-          alert('Error: No se pudo obtener token de administrador');
-          return;
-        }
+        alert('❌ Error: No se pudo obtener token de administrador');
+        return;
       }
+      console.log('✅ Token obtenido correctamente');
 
-      // Validate form data
+      // Validar campos obligatorios
       if (!formData.name || !formData.description || !formData.retail_price || !formData.wholesale_price) {
-        alert('Por favor completa todos los campos obligatorios (nombre, descripción, precios)');
+        alert('❌ Por favor completa todos los campos obligatorios: nombre, descripción, precio detal y precio mayorista');
         return;
       }
 
-      console.log('Form data being sent:', formData);
-
-      // Prepare product data
+      // Preparar datos del producto
       const productData = {
         name: formData.name.trim(),
         description: formData.description.trim(),
@@ -528,15 +522,13 @@ const AdminPanel = ({ isOpen, onClose, products, setProducts, productToEdit }) =
         exchange_policy: 'Cambios hasta 15 días después de la compra'
       };
 
-      // Ensure at least one image
+      // Asegurar al menos una imagen
       if (productData.images.length === 0) {
-        productData.images = ['https://via.placeholder.com/400x400?text=No+Image'];
+        productData.images = ['https://via.placeholder.com/400x400/f8b4d1/ffffff?text=HANNU+CLOTHES'];
       }
+      productData.image = productData.images[0]; // Para compatibilidad
 
-      // Set main image for backward compatibility
-      productData.image = productData.images[0];
-
-      console.log('Product data to send:', productData);
+      console.log('📦 Datos del producto preparados:', productData);
 
       const headers = {
         'Content-Type': 'application/json',
@@ -544,46 +536,51 @@ const AdminPanel = ({ isOpen, onClose, products, setProducts, productToEdit }) =
       };
 
       let response;
+      const apiUrl = editingProduct ? `${API}/products/${editingProduct.id}` : `${API}/products`;
+      const method = editingProduct ? 'PUT' : 'POST';
+      
+      console.log(`📡 Haciendo ${method} a: ${apiUrl}`);
+      
       if (editingProduct) {
-        // Update existing product
-        console.log(`Updating product ${editingProduct.id}...`);
-        response = await axios.put(`${API}/products/${editingProduct.id}`, productData, { headers });
-        // Update in products list
+        response = await axios.put(apiUrl, productData, { headers });
         setProducts(products.map(p => p.id === editingProduct.id ? response.data : p));
-        alert('✅ Producto actualizado correctamente');
-        console.log('Product updated:', response.data);
+        console.log('✅ Producto actualizado:', response.data);
       } else {
-        // Create new product
-        console.log('Creating new product...');
-        response = await axios.post(`${API}/products`, productData, { headers });
-        // Add to products list
+        response = await axios.post(apiUrl, productData, { headers });
         setProducts([...products, response.data]);
-        alert('✅ Producto creado correctamente');
-        console.log('Product created:', response.data);
+        console.log('✅ Producto creado:', response.data);
       }
 
+      alert(`✅ Producto ${editingProduct ? 'actualizado' : 'creado'} correctamente!`);
       resetForm();
       onClose();
 
+      // Recargar productos para asegurar sincronización
+      setTimeout(async () => {
+        try {
+          const refreshResponse = await axios.get(`${API}/products`);
+          setProducts(refreshResponse.data);
+          console.log('🔄 Productos recargados:', refreshResponse.data.length);
+        } catch (error) {
+          console.error('Error recargando productos:', error);
+        }
+      }, 1000);
+
     } catch (error) {
-      console.error('Error saving product:', error);
-      console.error('Error details:', error.response?.data);
-      console.error('Error status:', error.response?.status);
+      console.error('❌ ERROR COMPLETO:', error);
+      console.error('❌ Response:', error.response?.data);
+      console.error('❌ Status:', error.response?.status);
       
       if (error.response?.status === 401) {
-        alert('Error: Sesión de administrador expirada. Eliminando token y reintentando...');
+        alert('❌ Error de autenticación. Reintentando...');
         localStorage.removeItem('adminToken');
-        // Try to login again
-        const newToken = await loginAdmin();
-        if (newToken) {
-          alert('Sesión restaurada. Por favor intenta guardar de nuevo.');
-        }
       } else if (error.response?.data?.detail) {
-        alert(`Error: ${JSON.stringify(error.response.data.detail)}`);
-      } else if (error.response?.data) {
-        alert(`Error del servidor: ${JSON.stringify(error.response.data)}`);
+        const detail = typeof error.response.data.detail === 'string' 
+          ? error.response.data.detail 
+          : JSON.stringify(error.response.data.detail);
+        alert(`❌ Error del servidor: ${detail}`);
       } else {
-        alert(`Error al guardar el producto: ${error.message}`);
+        alert(`❌ Error: ${error.message || 'Error desconocido'}`);
       }
     } finally {
       setSaving(false);
