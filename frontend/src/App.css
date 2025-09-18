@@ -705,6 +705,115 @@ body {
   transform: scale(1.1);
 }
 
+.modal-image {
+  position: relative;
+}
+
+.modal-image img {
+  width: 100%;
+  height: auto;
+  min-height: 400px;
+  max-height: 600px;
+  object-fit: contain;
+  border-radius: 15px;
+  background: var(--soft-gray);
+}
+
+.modal-image-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1.5rem;
+  font-weight: bold;
+  z-index: 3;
+  transition: all 0.3s ease;
+}
+
+.modal-image-nav.prev {
+  left: 15px;
+}
+
+.modal-image-nav.next {
+  right: 15px;
+}
+
+.modal-image-nav:hover {
+  background: rgba(0, 0, 0, 1);
+  transform: translateY(-50%) scale(1.1);
+}
+
+.modal-image-dots {
+  position: absolute;
+  bottom: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+  z-index: 3;
+}
+
+.modal-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 2px solid rgba(255, 255, 255, 0.8);
+}
+
+.modal-dot.active {
+  background: white;
+  transform: scale(1.2);
+}
+
+.modal-dot:hover {
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.colors-list {
+  display: flex;
+  gap: var(--spacing-xs);
+  flex-wrap: wrap;
+  margin-top: var(--spacing-xs);
+}
+
+.color-tag {
+  background: var(--accent-pink);
+  color: white;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: 15px;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.sizes-list {
+  display: flex;
+  gap: var(--spacing-xs);
+  flex-wrap: wrap;
+  margin-top: var(--spacing-xs);
+}
+
+.size-tag {
+  background: var(--soft-gray);
+  border: 2px solid var(--secondary-pink);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: 8px;
+  font-weight: 500;
+  min-width: 45px;
+  text-align: center;
+}
+
 .modal-content {
   display: grid;
   grid-template-columns: 1fr 1fr;
