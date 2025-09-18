@@ -370,6 +370,18 @@ const ProductModal = ({ product, isOpen, onClose }) => {
             <p className="product-description">{product.description}</p>
             
             <div className="product-details">
+              <div className="detail-section">
+                <h4>💳 Métodos de Pago</h4>
+                <div className="payment-methods">
+                  <div className="payment-method">
+                    <strong>📍 En Medellín:</strong> Contra entrega 🏡
+                  </div>
+                  <div className="payment-method">
+                    <strong>🇨🇴 Resto del país:</strong> Pago anticipado por Bancolombia o Davivienda
+                  </div>
+                </div>
+              </div>
+
               {product.colors && product.colors.length > 0 && (
                 <div className="detail-section">
                   <h4>Colores Disponibles</h4>
