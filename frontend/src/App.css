@@ -1912,3 +1912,17 @@ html {
 }
 
 /* Form Grid Updates */
+
+.color-input-group, 
+.size-input-group {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.color-input-group input,
+.size-input-group input {
+  flex: 1;
+  min-width: 0;
+}
