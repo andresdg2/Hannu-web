@@ -194,9 +194,26 @@ async def create_product(product: ProductCreate, admin: Admin = Depends(get_curr
         raise HTTPException(status_code=400, detail="Wholesale price must be less than retail price")
     
     product_dict = product.dict()
+    
+    # Handle backward compatibility: if no images array but has image, add to images
+    if not product_dict.get("images") and product_dict.get("image"):
+        product_dict["images"] = [product_dict["image"]]
+    elif product_dict.get("images") and not product_dict.get("image"):
+        # Set first image as main image for backward compatibility
+        product_dict["image"] = product_dict["images"][0] if product_dict["images"] else ""
+    
+    # Filter out empty strings from images and colors
+    if product_dict.get("images"):
+        product_dict["images"] = [img for img in product_dict["images"] if img.strip()]
+    if product_dict.get("colors"):
+        product_dict["colors"] = [color for color in product_dict["colors"] if color.strip()]
+    
     product_obj = Product(**product_dict)
     
-    await db.products.insert_one(product_obj.dict())
+    # Convert to dict for MongoDB storage
+    product_doc = product_obj.dict()
+    await db.products.insert_one(product_doc)
+    
     return product_obj
 
 @api_router.put("/products/{product_id}", response_model=Product)
