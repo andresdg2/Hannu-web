@@ -464,7 +464,7 @@ const AdminPanel = ({ isOpen, onClose, products, setProducts, productToEdit }) =
       images: product.images && product.images.length > 0 ? product.images : [product.image || ''],
       colors: product.colors || [''],
       composition: product.composition,
-      sizes: product.sizes || []
+      sizes: product.sizes && product.sizes.length > 0 ? product.sizes : ['']
     });
   };
 
