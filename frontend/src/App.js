@@ -792,6 +792,7 @@ const Home = () => {
   const [showAdmin, setShowAdmin] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [productToEdit, setProductToEdit] = useState(null);
 
   useEffect(() => {
     // Load products from backend
