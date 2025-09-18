@@ -370,21 +370,6 @@ const ProductModal = ({ product, isOpen, onClose }) => {
             <p className="product-description">{product.description}</p>
             
             <div className="product-details">
-              <div className="detail-section">
-                <h4>Especificaciones</h4>
-                <p>{product.specifications}</p>
-              </div>
-              
-              <div className="detail-section">
-                <h4>Composición</h4>
-                <p>{product.composition}</p>
-              </div>
-              
-              <div className="detail-section">
-                <h4>Cuidados</h4>
-                <p>{product.care}</p>
-              </div>
-              
               {product.colors && product.colors.length > 0 && (
                 <div className="detail-section">
                   <h4>Colores Disponibles</h4>
