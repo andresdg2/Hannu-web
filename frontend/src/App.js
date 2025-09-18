@@ -1158,9 +1158,13 @@ const Home = () => {
       
       <AdminPanel
         isOpen={showAdmin && isAdmin}
-        onClose={() => setShowAdmin(false)}
+        onClose={() => {
+          setShowAdmin(false);
+          setProductToEdit(null);
+        }}
         products={products}
         setProducts={setProducts}
+        productToEdit={productToEdit}
       />
     </div>
   );
