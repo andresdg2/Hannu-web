@@ -765,9 +765,13 @@ const AdminPanel = ({ isOpen, onClose, products, setProducts }) => {
             </div>
             
             <div className="form-actions">
-              <button className="save-btn" onClick={() => {}}>
+              <button 
+                className="save-btn" 
+                onClick={saveProduct}
+                disabled={saving}
+              >
                 <Save size={16} />
-                {editingProduct ? 'Actualizar' : 'Guardar'} Producto
+                {saving ? 'Guardando...' : (editingProduct ? 'Actualizar' : 'Guardar')} Producto
               </button>
               <button className="cancel-btn" onClick={resetForm}>
                 Cancelar
