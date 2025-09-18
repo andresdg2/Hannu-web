@@ -438,6 +438,23 @@ const AdminPanel = ({ isOpen, onClose, products, setProducts, productToEdit }) =
     }
   }, [productToEdit]);
 
+  const loginAdmin = async () => {
+    try {
+      const response = await axios.post(`${API}/admin/login`, {
+        username: 'admin',
+        password: 'admin123'
+      });
+      
+      const token = response.data.access_token;
+      localStorage.setItem('adminToken', token);
+      console.log('✅ Admin logged in successfully');
+      return token;
+    } catch (error) {
+      console.error('Error logging in as admin:', error);
+      return null;
+    }
+  };
+
   const resetForm = () => {
     setFormData({
       name: '',
