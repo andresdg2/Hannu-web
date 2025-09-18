@@ -471,18 +471,28 @@ const AdminPanel = ({ isOpen, onClose, products, setProducts, productToEdit }) =
   const saveProduct = async () => {
     setSaving(true);
     try {
+      console.log('Starting save process...');
+      
       // Get admin token
-      const token = localStorage.getItem('adminToken');
+      let token = localStorage.getItem('adminToken');
+      console.log('Token found:', !!token);
+      
       if (!token) {
-        alert('Error: No se encontró token de administrador');
-        return;
+        console.log('No token found, attempting login...');
+        token = await loginAdmin();
+        if (!token) {
+          alert('Error: No se pudo obtener token de administrador');
+          return;
+        }
       }
 
       // Validate form data
       if (!formData.name || !formData.description || !formData.retail_price || !formData.wholesale_price) {
-        alert('Por favor completa todos los campos obligatorios');
+        alert('Por favor completa todos los campos obligatorios (nombre, descripción, precios)');
         return;
       }
+
+      console.log('Form data being sent:', formData);
 
       // Prepare product data
       const productData = {
@@ -509,6 +519,8 @@ const AdminPanel = ({ isOpen, onClose, products, setProducts, productToEdit }) =
       // Set main image for backward compatibility
       productData.image = productData.images[0];
 
+      console.log('Product data to send:', productData);
+
       const headers = {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
@@ -517,31 +529,44 @@ const AdminPanel = ({ isOpen, onClose, products, setProducts, productToEdit }) =
       let response;
       if (editingProduct) {
         // Update existing product
+        console.log(`Updating product ${editingProduct.id}...`);
         response = await axios.put(`${API}/products/${editingProduct.id}`, productData, { headers });
         // Update in products list
         setProducts(products.map(p => p.id === editingProduct.id ? response.data : p));
         alert('✅ Producto actualizado correctamente');
+        console.log('Product updated:', response.data);
       } else {
         // Create new product
+        console.log('Creating new product...');
         response = await axios.post(`${API}/products`, productData, { headers });
         // Add to products list
         setProducts([...products, response.data]);
         alert('✅ Producto creado correctamente');
+        console.log('Product created:', response.data);
       }
 
-      console.log('Product saved:', response.data);
       resetForm();
       onClose();
 
     } catch (error) {
       console.error('Error saving product:', error);
+      console.error('Error details:', error.response?.data);
+      console.error('Error status:', error.response?.status);
+      
       if (error.response?.status === 401) {
-        alert('Error: Sesión de administrador expirada. Por favor vuelve a acceder.');
+        alert('Error: Sesión de administrador expirada. Eliminando token y reintentando...');
         localStorage.removeItem('adminToken');
+        // Try to login again
+        const newToken = await loginAdmin();
+        if (newToken) {
+          alert('Sesión restaurada. Por favor intenta guardar de nuevo.');
+        }
       } else if (error.response?.data?.detail) {
-        alert(`Error: ${error.response.data.detail}`);
+        alert(`Error: ${JSON.stringify(error.response.data.detail)}`);
+      } else if (error.response?.data) {
+        alert(`Error del servidor: ${JSON.stringify(error.response.data)}`);
       } else {
-        alert('Error al guardar el producto. Por favor intenta de nuevo.');
+        alert(`Error al guardar el producto: ${error.message}`);
       }
     } finally {
       setSaving(false);
