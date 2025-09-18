@@ -143,7 +143,7 @@ const Hero = () => {
             </div>
             <div className="feature">
               <Check size={20} />
-              <span>Inventario en Tiempo Real</span>
+              <span>Confeccionamos modelos específicos</span>
             </div>
             <div className="feature">
               <Check size={20} />
