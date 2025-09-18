@@ -416,7 +416,7 @@ const ProductModal = ({ product, isOpen, onClose }) => {
   );
 };
 
-const AdminPanel = ({ isOpen, onClose, products, setProducts }) => {
+const AdminPanel = ({ isOpen, onClose, products, setProducts, productToEdit }) => {
   const [editingProduct, setEditingProduct] = useState(null);
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
@@ -430,6 +430,13 @@ const AdminPanel = ({ isOpen, onClose, products, setProducts }) => {
     composition: '',
     sizes: []
   });
+
+  // Effect to handle productToEdit from parent component
+  useEffect(() => {
+    if (productToEdit) {
+      handleEdit(productToEdit);
+    }
+  }, [productToEdit]);
 
   const resetForm = () => {
     setFormData({
