@@ -7,7 +7,7 @@ import { ShoppingCart, User, Search, Menu, X, Heart, Star, ArrowRight, Check, Ph
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
-// Sample product data with dual pricing
+// Sample product data with multiple images and colors
 const sampleProducts = [
   {
     id: 1,
@@ -16,14 +16,15 @@ const sampleProducts = [
     retail_price: 150000,
     wholesale_price: 105000,
     category: "vestidos",
-    image: "https://i.ibb.co/ckRPK0cn/Vestido-Velvet.jpg",
+    images: [
+      "https://i.ibb.co/ckRPK0cn/Vestido-Velvet.jpg",
+      "https://customer-assets.emergentagent.com/job_hannu-clothing/artifacts/rvmnvnxx_Vestido%20Sorelle%20Rosado.jpeg"
+    ],
+    colors: ["Rosa", "Beige"],
     specifications: "Vestido de corte A, manga corta, cuello redondo, cierre posterior invisible",
     composition: "95% Algodón, 5% Elastano",
     care: "Lavar a máquina en agua fría, no usar blanqueador, planchar a temperatura media",
-    shipping_policy: "Envío nacional 2-5 días hábiles. Envío gratis en compras superiores a $200.000",
-    exchange_policy: "Cambios y devoluciones hasta 15 días después de la compra. El producto debe estar en perfectas condiciones.",
-    sizes: ["XS", "S", "M", "L", "XL"],
-    stock: {"XS": 5, "S": 8, "M": 12, "L": 10, "XL": 6}
+    sizes: ["XS", "S", "M", "L", "XL"]
   },
   {
     id: 2,
@@ -32,14 +33,14 @@ const sampleProducts = [
     retail_price: 75000,
     wholesale_price: 52500,
     category: "blusas",
-    image: "https://i.ibb.co/ckRPK0cn/Vestido-Velvet.jpg",
+    images: [
+      "https://i.ibb.co/ckRPK0cn/Vestido-Velvet.jpg"
+    ],
+    colors: ["Blanco con rayas negras"],
     specifications: "Blusa de rayas horizontales, manga larga, cuello camisero, botones frontales",
     composition: "100% Algodón orgánico",
     care: "Lavar a máquina en agua tibia, secar al aire, planchar del revés",
-    shipping_policy: "Envío nacional 2-5 días hábiles. Envío gratis en compras superiores a $200.000",
-    exchange_policy: "Cambios y devoluciones hasta 15 días después de la compra. El producto debe estar en perfectas condiciones.",
-    sizes: ["XS", "S", "M", "L", "XL"],
-    stock: {"XS": 3, "S": 6, "M": 8, "L": 7, "XL": 4}
+    sizes: ["XS", "S", "M", "L", "XL"]
   },
   {
     id: 3,
@@ -48,14 +49,14 @@ const sampleProducts = [
     retail_price: 185000,
     wholesale_price: 129500,
     category: "enterizos",
-    image: "https://i.ibb.co/ckRPK0cn/Vestido-Velvet.jpg",
+    images: [
+      "https://customer-assets.emergentagent.com/job_hannu-clothing/artifacts/abfuz73m_Vestido%20Sorelle%20Negro.jpeg"
+    ],
+    colors: ["Negro"],
     specifications: "Enterizo de pierna ancha, tirantes ajustables, cintura marcada, bolsillos laterales",
     composition: "88% Poliéster, 12% Elastano",
     care: "Lavar a máquina en agua fría, no usar blanqueador, planchar a temperatura baja",
-    shipping_policy: "Envío nacional 2-5 días hábiles. Envío gratis en compras superiores a $200.000",
-    exchange_policy: "Cambios y devoluciones hasta 15 días después de la compra. El producto debe estar en perfectas condiciones.",
-    sizes: ["XS", "S", "M", "L", "XL"],
-    stock: {"XS": 2, "S": 5, "M": 7, "L": 6, "XL": 3}
+    sizes: ["XS", "S", "M", "L", "XL"]
   }
 ];
 
