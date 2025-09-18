@@ -856,9 +856,9 @@ const Home = () => {
   };
 
   const handleEditProduct = (product) => {
+    setProductToEdit(product);
     setShowAdmin(true);
     setIsAdmin(true);
-    // We'll pass the product to edit directly to AdminPanel
   };
 
   const handleDeleteProduct = async (productId) => {
