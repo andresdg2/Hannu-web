@@ -418,6 +418,7 @@ const ProductModal = ({ product, isOpen, onClose }) => {
 
 const AdminPanel = ({ isOpen, onClose, products, setProducts }) => {
   const [editingProduct, setEditingProduct] = useState(null);
+  const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -458,6 +459,87 @@ const AdminPanel = ({ isOpen, onClose, products, setProducts }) => {
       composition: product.composition,
       sizes: product.sizes || []
     });
+  };
+
+  const saveProduct = async () => {
+    setSaving(true);
+    try {
+      // Get admin token
+      const token = localStorage.getItem('adminToken');
+      if (!token) {
+        alert('Error: No se encontró token de administrador');
+        return;
+      }
+
+      // Validate form data
+      if (!formData.name || !formData.description || !formData.retail_price || !formData.wholesale_price) {
+        alert('Por favor completa todos los campos obligatorios');
+        return;
+      }
+
+      // Prepare product data
+      const productData = {
+        name: formData.name.trim(),
+        description: formData.description.trim(),
+        retail_price: parseInt(formData.retail_price),
+        wholesale_price: parseInt(formData.wholesale_price),
+        category: formData.category,
+        images: formData.images.filter(img => img.trim() !== ''),
+        colors: formData.colors.filter(color => color.trim() !== ''),
+        composition: formData.composition.trim(),
+        sizes: formData.sizes,
+        specifications: `${formData.category} de alta calidad`,
+        care: 'Lavar a máquina en agua fría, no usar blanqueador, planchar a temperatura media',
+        shipping_policy: 'Envío nacional 2-5 días hábiles',
+        exchange_policy: 'Cambios hasta 15 días después de la compra',
+        stock: {}
+      };
+
+      // Ensure at least one image
+      if (productData.images.length === 0) {
+        productData.images = ['https://via.placeholder.com/400x400?text=No+Image'];
+      }
+
+      // Set main image for backward compatibility
+      productData.image = productData.images[0];
+
+      const headers = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      };
+
+      let response;
+      if (editingProduct) {
+        // Update existing product
+        response = await axios.put(`${API}/products/${editingProduct.id}`, productData, { headers });
+        // Update in products list
+        setProducts(products.map(p => p.id === editingProduct.id ? response.data : p));
+        alert('✅ Producto actualizado correctamente');
+      } else {
+        // Create new product
+        response = await axios.post(`${API}/products`, productData, { headers });
+        // Add to products list
+        setProducts([...products, response.data]);
+        alert('✅ Producto creado correctamente');
+      }
+
+      console.log('Product saved:', response.data);
+      resetForm();
+      onClose();
+
+    } catch (error) {
+      console.error('Error saving product:', error);
+      if (error.response?.status === 401) {
+        alert('Error: Sesión de administrador expirada. Por favor vuelve a acceder.');
+        localStorage.removeItem('adminToken');
+      } else if (error.response?.data?.detail) {
+        alert(`Error: ${error.response.data.detail}`);
+      } else {
+        alert('Error al guardar el producto. Por favor intenta de nuevo.');
+      }
+    } finally {
+      setSaving(false);
+    }
   };
 
   const addImageField = () => {
