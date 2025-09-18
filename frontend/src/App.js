@@ -607,40 +607,6 @@ const AdminPanel = ({ isOpen, onClose, products, setProducts, productToEdit }) =
     setFormData({...formData, images: newImages});
   };
 
-  const addColorField = () => {
-    setFormData({...formData, colors: [...formData.colors, '']});
-  };
-
-  const removeColorField = (index) => {
-    if (formData.colors.length > 1) {
-      const newColors = formData.colors.filter((_, i) => i !== index);
-      setFormData({...formData, colors: newColors});
-    }
-  };
-
-  const updateColor = (index, value) => {
-    const newColors = [...formData.colors];
-    newColors[index] = value;
-    setFormData({...formData, colors: newColors});
-  };
-
-  const addSizeField = () => {
-    setFormData({...formData, sizes: [...formData.sizes, '']});
-  };
-
-  const removeSizeField = (index) => {
-    if (formData.sizes.length > 1) {
-      const newSizes = formData.sizes.filter((_, i) => i !== index);
-      setFormData({...formData, sizes: newSizes});
-    }
-  };
-
-  const updateSize = (index, value) => {
-    const newSizes = [...formData.sizes];
-    newSizes[index] = value;
-    setFormData({...formData, sizes: newSizes});
-  };
-
   const convertGoogleDriveLink = (imageUrl) => {
     if (imageUrl.includes('drive.google.com')) {
       const regex = /\/file\/d\/([a-zA-Z0-9_-]+)\//;
