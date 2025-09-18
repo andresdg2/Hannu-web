@@ -859,9 +859,31 @@ const Home = () => {
     setIsAdmin(true);
   };
 
-  const handleDeleteProduct = (productId) => {
+  const handleDeleteProduct = async (productId) => {
     if (window.confirm('¿Estás seguro de que quieres eliminar este producto?')) {
-      setProducts(products.filter(p => p.id !== productId));
+      try {
+        const token = localStorage.getItem('adminToken');
+        if (!token) {
+          alert('Error: No se encontró token de administrador');
+          return;
+        }
+
+        const headers = {
+          'Authorization': `Bearer ${token}`
+        };
+
+        await axios.delete(`${API}/products/${productId}`, { headers });
+        setProducts(products.filter(p => p.id !== productId));
+        alert('✅ Producto eliminado correctamente');
+      } catch (error) {
+        console.error('Error deleting product:', error);
+        if (error.response?.status === 401) {
+          alert('Error: Sesión de administrador expirada. Por favor vuelve a acceder.');
+          localStorage.removeItem('adminToken');
+        } else {
+          alert('Error al eliminar el producto. Por favor intenta de nuevo.');
+        }
+      }
     }
   };
 
