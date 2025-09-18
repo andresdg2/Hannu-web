@@ -43,13 +43,15 @@ class Product(BaseModel):
     retail_price: int  # Price in COP cents for retail customers
     wholesale_price: int  # Price in COP cents for wholesale customers
     category: str  # vestidos, enterizos, conjuntos, blusas, faldas, pantalones
-    image: str
-    specifications: str
-    composition: str
-    care: str
-    shipping_policy: str
-    exchange_policy: str
-    sizes: List[str]
+    image: str  # Keep for backward compatibility
+    images: List[str] = Field(default_factory=list)  # Support multiple images
+    colors: List[str] = Field(default_factory=list)  # Support multiple colors
+    specifications: str = ""
+    composition: str = ""
+    care: str = ""
+    shipping_policy: str = ""
+    exchange_policy: str = ""
+    sizes: List[str] = Field(default_factory=list)
     stock: Dict[str, int] = Field(default_factory=dict)  # size -> quantity
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
@@ -60,13 +62,15 @@ class ProductCreate(BaseModel):
     retail_price: int
     wholesale_price: int
     category: str
-    image: str
-    specifications: str
-    composition: str
-    care: str
-    shipping_policy: str
-    exchange_policy: str
-    sizes: List[str]
+    image: Optional[str] = ""  # Keep for backward compatibility
+    images: List[str] = Field(default_factory=list)  # Support multiple images
+    colors: List[str] = Field(default_factory=list)  # Support multiple colors
+    specifications: Optional[str] = ""
+    composition: Optional[str] = ""
+    care: Optional[str] = ""
+    shipping_policy: Optional[str] = ""
+    exchange_policy: Optional[str] = ""
+    sizes: List[str] = Field(default_factory=list)
     stock: Dict[str, int] = Field(default_factory=dict)
 
 class ProductUpdate(BaseModel):
@@ -75,7 +79,9 @@ class ProductUpdate(BaseModel):
     retail_price: Optional[int] = None
     wholesale_price: Optional[int] = None
     category: Optional[str] = None
-    image: Optional[str] = None
+    image: Optional[str] = None  # Keep for backward compatibility
+    images: Optional[List[str]] = None  # Support multiple images
+    colors: Optional[List[str]] = None  # Support multiple colors
     specifications: Optional[str] = None
     composition: Optional[str] = None
     care: Optional[str] = None
