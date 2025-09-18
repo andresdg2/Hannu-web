@@ -71,7 +71,7 @@ class ProductCreate(BaseModel):
     shipping_policy: Optional[str] = ""
     exchange_policy: Optional[str] = ""
     sizes: List[str] = Field(default_factory=list)
-    stock: Dict[str, int] = Field(default_factory=dict)
+    stock: Optional[Dict[str, int]] = Field(default_factory=dict)
 
 class ProductUpdate(BaseModel):
     name: Optional[str] = None
