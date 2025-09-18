@@ -448,7 +448,7 @@ const AdminPanel = ({ isOpen, onClose, products, setProducts, productToEdit }) =
       images: [''],
       colors: [''],
       composition: '',
-      sizes: []
+      sizes: ['']
     });
     setEditingProduct(null);
   };
