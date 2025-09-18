@@ -152,7 +152,7 @@ const Hero = () => {
           </div>
         </div>
         <div className="hero-image">
-          <img src="https://customer-assets.emergentagent.com/job_hannu-clothing/artifacts/54sp5pdl_Enterizo%20Suelto.jpeg" alt="HANNU CLOTHES - Enterizo Elegante" />
+          <img src="https://customer-assets.emergentagent.com/job_hannu-clothing/artifacts/abfuz73m_Vestido%20Sorelle%20Negro.jpeg" alt="HANNU CLOTHES - Vestido Sorelle Negro" />
         </div>
       </div>
     </section>
