@@ -163,6 +163,7 @@ const Hero = () => {
 const ProductCard = ({ product, onView, isAdmin, onEdit, onDelete }) => {
   const [showPrices, setShowPrices] = useState('retail');
   const [imageError, setImageError] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const formatPrice = (price) => {
     // Ensure price is a number
@@ -174,14 +175,6 @@ const ProductCard = ({ product, onView, isAdmin, onEdit, onDelete }) => {
     }).format(numPrice);
   };
 
-  const getTotalStock = () => {
-    if (!product.stock || typeof product.stock !== 'object') return 0;
-    return Object.values(product.stock).reduce((total, qty) => {
-      const num = typeof qty === 'number' ? qty : parseInt(qty) || 0;
-      return total + num;
-    }, 0);
-  };
-
   const handleImageError = () => {
     setImageError(true);
   };
@@ -190,17 +183,48 @@ const ProductCard = ({ product, onView, isAdmin, onEdit, onDelete }) => {
     setImageError(false);
   };
 
+  const currentImage = product.images && product.images.length > 0 ? product.images[currentImageIndex] : product.image;
+
+  const nextImage = () => {
+    if (product.images && product.images.length > 1) {
+      setCurrentImageIndex((prev) => (prev + 1) % product.images.length);
+    }
+  };
+
+  const prevImage = () => {
+    if (product.images && product.images.length > 1) {
+      setCurrentImageIndex((prev) => (prev - 1 + product.images.length) % product.images.length);
+    }
+  };
+
   return (
     <div className="product-card">
       <div className="product-image">
         {!imageError ? (
-          <img 
-            src={product.image} 
-            alt={product.name}
-            onError={handleImageError}
-            onLoad={handleImageLoad}
-            crossOrigin="anonymous"
-          />
+          <>
+            <img 
+              src={currentImage} 
+              alt={product.name}
+              onError={handleImageError}
+              onLoad={handleImageLoad}
+              crossOrigin="anonymous"
+            />
+            {product.images && product.images.length > 1 && (
+              <>
+                <button className="image-nav prev" onClick={prevImage}>‹</button>
+                <button className="image-nav next" onClick={nextImage}>›</button>
+                <div className="image-dots">
+                  {product.images.map((_, index) => (
+                    <span 
+                      key={index} 
+                      className={`dot ${index === currentImageIndex ? 'active' : ''}`}
+                      onClick={() => setCurrentImageIndex(index)}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
+          </>
         ) : (
           <div className="image-placeholder">
             <div className="placeholder-content">
@@ -219,9 +243,11 @@ const ProductCard = ({ product, onView, isAdmin, onEdit, onDelete }) => {
             </button>
           </div>
         )}
-        <div className="stock-badge">
-          Stock: {getTotalStock()}
-        </div>
+        {product.colors && product.colors.length > 0 && (
+          <div className="colors-badge">
+            {product.colors.length} {product.colors.length === 1 ? 'Color' : 'Colores'}
+          </div>
+        )}
       </div>
       <div className="product-info">
         <h3>{product.name}</h3>
