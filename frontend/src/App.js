@@ -479,9 +479,9 @@ const AdminPanel = ({ isOpen, onClose, products, setProducts, productToEdit }) =
       wholesale_price: product.wholesale_price,
       category: product.category,
       images: product.images && product.images.length > 0 ? product.images : [product.image || ''],
-      colors: product.colors || [''],
+      colors: Array.isArray(product.colors) ? product.colors.join(', ') : (product.colors || ''),
       composition: product.composition,
-      sizes: product.sizes && product.sizes.length > 0 ? product.sizes : ['']
+      sizes: Array.isArray(product.sizes) ? product.sizes.join(', ') : (product.sizes || '')
     });
   };
 
