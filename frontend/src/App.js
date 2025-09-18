@@ -493,13 +493,12 @@ const AdminPanel = ({ isOpen, onClose, products, setProducts, productToEdit }) =
         category: formData.category,
         images: formData.images.filter(img => img.trim() !== ''),
         colors: formData.colors.filter(color => color.trim() !== ''),
+        sizes: formData.sizes.filter(size => size.trim() !== ''),
         composition: formData.composition.trim(),
-        sizes: formData.sizes,
         specifications: `${formData.category} de alta calidad`,
         care: 'Lavar a máquina en agua fría, no usar blanqueador, planchar a temperatura media',
         shipping_policy: 'Envío nacional 2-5 días hábiles',
-        exchange_policy: 'Cambios hasta 15 días después de la compra',
-        stock: {}
+        exchange_policy: 'Cambios hasta 15 días después de la compra'
       };
 
       // Ensure at least one image
