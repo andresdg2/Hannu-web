@@ -287,6 +287,7 @@ const ProductCard = ({ product, onView, isAdmin, onEdit, onDelete }) => {
 
 const ProductModal = ({ product, isOpen, onClose }) => {
   const [showPrices, setShowPrices] = useState('retail');
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const formatPrice = (price) => {
     return new Intl.NumberFormat('es-CO', {
@@ -298,6 +299,20 @@ const ProductModal = ({ product, isOpen, onClose }) => {
 
   if (!isOpen || !product) return null;
 
+  const currentImage = product.images && product.images.length > 0 ? product.images[currentImageIndex] : product.image;
+
+  const nextImage = () => {
+    if (product.images && product.images.length > 1) {
+      setCurrentImageIndex((prev) => (prev + 1) % product.images.length);
+    }
+  };
+
+  const prevImage = () => {
+    if (product.images && product.images.length > 1) {
+      setCurrentImageIndex((prev) => (prev - 1 + product.images.length) % product.images.length);
+    }
+  };
+
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="product-modal large" onClick={e => e.stopPropagation()}>
@@ -307,7 +322,22 @@ const ProductModal = ({ product, isOpen, onClose }) => {
         
         <div className="modal-content">
           <div className="modal-image">
-            <img src={product.image} alt={product.name} />
+            <img src={currentImage} alt={product.name} />
+            {product.images && product.images.length > 1 && (
+              <>
+                <button className="modal-image-nav prev" onClick={prevImage}>‹</button>
+                <button className="modal-image-nav next" onClick={nextImage}>›</button>
+                <div className="modal-image-dots">
+                  {product.images.map((_, index) => (
+                    <span 
+                      key={index} 
+                      className={`modal-dot ${index === currentImageIndex ? 'active' : ''}`}
+                      onClick={() => setCurrentImageIndex(index)}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
           </div>
           
           <div className="modal-info">
@@ -355,24 +385,26 @@ const ProductModal = ({ product, isOpen, onClose }) => {
                 <p>{product.care}</p>
               </div>
               
-              <div className="detail-section">
-                <h4>Política de Envíos</h4>
-                <p>{product.shipping_policy}</p>
-              </div>
-              
-              <div className="detail-section">
-                <h4>Política de Cambios</h4>
-                <p>{product.exchange_policy}</p>
-              </div>
+              {product.colors && product.colors.length > 0 && (
+                <div className="detail-section">
+                  <h4>Colores Disponibles</h4>
+                  <div className="colors-list">
+                    {product.colors.map((color, index) => (
+                      <span key={index} className="color-tag">
+                        {color}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
               
               <div className="detail-section">
                 <h4>Tallas Disponibles</h4>
-                <div className="size-stock-grid">
+                <div className="sizes-list">
                   {product.sizes.map(size => (
-                    <div key={size} className="size-stock-item">
-                      <span className="size">{size}</span>
-                      <span className="stock">Stock: {product.stock[size] || 0}</span>
-                    </div>
+                    <span key={size} className="size-tag">
+                      {size}
+                    </span>
                   ))}
                 </div>
               </div>
