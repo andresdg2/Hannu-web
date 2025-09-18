@@ -780,28 +780,12 @@ const AdminPanel = ({ isOpen, onClose, products, setProducts, productToEdit }) =
               
               <div className="form-group full-width">
                 <label>Tallas Disponibles</label>
-                {formData.sizes.map((size, index) => (
-                  <div key={index} className="size-input-group">
-                    <input
-                      type="text"
-                      value={size}
-                      onChange={(e) => updateSize(index, e.target.value)}
-                      placeholder={`Talla ${index + 1} (ej: S, M, L, XL)`}
-                    />
-                    {formData.sizes.length > 1 && (
-                      <button 
-                        type="button" 
-                        className="remove-btn"
-                        onClick={() => removeSizeField(index)}
-                      >
-                        ❌
-                      </button>
-                    )}
-                  </div>
-                ))}
-                <button type="button" className="add-btn" onClick={addSizeField}>
-                  ➕ Agregar Talla
-                </button>
+                <input
+                  type="text"
+                  value={formData.sizes}
+                  onChange={(e) => setFormData({...formData, sizes: e.target.value})}
+                  placeholder="Ej: XS, S, M, L, XL (separados por comas)"
+                />
               </div>
             </div>
             
