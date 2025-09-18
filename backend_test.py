@@ -403,10 +403,13 @@ def main():
         ("Admin Profile", tester.test_admin_profile),
         ("Catalog Statistics", tester.test_catalog_stats),
         ("Search Products", tester.test_search_products),
-        ("Create Product", tester.test_create_product),
+        ("Create Product with Images/Colors", tester.test_create_product_with_images_colors),
+        ("Create Product Legacy Format", tester.test_create_product_legacy_format),
+        ("Data Validation Test", tester.test_data_validation),
         ("Get Single Product", tester.test_get_single_product),
         ("Update Product", tester.test_update_product),
-        ("Delete Product", tester.test_delete_product),
+        ("Product Appears in Catalog", tester.test_product_appears_in_catalog),
+        ("Cleanup Test Products", tester.cleanup_test_products),
     ]
     
     print(f"\n📋 Running {len(tests)} test categories...")
