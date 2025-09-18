@@ -1926,3 +1926,22 @@ html {
   flex: 1;
   min-width: 0;
 }
+
+/* Payment Methods Styles */
+.payment-methods {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.payment-method {
+  padding: 8px 12px;
+  background: #f8f9fa;
+  border-radius: 6px;
+  border-left: 3px solid #e91e63;
+  font-size: 14px;
+}
+
+.payment-method strong {
+  color: #e91e63;
+}
