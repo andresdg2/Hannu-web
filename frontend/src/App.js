@@ -463,9 +463,9 @@ const AdminPanel = ({ isOpen, onClose, products, setProducts, productToEdit }) =
       wholesale_price: '',
       category: 'vestidos',
       images: [''],
-      colors: [''],
+      colors: '',  // String único
       composition: '',
-      sizes: ['']
+      sizes: ''    // String único
     });
     setEditingProduct(null);
   };
