@@ -426,9 +426,9 @@ const AdminPanel = ({ isOpen, onClose, products, setProducts, productToEdit }) =
     wholesale_price: '',
     category: 'vestidos',
     images: [''],
-    colors: [''],
+    colors: '',  // Cambiado a string único
     composition: '',
-    sizes: ['']
+    sizes: ''    // Cambiado a string único
   });
 
   // Effect to handle productToEdit from parent component
