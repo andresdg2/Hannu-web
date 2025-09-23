@@ -370,6 +370,13 @@ const ProductModal = ({ product, isOpen, onClose }) => {
             <p className="product-description">{product.description}</p>
             
             <div className="product-details">
+              {product.composition && (
+                <div className="detail-section">
+                  <h4>Composición</h4>
+                  <p>{product.composition}</p>
+                </div>
+              )}
+
               <div className="detail-section">
                 <h4>💳 Métodos de Pago</h4>
                 <div className="payment-methods">
