@@ -985,6 +985,25 @@ const Home = () => {
           </div>
         </section>
         
+        <section className="immediate-delivery">
+          <div className="container">
+            <div className="delivery-content">
+              <div className="delivery-icons">
+                <img src="https://customer-assets.emergentagent.com/job_style-showcase-27/artifacts/w75ccsee_image.png" alt="Entrega inmediata" className="delivery-icon" />
+                <img src="https://customer-assets.emergentagent.com/job_style-showcase-27/artifacts/w75ccsee_image.png" alt="Entrega inmediata" className="delivery-icon" />
+              </div>
+              <div className="delivery-text">
+                <h3>📦 Entrega Inmediata 💖</h3>
+                <p>LAS PRENDAS PARA ENTREGA INMEDIATA ESTÁN EN NUESTRAS 2 HISTORIAS DESTACADAS DE INSTAGRAM</p>
+                <a href="https://instagram.com/hannuclothes" target="_blank" rel="noopener noreferrer" className="instagram-link">
+                  <Instagram size={20} />
+                  @hannuclothes
+                </a>
+              </div>
+            </div>
+          </div>
+        </section>
+        
         <section className="featured-product">
           <div className="container">
             <div className="featured-content">
