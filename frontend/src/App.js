@@ -603,15 +603,32 @@ const AdminPanel = ({ isOpen, onClose, products, setProducts, productToEdit }) =
       const method = editingProduct ? 'PUT' : 'POST';
       
       console.log(`📡 Haciendo ${method} a: ${apiUrl}`);
+      console.log(`📝 Producto en edición:`, editingProduct);
       
       if (editingProduct) {
+        // Update existing product
+        console.log(`Updating product ${editingProduct.id}...`);
         response = await axios.put(apiUrl, productData, { headers });
-        setProducts(products.map(p => p.id === editingProduct.id ? response.data : p));
-        console.log('✅ Producto actualizado:', response.data);
+        
+        // Update in products list correctly
+        const updatedProducts = products.map(p => {
+          if (p.id === editingProduct.id) {
+            console.log(`✅ Actualizando producto en lista:`, response.data);
+            return response.data;
+          }
+          return p;
+        });
+        setProducts(updatedProducts);
+        alert('✅ Producto actualizado correctamente');
+        console.log('Product updated:', response.data);
       } else {
+        // Create new product
+        console.log('Creating new product...');
         response = await axios.post(apiUrl, productData, { headers });
+        // Add to products list
         setProducts([...products, response.data]);
-        console.log('✅ Producto creado:', response.data);
+        alert('✅ Producto creado correctamente');
+        console.log('Product created:', response.data);
       }
 
       alert(`✅ Producto ${editingProduct ? 'actualizado' : 'creado'} correctamente!`);
