@@ -185,7 +185,7 @@ async def get_product(product_id: str):
 async def create_product(product: ProductCreate, admin: Admin = Depends(get_current_admin)):
     """Create a new product (admin only)"""
     # Validate category
-    valid_categories = ["vestidos", "enterizos", "conjuntos", "blusas", "faldas", "pantalones"]
+    valid_categories = ["vestidos", "enterizos", "conjuntos", "blusas", "tops", "faldas", "pantalones"]
     if product.category not in valid_categories:
         raise HTTPException(status_code=400, detail="Invalid category")
     
