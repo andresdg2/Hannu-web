@@ -631,7 +631,6 @@ const AdminPanel = ({ isOpen, onClose, products, setProducts, productToEdit }) =
         console.log('Product created:', response.data);
       }
 
-      alert(`✅ Producto ${editingProduct ? 'actualizado' : 'creado'} correctamente!`);
       resetForm();
       onClose();
 
