@@ -164,6 +164,7 @@ const ProductCard = ({ product, onView, isAdmin, onEdit, onDelete }) => {
   const [showPrices, setShowPrices] = useState('retail');
   const [imageError, setImageError] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [imageLoading, setImageLoading] = useState(true);
 
   const formatPrice = (price) => {
     // Ensure price is a number
@@ -177,23 +178,49 @@ const ProductCard = ({ product, onView, isAdmin, onEdit, onDelete }) => {
 
   const handleImageError = () => {
     setImageError(true);
+    setImageLoading(false);
+    console.log('Error loading image:', currentImage);
   };
 
   const handleImageLoad = () => {
     setImageError(false);
+    setImageLoading(false);
   };
 
-  const currentImage = product.images && product.images.length > 0 ? product.images[currentImageIndex] : product.image;
+  // Función para obtener imagen válida con fallbacks
+  const getValidImage = () => {
+    // Fallback por defecto
+    const defaultImage = 'https://via.placeholder.com/400x400/f8b4d1/ffffff?text=HANNU+CLOTHES';
+    
+    // Si tiene array de imágenes, usar esa
+    if (product.images && product.images.length > 0) {
+      const img = product.images[currentImageIndex];
+      return img && img.trim() !== '' ? img : defaultImage;
+    }
+    
+    // Si solo tiene imagen singular
+    if (product.image && product.image.trim() !== '') {
+      return product.image;
+    }
+    
+    return defaultImage;
+  };
+
+  const currentImage = getValidImage();
 
   const nextImage = () => {
     if (product.images && product.images.length > 1) {
       setCurrentImageIndex((prev) => (prev + 1) % product.images.length);
+      setImageError(false);
+      setImageLoading(true);
     }
   };
 
   const prevImage = () => {
     if (product.images && product.images.length > 1) {
       setCurrentImageIndex((prev) => (prev - 1 + product.images.length) % product.images.length);
+      setImageError(false);
+      setImageLoading(true);
     }
   };
 
