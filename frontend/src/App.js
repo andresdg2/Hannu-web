@@ -229,14 +229,21 @@ const ProductCard = ({ product, onView, isAdmin, onEdit, onDelete }) => {
       <div className="product-image">
         {!imageError ? (
           <>
+            {imageLoading && (
+              <div className="image-loading">
+                <div className="loading-spinner"></div>
+                <p>Cargando imagen...</p>
+              </div>
+            )}
             <img 
               src={currentImage} 
               alt={product.name}
               onError={handleImageError}
               onLoad={handleImageLoad}
+              style={{ display: imageLoading ? 'none' : 'block' }}
               crossOrigin="anonymous"
             />
-            {product.images && product.images.length > 1 && (
+            {product.images && product.images.length > 1 && !imageError && (
               <>
                 <button className="image-nav prev" onClick={prevImage}>‹</button>
                 <button className="image-nav next" onClick={nextImage}>›</button>
@@ -245,7 +252,11 @@ const ProductCard = ({ product, onView, isAdmin, onEdit, onDelete }) => {
                     <span 
                       key={index} 
                       className={`dot ${index === currentImageIndex ? 'active' : ''}`}
-                      onClick={() => setCurrentImageIndex(index)}
+                      onClick={() => {
+                        setCurrentImageIndex(index);
+                        setImageError(false);
+                        setImageLoading(true);
+                      }}
                     />
                   ))}
                 </div>
@@ -255,8 +266,18 @@ const ProductCard = ({ product, onView, isAdmin, onEdit, onDelete }) => {
         ) : (
           <div className="image-placeholder">
             <div className="placeholder-content">
-              <span>📷</span>
-              <p>Imagen no disponible</p>
+              <span>🏷️</span>
+              <p><strong>{product.name}</strong></p>
+              <p>Imagen cargando...</p>
+              <button 
+                className="retry-btn"
+                onClick={() => {
+                  setImageError(false);
+                  setImageLoading(true);
+                }}
+              >
+                🔄 Reintentar
+              </button>
             </div>
           </div>
         )}
