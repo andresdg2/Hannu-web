@@ -740,8 +740,8 @@ const AdminPanel = ({ isOpen, onClose, products, setProducts, productToEdit }) =
                   <option value="vestidos">Vestidos</option>
                   <option value="enterizos">Enterizos</option>
                   <option value="conjuntos">Conjuntos</option>
-                  <option value="blusas">Blusas</option>
-                  <option value="faldas">Faldas</option>
+                  <option value="blusas">Tops & Bodys</option>
+                  <option value="faldas">Faldas & Pantalones</option>
                 </select>
               </div>
               
