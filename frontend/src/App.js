@@ -1175,7 +1175,7 @@ const Home = () => {
                 <li>Vestidos</li>
                 <li>Enterizos</li>
                 <li>Conjuntos</li>
-                <li>Blusas</li>
+                <li>Tops & Bodys</li>
                 <li>Faldas & Pantalones</li>
               </ul>
             </div>
