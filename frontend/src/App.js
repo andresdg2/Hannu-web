@@ -378,6 +378,17 @@ const ProductModal = ({ product, isOpen, onClose }) => {
               )}
 
               <div className="detail-section">
+                <h4>📦 Entrega Inmediata 💖</h4>
+                <div className="delivery-info">
+                  <p>LAS PRENDAS PARA ENTREGA INMEDIATA ESTÁN EN NUESTRAS 2 HISTORIAS DESTACADAS DE INSTAGRAM</p>
+                  <a href="https://instagram.com/hannuclothes" target="_blank" rel="noopener noreferrer" className="instagram-link-small">
+                    <Instagram size={16} />
+                    @hannuclothes
+                  </a>
+                </div>
+              </div>
+
+              <div className="detail-section">
                 <h4>💳 Métodos de Pago</h4>
                 <div className="payment-methods">
                   <div className="payment-method">
