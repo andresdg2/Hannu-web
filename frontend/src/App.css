@@ -1945,3 +1945,105 @@ html {
 .payment-method strong {
   color: #e91e63;
 }
+
+/* Immediate Delivery Section */
+.immediate-delivery {
+  background: linear-gradient(135deg, #f8b4d1 0%, #e91e63 100%);
+  padding: 40px 0;
+  margin: 40px 0;
+}
+
+.delivery-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 30px;
+  text-align: center;
+}
+
+.delivery-icons {
+  display: flex;
+  gap: 15px;
+}
+
+.delivery-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: 3px solid white;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.delivery-text h3 {
+  color: white;
+  margin: 0 0 10px 0;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.delivery-text p {
+  color: white;
+  margin: 0 0 15px 0;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.instagram-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: white;
+  text-decoration: none;
+  background: rgba(255,255,255,0.2);
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.instagram-link:hover {
+  background: rgba(255,255,255,0.3);
+  transform: translateY(-2px);
+}
+
+.instagram-link-small {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #e91e63;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.delivery-info {
+  background: #f8f9fa;
+  padding: 12px;
+  border-radius: 8px;
+  border-left: 3px solid #e91e63;
+}
+
+.delivery-info p {
+  margin: 0 0 8px 0;
+  font-size: 14px;
+  color: #333;
+}
+
+@media (max-width: 768px) {
+  .delivery-content {
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .delivery-icons {
+    justify-content: center;
+  }
+  
+  .delivery-text h3 {
+    font-size: 20px;
+  }
+  
+  .delivery-text p {
+    font-size: 14px;
+  }
+}
