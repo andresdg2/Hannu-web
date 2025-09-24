@@ -1039,9 +1039,16 @@ const Home = () => {
         
         <section className="policies">
           <div className="container">
-            <h2>Políticas de la Empresa</h2>
+            <h2>Políticas Hannu</h2>
             <div className="policies-grid">
               
+              <div className="policy-card">
+                <h3>🪡 Confeccionamos Modelos Específicos</h3>
+                <p>
+                  Se pueden realizar bajo pedido modelos específicos y/o prendas que no estén disponibles para entrega inmediata con un tiempo de realización de 4 a 8 días hábiles.
+                </p>
+              </div>
+
               <div className="policy-card">
                 <h3>💳 Métodos de Pago</h3>
                 <ul>
