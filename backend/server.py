@@ -40,8 +40,8 @@ class Product(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     name: str
     description: str
-    retail_price: int  # Price in COP cents for retail customers
-    wholesale_price: int  # Price in COP cents for wholesale customers
+    retail_price: Union[int, float]  # Accept both int and float
+    wholesale_price: Union[int, float]  # Accept both int and float
     category: str  # vestidos, enterizos, conjuntos, blusas, faldas, pantalones
     image: str  # Keep for backward compatibility
     images: List[str] = Field(default_factory=list)  # Support multiple images
