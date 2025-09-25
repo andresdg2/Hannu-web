@@ -169,7 +169,7 @@ async def get_products(category: Optional[str] = None, limit: int = 100):
     if category and category != "todos":
         query["category"] = category
     
-    products = await db.products.find(query).limit(limit).to_list(limit)
+    products = await db.products.find(query).sort("created_at", -1).limit(limit).to_list(limit)
     return [Product(**product) for product in products]
 
 @api_router.get("/products/{product_id}", response_model=Product)
