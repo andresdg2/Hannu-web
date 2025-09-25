@@ -383,6 +383,269 @@ class HannuClothesAPITester:
             except Exception as e:
                 print(f"   ⚠️  Could not clean up product {product_id[:8]}...: {str(e)}")
 
+    def test_price_validation_comprehensive(self):
+        """Comprehensive test for price validation - critical for launch readiness"""
+        print("\n🔍 CRITICAL PRICE VALIDATION TESTING...")
+        print("   Checking for products with invalid wholesale prices...")
+        
+        # Get all products to check price integrity
+        success, response = self.run_test(
+            "Get All Products for Price Validation",
+            "GET",
+            "products",
+            200
+        )
+        
+        if not success or not isinstance(response, list):
+            print("❌ Failed to get products for price validation")
+            return False
+        
+        print(f"   📊 Analyzing {len(response)} products for price integrity...")
+        
+        invalid_price_products = []
+        price_issues = {
+            'wholesale_zero_or_negative': [],
+            'wholesale_greater_equal_retail': [],
+            'missing_prices': []
+        }
+        
+        for product in response:
+            name = product.get('name', 'Unknown')
+            wholesale_price = product.get('wholesale_price')
+            retail_price = product.get('retail_price')
+            
+            # Check for missing prices
+            if wholesale_price is None or retail_price is None:
+                price_issues['missing_prices'].append(name)
+                invalid_price_products.append(name)
+                continue
+            
+            # Check for wholesale price <= 0
+            if wholesale_price <= 0:
+                price_issues['wholesale_zero_or_negative'].append({
+                    'name': name,
+                    'wholesale_price': wholesale_price,
+                    'retail_price': retail_price
+                })
+                invalid_price_products.append(name)
+            
+            # Check for wholesale price >= retail price
+            if wholesale_price >= retail_price:
+                price_issues['wholesale_greater_equal_retail'].append({
+                    'name': name,
+                    'wholesale_price': wholesale_price,
+                    'retail_price': retail_price
+                })
+                invalid_price_products.append(name)
+        
+        # Report findings
+        print(f"\n📋 PRICE VALIDATION RESULTS:")
+        print(f"   Total products analyzed: {len(response)}")
+        print(f"   Products with invalid prices: {len(invalid_price_products)}")
+        
+        if len(price_issues['wholesale_zero_or_negative']) > 0:
+            print(f"\n❌ CRITICAL: {len(price_issues['wholesale_zero_or_negative'])} products with wholesale_price <= 0:")
+            for item in price_issues['wholesale_zero_or_negative']:
+                print(f"      • {item['name']}: wholesale={item['wholesale_price']}, retail={item['retail_price']}")
+        
+        if len(price_issues['wholesale_greater_equal_retail']) > 0:
+            print(f"\n❌ CRITICAL: {len(price_issues['wholesale_greater_equal_retail'])} products with wholesale_price >= retail_price:")
+            for item in price_issues['wholesale_greater_equal_retail']:
+                print(f"      • {item['name']}: wholesale={item['wholesale_price']}, retail={item['retail_price']}")
+        
+        if len(price_issues['missing_prices']) > 0:
+            print(f"\n❌ CRITICAL: {len(price_issues['missing_prices'])} products with missing prices:")
+            for name in price_issues['missing_prices']:
+                print(f"      • {name}")
+        
+        if len(invalid_price_products) == 0:
+            print(f"\n✅ EXCELLENT: All products have valid pricing!")
+            print(f"   ✅ No products with wholesale_price <= 0")
+            print(f"   ✅ No products with wholesale_price >= retail_price")
+            print(f"   ✅ All products have both wholesale and retail prices")
+            return True
+        else:
+            print(f"\n❌ LAUNCH BLOCKER: {len(invalid_price_products)} products have invalid pricing")
+            print(f"   This violates business rules and must be fixed before launch")
+            return False
+
+    def test_price_validation_api_enforcement(self):
+        """Test that API enforces price validation rules"""
+        if not self.token:
+            print("❌ Skipping price validation API test - no token available")
+            return False
+        
+        print("\n🔍 Testing API price validation enforcement...")
+        
+        # Test 1: Try to create product with wholesale >= retail
+        invalid_product_1 = {
+            "name": "Invalid Price Test 1",
+            "description": "Testing price validation",
+            "retail_price": 50000,
+            "wholesale_price": 60000,  # Higher than retail - should fail
+            "category": "vestidos"
+        }
+        
+        success_1, response_1 = self.run_test(
+            "Create Product with wholesale >= retail (should fail)",
+            "POST",
+            "products",
+            400,  # Expecting 400 Bad Request
+            data=invalid_product_1
+        )
+        
+        # Test 2: Try to create product with wholesale = retail
+        invalid_product_2 = {
+            "name": "Invalid Price Test 2",
+            "description": "Testing price validation",
+            "retail_price": 50000,
+            "wholesale_price": 50000,  # Equal to retail - should fail
+            "category": "vestidos"
+        }
+        
+        success_2, response_2 = self.run_test(
+            "Create Product with wholesale = retail (should fail)",
+            "POST",
+            "products",
+            400,  # Expecting 400 Bad Request
+            data=invalid_product_2
+        )
+        
+        # Test 3: Create valid product (should succeed)
+        valid_product = {
+            "name": "Valid Price Test",
+            "description": "Testing valid pricing",
+            "retail_price": 80000,
+            "wholesale_price": 56000,  # 70% of retail - valid
+            "category": "vestidos"
+        }
+        
+        success_3, response_3 = self.run_test(
+            "Create Product with valid pricing (should succeed)",
+            "POST",
+            "products",
+            200,  # Expecting success
+            data=valid_product
+        )
+        
+        # Clean up valid product if created
+        if success_3 and isinstance(response_3, dict) and 'id' in response_3:
+            self.run_test(
+                "Cleanup Valid Price Test Product",
+                "DELETE",
+                f"products/{response_3['id']}",
+                200
+            )
+        
+        if success_1 and success_2 and success_3:
+            print("✅ API price validation working correctly")
+            return True
+        else:
+            print("❌ API price validation not working as expected")
+            return False
+
+    def test_launch_readiness_comprehensive(self):
+        """Comprehensive launch readiness test"""
+        print("\n🚀 COMPREHENSIVE LAUNCH READINESS ASSESSMENT")
+        print("="*60)
+        
+        readiness_checks = {
+            'api_endpoints': False,
+            'admin_auth': False,
+            'price_integrity': False,
+            'data_integrity': False,
+            'performance': False
+        }
+        
+        # 1. API Endpoints Check
+        print("\n1️⃣ API ENDPOINTS CHECK:")
+        endpoints_success = 0
+        critical_endpoints = [
+            ("GET /api/", "Root endpoint"),
+            ("GET /api/products", "Get products"),
+            ("GET /api/categories", "Get categories"),
+            ("POST /api/admin/login", "Admin login"),
+            ("GET /api/catalog/stats", "Catalog stats")
+        ]
+        
+        for endpoint, description in critical_endpoints:
+            if "login" in endpoint:
+                success, _ = self.run_test(f"Test {description}", "POST", "admin/login", 200, 
+                                        data={"username": self.admin_username, "password": self.admin_password})
+            elif "stats" in endpoint:
+                success, _ = self.run_test(f"Test {description}", "GET", "catalog/stats", 200)
+            elif endpoint == "GET /api/":
+                success, _ = self.run_test(f"Test {description}", "GET", "", 200)
+            else:
+                success, _ = self.run_test(f"Test {description}", "GET", endpoint.replace("GET /api/", ""), 200)
+            
+            if success:
+                endpoints_success += 1
+        
+        readiness_checks['api_endpoints'] = endpoints_success == len(critical_endpoints)
+        print(f"   Result: {endpoints_success}/{len(critical_endpoints)} critical endpoints working")
+        
+        # 2. Admin Authentication Check
+        print("\n2️⃣ ADMIN AUTHENTICATION CHECK:")
+        if self.token:
+            readiness_checks['admin_auth'] = True
+            print("   ✅ Admin authentication working")
+        else:
+            print("   ❌ Admin authentication failed")
+        
+        # 3. Price Integrity Check
+        print("\n3️⃣ PRICE INTEGRITY CHECK:")
+        readiness_checks['price_integrity'] = self.test_price_validation_comprehensive()
+        
+        # 4. Data Integrity Check
+        print("\n4️⃣ DATA INTEGRITY CHECK:")
+        success, products = self.run_test("Get products for data integrity", "GET", "products", 200)
+        if success and isinstance(products, list):
+            print(f"   ✅ {len(products)} products in database")
+            print(f"   ✅ Product data structure intact")
+            readiness_checks['data_integrity'] = True
+        else:
+            print("   ❌ Data integrity issues detected")
+        
+        # 5. Performance Check
+        print("\n5️⃣ PERFORMANCE CHECK:")
+        import time
+        start_time = time.time()
+        success, _ = self.run_test("Performance test", "GET", "products", 200)
+        end_time = time.time()
+        response_time = end_time - start_time
+        
+        if success and response_time < 2.0:  # Less than 2 seconds
+            print(f"   ✅ Response time: {response_time:.2f}s (< 2s requirement)")
+            readiness_checks['performance'] = True
+        else:
+            print(f"   ❌ Response time: {response_time:.2f}s (>= 2s - too slow)")
+        
+        # Final Assessment
+        print("\n" + "="*60)
+        print("🎯 LAUNCH READINESS SUMMARY:")
+        print("="*60)
+        
+        passed_checks = sum(readiness_checks.values())
+        total_checks = len(readiness_checks)
+        readiness_percentage = (passed_checks / total_checks) * 100
+        
+        for check, status in readiness_checks.items():
+            status_icon = "✅" if status else "❌"
+            print(f"   {status_icon} {check.replace('_', ' ').title()}")
+        
+        print(f"\n📊 Overall Readiness: {passed_checks}/{total_checks} ({readiness_percentage:.1f}%)")
+        
+        if readiness_percentage == 100:
+            print("\n🎉 BACKEND IS 100% READY FOR LAUNCH!")
+            return True
+        elif readiness_percentage >= 80:
+            print(f"\n⚠️  BACKEND IS {readiness_percentage:.1f}% READY - Minor issues need attention")
+            return False
+        else:
+            print(f"\n❌ BACKEND IS ONLY {readiness_percentage:.1f}% READY - Critical issues must be fixed")
+            return False
+
     def test_create_product(self):
         """Legacy test method - redirects to new comprehensive tests"""
         return self.test_create_product_with_images_colors()
