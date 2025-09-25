@@ -204,49 +204,25 @@ const ProductCard = ({ product, onView, isAdmin, onEdit, onDelete }) => {
 
   // Función para obtener imagen válida con fallbacks múltiples
   const getValidImage = () => {
-    const defaultImage = 'https://via.placeholder.com/400x400/f8b4d1/ffffff?text=HANNU+CLOTHES';
+    const productName = encodeURIComponent(product.name);
+    const categoryName = encodeURIComponent(product.category || 'HANNU');
+    const defaultImage = `https://via.placeholder.com/400x400/f8b4d1/333333?text=${productName}`;
     
     // Si tiene array de imágenes, usar esa
     if (product.images && product.images.length > 0) {
       const img = product.images[currentImageIndex];
       if (img && img.trim() !== '') {
-        // Intentar convertir URLs problemáticas
-        return convertImageUrl(img);
+        // Solo usar la URL original, sin proxies
+        return img;
       }
     }
     
     // Si solo tiene imagen singular
     if (product.image && product.image.trim() !== '') {
-      return convertImageUrl(product.image);
+      return product.image;
     }
     
     return defaultImage;
-  };
-
-  // Función para convertir URLs problemáticas
-  const convertImageUrl = (url) => {
-    if (!url) return 'https://via.placeholder.com/400x400/f8b4d1/ffffff?text=HANNU+CLOTHES';
-    
-    // Si es una URL de i.postimg.cc, intentar usar un proxy o convertirla
-    if (url.includes('i.postimg.cc')) {
-      // Intentar usar un servicio de proxy de imágenes
-      return `https://images.weserv.nl/?url=${encodeURIComponent(url)}&w=400&h=400&fit=cover&we`;
-    }
-    
-    // Si es Google Drive, convertir a formato directo
-    if (url.includes('drive.google.com')) {
-      const fileId = extractGoogleDriveId(url);
-      if (fileId) {
-        return `https://drive.google.com/uc?export=view&id=${fileId}`;
-      }
-    }
-    
-    return url;
-  };
-
-  const extractGoogleDriveId = (url) => {
-    const match = url.match(/\/file\/d\/([a-zA-Z0-9-_]+)/);
-    return match ? match[1] : null;
   };
 
   const currentImage = getValidImage();
