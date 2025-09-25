@@ -69,7 +69,7 @@ const categories = [
   { id: "faldas", name: "Faldas & Pantalones", image: "https://images.unsplash.com/photo-1597544004999-11b0390e0cc5?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Njl8MHwxfHNlYXJjaHwxfHx3b21lbiUyMGJvdHRvbXN8ZW58MHx8fHwxNzU2OTk5NjY2fDA&ixlib=rb-4.1.0&q=85" }
 ];
 
-const Header = ({ selectedCategory, setSelectedCategory, showAdmin, setShowAdmin, isAdmin, setIsAdmin }) => {
+const Header = ({ selectedCategory, setSelectedCategory, showAdmin, setShowAdmin, isAdmin, setIsAdmin, searchQuery, setSearchQuery, showSearch, setShowSearch }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
