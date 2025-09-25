@@ -177,11 +177,11 @@ backend:
 frontend:
   - task: "Implement save product functionality in AdminPanel"
     implemented: true
-    working: true
+    working: false
     file: "/app/frontend/src/App.js"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: false
         agent: "main"
@@ -192,6 +192,9 @@ frontend:
       - working: true
         agent: "testing"
         comment: "✅ VERIFIED: Save product functionality working perfectly! Tested complete workflow: Admin access → Fill form (name, description, prices, category, composition, multiple images, multiple colors) → Save → Product created successfully. API request POST /api/products returns 200. Admin panel closes after successful save. Product appears immediately in catalog with all data intact. Admin authentication working with default credentials (admin/admin123)."
+      - working: false
+        agent: "user"
+        comment: "USER REPORTS: Products still disappearing immediately after adding them. 'Sigue pasando el mismo error, agrego un producto y el momento se desaparece'. Issue persists despite testing verification."
 
   - task: "Fix product data refresh after save"
     implemented: true
