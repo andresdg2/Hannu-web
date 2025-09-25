@@ -76,8 +76,8 @@ class ProductCreate(BaseModel):
 class ProductUpdate(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
-    retail_price: Optional[int] = None
-    wholesale_price: Optional[int] = None
+    retail_price: Optional[Union[int, float]] = None
+    wholesale_price: Optional[Union[int, float]] = None
     category: Optional[str] = None
     image: Optional[str] = None  # Keep for backward compatibility
     images: Optional[List[str]] = None  # Support multiple images
