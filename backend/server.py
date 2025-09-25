@@ -59,8 +59,8 @@ class Product(BaseModel):
 class ProductCreate(BaseModel):
     name: str
     description: str
-    retail_price: int
-    wholesale_price: int
+    retail_price: Union[int, float]
+    wholesale_price: Union[int, float]
     category: str
     image: Optional[str] = ""  # Keep for backward compatibility
     images: List[str] = Field(default_factory=list)  # Support multiple images
