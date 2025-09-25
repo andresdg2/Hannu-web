@@ -97,9 +97,24 @@ const Header = ({ selectedCategory, setSelectedCategory, showAdmin, setShowAdmin
           </nav>
 
           <div className="header-actions">
-            <button className="action-btn">
+            <button 
+              className={`action-btn ${showSearch ? 'active' : ''}`}
+              onClick={() => setShowSearch(!showSearch)}
+            >
               <Search size={20} />
             </button>
+            {showSearch && (
+              <div className="search-input-container">
+                <input
+                  type="text"
+                  placeholder="Buscar productos..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="search-input"
+                  autoFocus
+                />
+              </div>
+            )}
             <a 
               href="https://wa.me/message/MNLVUZAVGCAHH1" 
               target="_blank" 
