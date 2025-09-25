@@ -949,9 +949,16 @@ const Home = () => {
     return storedToken;
   };
 
-  const filteredProducts = selectedCategory === 'todos' 
-    ? products 
-    : products.filter(product => product.category === selectedCategory);
+  const filteredProducts = products.filter(product => {
+    const matchesCategory = selectedCategory === 'todos' || product.category === selectedCategory;
+    const matchesSearch = searchQuery === '' || 
+      product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      product.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (product.colors && product.colors.some(color => 
+        color.toLowerCase().includes(searchQuery.toLowerCase())
+      ));
+    return matchesCategory && matchesSearch;
+  });
 
   const openProductModal = (product) => {
     setSelectedProduct(product);
