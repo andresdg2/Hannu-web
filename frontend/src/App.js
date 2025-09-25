@@ -1023,6 +1023,10 @@ const Home = () => {
         setShowAdmin={setShowAdmin}
         isAdmin={isAdmin}
         setIsAdmin={setIsAdmin}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        showSearch={showSearch}
+        setShowSearch={setShowSearch}
       />
       
       <main>
