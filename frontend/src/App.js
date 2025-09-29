@@ -871,9 +871,18 @@ const AdminPanel = ({ isOpen, onClose, products, setProducts, productToEdit }) =
       <div className="admin-panel">
         <div className="admin-header">
           <h2>Panel de Administración - HANNU CLOTHES</h2>
-          <button className="admin-close" onClick={onClose}>
-            <X size={24} />
-          </button>
+          <div className="admin-header-actions">
+            <span className="manager-status">
+              👤 Manager: {localStorage.getItem('managerUsername') || 'Autorizado'}
+            </span>
+            <button className="logout-btn" onClick={logoutManager} title="Cerrar sesión">
+              <User size={16} />
+              Salir
+            </button>
+            <button className="admin-close" onClick={onClose}>
+              <X size={24} />
+            </button>
+          </div>
         </div>
         
         <div className="admin-content">
