@@ -507,6 +507,12 @@ const ProductModal = ({ product, isOpen, onClose }) => {
 const AdminPanel = ({ isOpen, onClose, products, setProducts, productToEdit }) => {
   const [editingProduct, setEditingProduct] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [showManagerLogin, setShowManagerLogin] = useState(true);
+  const [isManagerAuthenticated, setIsManagerAuthenticated] = useState(false);
+  const [managerCredentials, setManagerCredentials] = useState({
+    username: '',
+    password: ''
+  });
   const [formData, setFormData] = useState({
     name: '',
     description: '',
