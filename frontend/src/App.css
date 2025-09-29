@@ -2159,3 +2159,241 @@ html {
   color: #e91e63;
   font-size: 16px;
 }
+
+/* Manager Authentication System */
+.manager-login-form {
+  text-align: center;
+  max-width: 400px;
+  margin: 0 auto;
+  padding: var(--spacing-xl);
+}
+
+.manager-login-form h3 {
+  font-family: var(--font-heading);
+  font-size: 1.8rem;
+  color: var(--charcoal);
+  margin-bottom: var(--spacing-md);
+}
+
+.manager-login-form p {
+  color: var(--medium-gray);
+  margin-bottom: var(--spacing-xl);
+  line-height: 1.6;
+}
+
+.manager-login-form .form-group {
+  margin-bottom: var(--spacing-lg);
+  text-align: left;
+}
+
+.manager-login-form .form-group label {
+  font-weight: 600;
+  color: var(--charcoal);
+  margin-bottom: var(--spacing-xs);
+}
+
+.manager-login-form .form-group input {
+  width: 100%;
+  padding: var(--spacing-md);
+  border: 2px solid var(--secondary-pink);
+  border-radius: 12px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.manager-login-form .form-group input:focus {
+  border-color: var(--deep-pink);
+  box-shadow: 0 0 0 3px rgba(212, 165, 165, 0.1);
+}
+
+.manager-info {
+  background: var(--soft-rose);
+  padding: var(--spacing-md);
+  border-radius: 12px;
+  margin-top: var(--spacing-lg);
+  border-left: 4px solid var(--deep-pink);
+}
+
+.manager-info p {
+  margin: var(--spacing-xs) 0;
+  font-size: 0.9rem;
+  color: var(--charcoal);
+}
+
+.manager-info small {
+  color: var(--medium-gray);
+  font-style: italic;
+  font-size: 0.8rem;
+}
+
+.admin-header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.manager-status {
+  background: var(--success);
+  color: white;
+  padding: var(--spacing-xs) var(--spacing-md);
+  border-radius: 15px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.logout-btn {
+  background: var(--warning);
+  color: white;
+  border: none;
+  padding: var(--spacing-xs) var(--spacing-md);
+  border-radius: 15px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  transition: all 0.3s ease;
+}
+
+.logout-btn:hover {
+  background: #D97706;
+  transform: translateY(-1px);
+}
+
+/* Admin Panel Image Input Enhancements */
+.image-input-group {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-sm);
+  padding: var(--spacing-sm);
+  background: white;
+  border-radius: 8px;
+  border: 1px solid var(--secondary-pink);
+}
+
+.image-input-group input {
+  flex: 1;
+  margin: 0;
+  border: 1px solid var(--accent-pink);
+}
+
+.image-controls {
+  display: flex;
+  gap: var(--spacing-xs);
+  align-items: center;
+}
+
+.convert-btn-small, .test-btn-small, .remove-btn {
+  background: none;
+  border: none;
+  padding: var(--spacing-xs);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.convert-btn-small {
+  background: var(--info);
+  color: white;
+}
+
+.test-btn-small {
+  background: var(--success);
+  color: white;
+}
+
+.remove-btn {
+  background: var(--error);
+  color: white;
+}
+
+.convert-btn-small:hover {
+  background: #2563EB;
+  transform: scale(1.1);
+}
+
+.test-btn-small:hover {
+  background: #059669;
+  transform: scale(1.1);
+}
+
+.remove-btn:hover {
+  background: #DC2626;
+  transform: scale(1.1);
+}
+
+.add-btn {
+  background: var(--deep-pink);
+  color: white;
+  border: none;
+  padding: var(--spacing-sm);
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  margin-top: var(--spacing-sm);
+}
+
+.add-btn:hover {
+  background: var(--accent-pink);
+  transform: translateY(-1px);
+}
+
+.mini-preview {
+  width: 60px;
+  height: 40px;
+  margin-top: var(--spacing-xs);
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid var(--secondary-pink);
+}
+
+.mini-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Mobile Responsive for Manager System */
+@media (max-width: 768px) {
+  .manager-login-form {
+    padding: var(--spacing-md);
+  }
+  
+  .admin-header-actions {
+    flex-direction: column;
+    gap: var(--spacing-sm);
+    align-items: flex-end;
+  }
+  
+  .manager-status {
+    font-size: 0.8rem;
+    padding: var(--spacing-xs);
+  }
+  
+  .logout-btn {
+    font-size: 0.8rem;
+    padding: var(--spacing-xs);
+  }
+  
+  .image-input-group {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .image-controls {
+    justify-content: center;
+    margin-top: var(--spacing-xs);
+  }
+}
