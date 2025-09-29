@@ -299,24 +299,39 @@ const ProductCard = ({ product, onView, isAdmin, onEdit, onDelete }) => {
         ) : (
           <div className="image-placeholder">
             <div className="placeholder-content">
-              <span>🏷️</span>
+              <span>🖼️</span>
               <p><strong>{product.name}</strong></p>
               <p>Imagen temporalmente no disponible</p>
-              <p className="placeholder-hint">Las imágenes se están cargando...</p>
-              <button 
-                className="retry-btn"
-                onClick={() => {
-                  setImageError(false);
-                  setImageLoading(true);
-                  // Force reload with a timestamp to bypass cache
-                  const img = new Image();
-                  img.onload = () => setImageError(false);
-                  img.onerror = () => setImageError(true);
-                  img.src = `${currentImage}?t=${Date.now()}`;
-                }}
-              >
-                🔄 Reintentar
-              </button>
+              <p className="placeholder-hint">
+                {currentImage.includes('postimg.cc') ? 
+                  'Problema de CORS con PostImg - Abriendo en nueva ventana debería funcionar' :
+                  'Las imágenes se están cargando...'
+                }
+              </p>
+              <div className="placeholder-actions">
+                <button 
+                  className="retry-btn"
+                  onClick={() => {
+                    setImageError(false);
+                    setImageLoading(true);
+                    // Force reload with a timestamp to bypass cache
+                    const img = new Image();
+                    img.onload = () => setImageError(false);
+                    img.onerror = () => setImageError(true);
+                    img.src = `${currentImage}?t=${Date.now()}`;
+                  }}
+                >
+                  🔄 Reintentar
+                </button>
+                {currentImage.includes('postimg.cc') && (
+                  <button 
+                    className="open-btn"
+                    onClick={() => window.open(currentImage, '_blank')}
+                  >
+                    🔗 Abrir Original
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         )}
