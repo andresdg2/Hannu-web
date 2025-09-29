@@ -927,7 +927,8 @@ const Home = () => {
     const loadProducts = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`${API}/products`);
+        // Cargar TODOS los productos sin límite
+        const response = await axios.get(`${API}/products?limit=1000`);
         console.log('Products loaded from backend:', response.data.length);
         
         if (response.data.length > 0) {
