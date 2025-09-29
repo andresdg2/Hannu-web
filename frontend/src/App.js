@@ -662,7 +662,7 @@ const AdminPanel = ({ isOpen, onClose, products, setProducts, productToEdit }) =
       // Recargar productos para asegurar sincronización
       setTimeout(async () => {
         try {
-          const refreshResponse = await axios.get(`${API}/products`);
+          const refreshResponse = await axios.get(`${API}/products?limit=1000`);
           setProducts(refreshResponse.data);
           console.log('🔄 Productos recargados:', refreshResponse.data.length);
         } catch (error) {
