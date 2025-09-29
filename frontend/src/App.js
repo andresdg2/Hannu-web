@@ -202,23 +202,19 @@ const ProductCard = ({ product, onView, isAdmin, onEdit, onDelete }) => {
     setImageLoading(false);
   };
 
-  // Función para obtener imagen válida con fallbacks múltiples
+  // Función para obtener imagen válida con proxy para solucionar CORS
   const getValidImage = () => {
     const productName = encodeURIComponent(product.name);
-    const categoryName = encodeURIComponent(product.category || 'HANNU');
     const defaultImage = `https://via.placeholder.com/400x400/f8b4d1/333333?text=${productName}`;
     
     // Si tiene array de imágenes, usar esa
     if (product.images && product.images.length > 0) {
       const img = product.images[currentImageIndex];
       if (img && img.trim() !== '') {
-        // Si es de postimg.cc y tiene problemas CORS, usar proxy
-        if (img.includes('i.postimg.cc') || img.includes('postimg.cc')) {
-          // Para i.postimg.cc, intentar convertir a formato sin CORS
-          const postimgId = img.match(/i\.postimg\.cc\/([^\/]+)/);
-          if (postimgId) {
-            return `https://postimg.cc/image/${postimgId[1]}/large.jpg`;
-          }
+        // Si es una imagen externa que puede tener problemas de CORS, usar proxy
+        if (img.includes('postimg.cc') || img.includes('imgur') || 
+            (!img.includes('via.placeholder.com') && !img.includes('customer-assets'))) {
+          return `${API}/proxy-image?url=${encodeURIComponent(img)}`;
         }
         return img;
       }
@@ -227,11 +223,9 @@ const ProductCard = ({ product, onView, isAdmin, onEdit, onDelete }) => {
     // Si solo tiene imagen singular
     if (product.image && product.image.trim() !== '') {
       // Aplicar la misma lógica para imagen singular
-      if (product.image.includes('i.postimg.cc') || product.image.includes('postimg.cc')) {
-        const postimgId = product.image.match(/i\.postimg\.cc\/([^\/]+)/);
-        if (postimgId) {
-          return `https://postimg.cc/image/${postimgId[1]}/large.jpg`;
-        }
+      if (product.image.includes('postimg.cc') || product.image.includes('imgur') || 
+          (!product.image.includes('via.placeholder.com') && !product.image.includes('customer-assets'))) {
+        return `${API}/proxy-image?url=${encodeURIComponent(product.image)}`;
       }
       return product.image;
     }
