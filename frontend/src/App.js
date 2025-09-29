@@ -1000,26 +1000,53 @@ const Home = () => {
   const handleDeleteProduct = async (productId) => {
     if (window.confirm('¿Estás seguro de que quieres eliminar este producto?')) {
       try {
-        const token = localStorage.getItem('adminToken');
+        // Asegurar autenticación antes de eliminar
+        let token = localStorage.getItem('adminToken');
         if (!token) {
-          alert('Error: No se encontró token de administrador');
-          return;
+          console.log('No hay token, obteniendo nuevo token...');
+          token = await loginAdmin();
+          if (!token) {
+            alert('❌ Error: No se pudo obtener autenticación de administrador');
+            return;
+          }
         }
 
         const headers = {
           'Authorization': `Bearer ${token}`
         };
 
+        console.log(`🗑️ Eliminando producto: ${productId}`);
         await axios.delete(`${API}/products/${productId}`, { headers });
-        setProducts(products.filter(p => p.id !== productId));
+        
+        // Actualizar lista local inmediatamente
+        const updatedProducts = products.filter(p => p.id !== productId);
+        setProducts(updatedProducts);
+        
         alert('✅ Producto eliminado correctamente');
+        
+        // Recargar para confirmar sincronización
+        setTimeout(async () => {
+          try {
+            const refreshResponse = await axios.get(`${API}/products?limit=1000`);
+            setProducts(refreshResponse.data);
+            console.log('🔄 Lista actualizada después de eliminación');
+          } catch (error) {
+            console.error('Error recargando después de eliminar:', error);
+          }
+        }, 500);
+        
       } catch (error) {
         console.error('Error deleting product:', error);
         if (error.response?.status === 401) {
-          alert('Error: Sesión de administrador expirada. Por favor vuelve a acceder.');
+          alert('❌ Error: Sesión de administrador expirada. Reintentando...');
           localStorage.removeItem('adminToken');
+          // Reintentar con nueva autenticación
+          const newToken = await loginAdmin();
+          if (newToken) {
+            handleDeleteProduct(productId); // Reintentar
+          }
         } else {
-          alert('Error al eliminar el producto. Por favor intenta de nuevo.');
+          alert(`❌ Error al eliminar el producto: ${error.response?.data?.detail || error.message}`);
         }
       }
     }
