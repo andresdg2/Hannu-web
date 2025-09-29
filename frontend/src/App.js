@@ -295,12 +295,9 @@ const ProductCard = ({ product, onView, isAdmin, onEdit, onDelete }) => {
             <div className="placeholder-content">
               <span>🖼️</span>
               <p><strong>{product.name}</strong></p>
-              <p>Imagen temporalmente no disponible</p>
+              <p>✅ Imagen procesándose por proxy</p>
               <p className="placeholder-hint">
-                {currentImage.includes('postimg.cc') ? 
-                  'Problema de CORS con PostImg - Abriendo en nueva ventana debería funcionar' :
-                  'Las imágenes se están cargando...'
-                }
+                Las imágenes ahora se cargan a través de nuestro servidor para evitar problemas de CORS
               </p>
               <div className="placeholder-actions">
                 <button 
@@ -317,14 +314,14 @@ const ProductCard = ({ product, onView, isAdmin, onEdit, onDelete }) => {
                 >
                   🔄 Reintentar
                 </button>
-                {currentImage.includes('postimg.cc') && (
-                  <button 
-                    className="open-btn"
-                    onClick={() => window.open(currentImage, '_blank')}
-                  >
-                    🔗 Abrir Original
-                  </button>
-                )}
+                <button 
+                  className="open-btn"
+                  onClick={() => window.open(currentImage.includes('proxy-image') 
+                    ? decodeURIComponent(currentImage.split('url=')[1]) 
+                    : currentImage, '_blank')}
+                >
+                  🔗 Ver Original
+                </button>
               </div>
             </div>
           </div>
