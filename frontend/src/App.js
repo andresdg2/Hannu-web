@@ -532,6 +532,47 @@ const AdminPanel = ({ isOpen, onClose, products, setProducts, productToEdit }) =
     }
   }, [productToEdit]);
 
+  // Check if manager is already authenticated
+  useEffect(() => {
+    const savedAuth = localStorage.getItem('managerAuthenticated');
+    if (savedAuth === 'true') {
+      setIsManagerAuthenticated(true);
+      setShowManagerLogin(false);
+    }
+  }, []);
+
+  const authenticateManager = async () => {
+    // Manager credentials - you can change these
+    const validCredentials = [
+      { username: 'manager', password: 'hannu2024' },
+      { username: 'admin', password: 'admin123' } // Mantener admin como fallback
+    ];
+
+    const isValid = validCredentials.some(cred => 
+      cred.username === managerCredentials.username && 
+      cred.password === managerCredentials.password
+    );
+
+    if (isValid) {
+      setIsManagerAuthenticated(true);
+      setShowManagerLogin(false);
+      localStorage.setItem('managerAuthenticated', 'true');
+      localStorage.setItem('managerUsername', managerCredentials.username);
+      alert('✅ Acceso de manager autorizado correctamente');
+    } else {
+      alert('❌ Credenciales incorrectas. Contacta al administrador del sistema.');
+    }
+  };
+
+  const logoutManager = () => {
+    setIsManagerAuthenticated(false);
+    setShowManagerLogin(true);
+    localStorage.removeItem('managerAuthenticated');
+    localStorage.removeItem('managerUsername');
+    localStorage.removeItem('adminToken');
+    onClose();
+  };
+
   const loginAdmin = async () => {
     try {
       const response = await axios.post(`${API}/admin/login`, {
