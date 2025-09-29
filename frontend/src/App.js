@@ -212,13 +212,27 @@ const ProductCard = ({ product, onView, isAdmin, onEdit, onDelete }) => {
     if (product.images && product.images.length > 0) {
       const img = product.images[currentImageIndex];
       if (img && img.trim() !== '') {
-        // Solo usar la URL original, sin proxies
+        // Si es de postimg.cc y tiene problemas CORS, usar proxy
+        if (img.includes('i.postimg.cc') || img.includes('postimg.cc')) {
+          // Para i.postimg.cc, intentar convertir a formato sin CORS
+          const postimgId = img.match(/i\.postimg\.cc\/([^\/]+)/);
+          if (postimgId) {
+            return `https://postimg.cc/image/${postimgId[1]}/large.jpg`;
+          }
+        }
         return img;
       }
     }
     
     // Si solo tiene imagen singular
     if (product.image && product.image.trim() !== '') {
+      // Aplicar la misma lógica para imagen singular
+      if (product.image.includes('i.postimg.cc') || product.image.includes('postimg.cc')) {
+        const postimgId = product.image.match(/i\.postimg\.cc\/([^\/]+)/);
+        if (postimgId) {
+          return `https://postimg.cc/image/${postimgId[1]}/large.jpg`;
+        }
+      }
       return product.image;
     }
     
