@@ -455,6 +455,68 @@ async def search_products(query: str, category: Optional[str] = None, limit: int
     products = await db.products.find(search_filter).limit(limit).to_list(limit)
     return [Product(**product) for product in products]
 
+# Image Proxy Endpoint to solve CORS issues
+@api_router.get("/proxy-image")
+async def proxy_image(url: str):
+    """
+    Proxy endpoint to serve images and bypass CORS issues
+    Usage: /api/proxy-image?url=https://example.com/image.jpg
+    """
+    if not url:
+        raise HTTPException(status_code=400, detail="URL parameter is required")
+    
+    # Validate URL to prevent abuse
+    allowed_domains = [
+        'i.postimg.cc',
+        'postimg.cc', 
+        'imgur.com',
+        'i.imgur.com',
+        'images.unsplash.com',
+        'via.placeholder.com',
+        'customer-assets.emergentagent.com',
+        'drive.google.com',
+        'googleusercontent.com'
+    ]
+    
+    try:
+        from urllib.parse import urlparse
+        parsed_url = urlparse(url)
+        domain = parsed_url.netloc.lower()
+        
+        # Check if domain is allowed
+        if not any(allowed_domain in domain for allowed_domain in allowed_domains):
+            raise HTTPException(status_code=403, detail="Domain not allowed")
+        
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            response = await client.get(url, follow_redirects=True)
+            
+            if response.status_code != 200:
+                raise HTTPException(status_code=response.status_code, detail="Failed to fetch image")
+            
+            # Determine content type
+            content_type = response.headers.get("content-type", "image/jpeg")
+            
+            # Ensure it's an image
+            if not content_type.startswith("image/"):
+                raise HTTPException(status_code=400, detail="URL does not point to an image")
+            
+            # Return the image with proper headers
+            return Response(
+                content=response.content,
+                media_type=content_type,
+                headers={
+                    "Cache-Control": "public, max-age=3600",  # Cache for 1 hour
+                    "Access-Control-Allow-Origin": "*",
+                    "Access-Control-Allow-Methods": "GET",
+                    "Access-Control-Allow-Headers": "*"
+                }
+            )
+            
+    except httpx.RequestError as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching image: {str(e)}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
 # Include the router in the main app
 app.include_router(api_router)
 
