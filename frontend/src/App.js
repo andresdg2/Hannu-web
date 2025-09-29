@@ -795,6 +795,77 @@ const AdminPanel = ({ isOpen, onClose, products, setProducts, productToEdit }) =
 
   if (!isOpen) return null;
 
+  // Mostrar login de manager si no está autenticado
+  if (showManagerLogin && !isManagerAuthenticated) {
+    return (
+      <div className="admin-panel-overlay">
+        <div className="admin-panel">
+          <div className="admin-header">
+            <h2>🔐 Acceso de Manager - HANNU CLOTHES</h2>
+            <button className="admin-close" onClick={onClose}>
+              <X size={24} />
+            </button>
+          </div>
+          
+          <div className="admin-content">
+            <div className="manager-login-form">
+              <h3>Autenticación Requerida</h3>
+              <p>Solo usuarios autorizados pueden acceder al panel de administración del catálogo.</p>
+              
+              <div className="form-group">
+                <label>Usuario Manager</label>
+                <input
+                  type="text"
+                  value={managerCredentials.username}
+                  onChange={(e) => setManagerCredentials({
+                    ...managerCredentials, 
+                    username: e.target.value
+                  })}
+                  placeholder="Ingresa tu usuario"
+                  onKeyPress={(e) => e.key === 'Enter' && authenticateManager()}
+                />
+              </div>
+              
+              <div className="form-group">
+                <label>Contraseña</label>
+                <input
+                  type="password"
+                  value={managerCredentials.password}
+                  onChange={(e) => setManagerCredentials({
+                    ...managerCredentials, 
+                    password: e.target.value
+                  })}
+                  placeholder="Ingresa tu contraseña"
+                  onKeyPress={(e) => e.key === 'Enter' && authenticateManager()}
+                />
+              </div>
+              
+              <div className="form-actions">
+                <button 
+                  className="save-btn" 
+                  onClick={authenticateManager}
+                  disabled={!managerCredentials.username || !managerCredentials.password}
+                >
+                  <User size={16} />
+                  Acceder al Panel
+                </button>
+                <button className="cancel-btn" onClick={onClose}>
+                  Cancelar
+                </button>
+              </div>
+              
+              <div className="manager-info">
+                <p><strong>👤 Usuario de prueba:</strong> manager</p>
+                <p><strong>🔑 Contraseña de prueba:</strong> hannu2024</p>
+                <small>Contacta al administrador del sistema para obtener credenciales definitivas.</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="admin-panel-overlay">
       <div className="admin-panel">
