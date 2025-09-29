@@ -2121,6 +2121,30 @@ html {
   background: #c2185b;
 }
 
+.open-btn {
+  background: #2563EB;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: background 0.3s ease;
+}
+
+.open-btn:hover {
+  background: #1D4ED8;
+}
+
+.placeholder-actions {
+  display: flex;
+  gap: var(--spacing-xs);
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: var(--spacing-xs);
+}
+
 .image-placeholder {
   position: relative;
   width: 100%;
