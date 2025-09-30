@@ -2577,11 +2577,11 @@ html {
 
 .file-upload-area {
   text-align: center;
-  padding: var(--spacing-xl);
+  padding: var(--spacing-md);
   background: rgba(255,255,255,0.9);
   border: 2px dashed var(--deep-pink);
   border-radius: 15px;
-  margin-bottom: var(--spacing-lg);
+  margin-bottom: var(--spacing-md);
 }
 
 .file-upload-label {
