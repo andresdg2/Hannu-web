@@ -307,16 +307,12 @@ const ProductCard = ({ product, onView, isAdmin, onEdit, onDelete }) => {
   const nextImage = () => {
     if (product.images && product.images.length > 1) {
       setCurrentImageIndex((prev) => (prev + 1) % product.images.length);
-      setImageError(false);
-      setImageLoading(true);
     }
   };
 
   const prevImage = () => {
     if (product.images && product.images.length > 1) {
       setCurrentImageIndex((prev) => (prev - 1 + product.images.length) % product.images.length);
-      setImageError(false);
-      setImageLoading(true);
     }
   };
 
