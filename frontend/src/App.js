@@ -72,9 +72,9 @@ const SmartImage = ({ originalSrc, alt, proxyUrl, productName }) => {
         <div className="placeholder-content">
           <span>🖼️</span>
           <p><strong>{productName}</strong></p>
-          <p>✅ Imagen procesándose por proxy</p>
+          <p>Imagen temporalmente no disponible</p>
           <p className="placeholder-hint">
-            Las imágenes ahora se cargan a través de nuestro servidor para evitar problemas de CORS
+            {loadAttempt > 0 ? 'Se intentó cargar a través del servidor de respaldo' : 'Problema de conectividad con la imagen'}
           </p>
           <div className="placeholder-actions">
             <button 
@@ -82,16 +82,20 @@ const SmartImage = ({ originalSrc, alt, proxyUrl, productName }) => {
               onClick={() => {
                 setImageError(false);
                 setImageLoading(true);
-                setCurrentSrc(`${originalSrc}?t=${Date.now()}`);
+                setLoadAttempt(0);
+                setCurrentSrc(originalSrc);
               }}
             >
               🔄 Reintentar
             </button>
             <button 
               className="open-btn"
-              onClick={() => window.open(originalSrc.includes('proxy-image') 
-                ? decodeURIComponent(originalSrc.split('url=')[1]) 
-                : originalSrc, '_blank')}
+              onClick={() => {
+                const urlToOpen = originalSrc.includes('proxy-image') 
+                  ? decodeURIComponent(originalSrc.split('url=')[1]) 
+                  : originalSrc;
+                window.open(urlToOpen, '_blank');
+              }}
             >
               🔗 Ver Original
             </button>
