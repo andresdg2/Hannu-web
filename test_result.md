@@ -287,8 +287,12 @@ metadata:
   run_ui: true
 
 test_plan:
-  current_focus: []
-  stuck_tasks: []
+  current_focus:
+    - "SmartImage System Implementation - URGENT Image Fix"
+    - "Image Proxy Functionality - URGENT User Report"
+  stuck_tasks:
+    - "SmartImage System Implementation - URGENT Image Fix"
+    - "Image Proxy Functionality - URGENT User Report"
   test_all: false
   test_priority: "high_first"
 
