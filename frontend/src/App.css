@@ -2525,8 +2525,8 @@ html {
 .mass-upload-section {
   background: linear-gradient(135deg, var(--soft-rose), var(--secondary-pink));
   border-radius: 15px;
-  padding: var(--spacing-xl);
-  margin-bottom: var(--spacing-xl);
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
   border: 2px solid var(--deep-pink);
 }
 
