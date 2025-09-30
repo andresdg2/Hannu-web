@@ -481,7 +481,7 @@ async def proxy_image(url: str):
     try:
         from urllib.parse import urlparse
         parsed_url = urlparse(url)
-        domain = parsed_url.netlnet.lower()
+        domain = parsed_url.netloc.lower()
         
         # Check if domain is allowed
         if not any(allowed_domain in domain for allowed_domain in allowed_domains):
