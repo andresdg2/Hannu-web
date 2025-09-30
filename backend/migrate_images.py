@@ -15,7 +15,7 @@ import re
 from datetime import datetime
 
 # Configuración
-IMGBB_API_KEY = "TU_API_KEY_AQUI"  # Reemplazar con tu API key de ImgBB
+IMGBB_API_KEY = "4b20a326ed0c0200ec705d1d4694c318"  # API key de ImgBB
 MONGO_URL = os.environ.get('MONGO_URL')
 DB_NAME = os.environ.get('DB_NAME', 'hannu_clothes')
 
