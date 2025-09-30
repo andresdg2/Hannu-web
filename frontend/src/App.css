@@ -2301,6 +2301,26 @@ html {
   transform: translateY(-1px);
 }
 
+.mass-upload-btn {
+  background: linear-gradient(45deg, #10B981, #059669);
+  color: white;
+  border: none;
+  padding: var(--spacing-xs) var(--spacing-md);
+  border-radius: 15px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  transition: all 0.3s ease;
+}
+
+.mass-upload-btn:hover {
+  background: linear-gradient(45deg, #059669, #047857);
+  transform: translateY(-1px);
+}
+
 /* Admin Panel Image Input Enhancements */
 .image-input-group {
   display: flex;
