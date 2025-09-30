@@ -575,6 +575,109 @@ async def proxy_image(url: str):
         print(f"Unexpected error in proxy_image: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
+# Mass Image Upload endpoint
+@api_router.post("/admin/upload-images")
+async def mass_upload_images(
+    files: List[UploadFile] = File(...),
+    product_names: str = Form(...),
+    current_user: dict = Depends(get_current_admin)
+):
+    """
+    Upload multiple images to ImgBB and update products automatically
+    """
+    try:
+        product_names_list = [name.strip() for name in product_names.split(',')]
+        
+        if len(files) != len(product_names_list):
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Number of files ({len(files)}) must match number of product names ({len(product_names_list)})"
+            )
+        
+        results = []
+        successful_uploads = 0
+        
+        for i, (file, product_name) in enumerate(zip(files, product_names_list)):
+            try:
+                # Read file content
+                contents = await file.read()
+                
+                # Upload to ImgBB
+                import base64
+                image_base64 = base64.b64encode(contents).decode('utf-8')
+                
+                async with httpx.AsyncClient(timeout=30.0) as client:
+                    data = {
+                        'key': IMGBB_API_KEY,
+                        'image': image_base64,
+                        'name': f"hannu_{product_name.replace(' ', '_')}"
+                    }
+                    
+                    response = await client.post('https://api.imgbb.com/1/upload', data=data)
+                    
+                    if response.status_code == 200:
+                        result = response.json()
+                        if result.get('success'):
+                            imgbb_url = result['data']['url']
+                            
+                            # Find and update product in database
+                            product = await db.products.find_one({"name": {"$regex": f"^{product_name}$", "$options": "i"}})
+                            
+                            if product:
+                                # Update product with new image
+                                update_data = {
+                                    "images": [imgbb_url],
+                                    "image": imgbb_url,  # For compatibility
+                                    "updated_at": datetime.utcnow()
+                                }
+                                
+                                await db.products.update_one(
+                                    {"id": product["id"]},
+                                    {"$set": update_data}
+                                )
+                                
+                                results.append({
+                                    "product_name": product_name,
+                                    "status": "success",
+                                    "imgbb_url": imgbb_url,
+                                    "message": f"Image uploaded and product updated"
+                                })
+                                successful_uploads += 1
+                            else:
+                                results.append({
+                                    "product_name": product_name,
+                                    "status": "error",
+                                    "message": f"Product '{product_name}' not found in database"
+                                })
+                        else:
+                            results.append({
+                                "product_name": product_name,
+                                "status": "error",
+                                "message": f"ImgBB upload failed: {result}"
+                            })
+                    else:
+                        results.append({
+                            "product_name": product_name,
+                            "status": "error",
+                            "message": f"ImgBB API error: HTTP {response.status_code}"
+                        })
+                        
+            except Exception as e:
+                results.append({
+                    "product_name": product_name,
+                    "status": "error",
+                    "message": f"Upload error: {str(e)}"
+                })
+        
+        return {
+            "total_files": len(files),
+            "successful_uploads": successful_uploads,
+            "results": results
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Mass upload error: {str(e)}")
+
 # Include the router in the main app
 app.include_router(api_router)
 
