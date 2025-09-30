@@ -262,9 +262,7 @@ const Hero = () => {
 
 const ProductCard = ({ product, onView, isAdmin, onEdit, onDelete }) => {
   const [showPrices, setShowPrices] = useState('retail');
-  const [imageError, setImageError] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [imageLoading, setImageLoading] = useState(true);
 
   const formatPrice = (price) => {
     // Ensure price is a number
@@ -274,17 +272,6 @@ const ProductCard = ({ product, onView, isAdmin, onEdit, onDelete }) => {
       currency: 'COP',
       minimumFractionDigits: 0
     }).format(numPrice);
-  };
-
-  const handleImageError = () => {
-    setImageError(true);
-    setImageLoading(false);
-    console.log('Error loading image:', currentImage);
-  };
-
-  const handleImageLoad = () => {
-    setImageError(false);
-    setImageLoading(false);
   };
 
   // Función mejorada para obtener imagen con múltiples respaldos
