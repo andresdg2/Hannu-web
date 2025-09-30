@@ -662,6 +662,103 @@ const AdminPanel = ({ isOpen, onClose, products, setProducts, productToEdit }) =
     onClose();
   };
 
+  // Lista de productos que necesitan imágenes nuevas
+  const missingImageProducts = [
+    // Vestidos
+    "Boston Corto", "Clavel", "Cruzado Corto", "Gabriela", "Gitana", "Jade", 
+    "Lisbeth Corto Manga Larga", "Lisbeth Largo", "Marsella", "Mile Corto", 
+    "Moño", "Nieve", "Nudo Corto", "Pekin", "Picapiedra", "Raquel", "Santorini",
+    // Conjuntos
+    "Bengalina De Falda",
+    // Blusas
+    "Sade"
+  ];
+
+  const handleMassUpload = async () => {
+    if (massUploadFiles.length === 0) {
+      alert('Por favor selecciona archivos para subir');
+      return;
+    }
+
+    try {
+      setSaving(true);
+      setUploadProgress({ current: 0, total: massUploadFiles.length });
+
+      // Obtener token de admin
+      let token = localStorage.getItem('adminToken');
+      if (!token) {
+        token = await loginAdmin();
+        if (!token) {
+          alert('❌ Error: No se pudo obtener autenticación de administrador');
+          return;
+        }
+      }
+
+      const formData = new FormData();
+      const productNames = [];
+
+      massUploadFiles.forEach((fileData) => {
+        formData.append('files', fileData.file);
+        productNames.push(fileData.productName);
+      });
+
+      formData.append('product_names', productNames.join(','));
+
+      const response = await axios.post(`${API}/admin/upload-images`, formData, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+
+      const results = response.data;
+      
+      // Mostrar resultados
+      const successCount = results.successful_uploads;
+      const totalCount = results.total_files;
+      
+      if (successCount === totalCount) {
+        alert(`🎉 ¡Éxito total! ${successCount}/${totalCount} imágenes subidas correctamente`);
+      } else {
+        alert(`⚠️ Parcialmente exitoso: ${successCount}/${totalCount} imágenes subidas. Revisa los errores.`);
+      }
+
+      // Mostrar detalles
+      console.log('Resultados de carga masiva:', results);
+      
+      // Recargar productos
+      const refreshResponse = await axios.get(`${API}/products?limit=1000`);
+      setProducts(refreshResponse.data);
+
+      // Limpiar estado
+      setMassUploadFiles([]);
+      setShowMassUpload(false);
+
+    } catch (error) {
+      console.error('Error en carga masiva:', error);
+      alert(`❌ Error en carga masiva: ${error.response?.data?.detail || error.message}`);
+    } finally {
+      setSaving(false);
+      setUploadProgress(null);
+    }
+  };
+
+  const handleFileSelection = (event) => {
+    const files = Array.from(event.target.files);
+    const newFiles = files.map(file => ({
+      file,
+      productName: '',
+      preview: URL.createObjectURL(file)
+    }));
+    setMassUploadFiles(newFiles);
+  };
+
+  const updateProductName = (index, name) => {
+    const updated = [...massUploadFiles];
+    updated[index].productName = name;
+    setMassUploadFiles(updated);
+  };
+
   const loginAdmin = async () => {
     try {
       const response = await axios.post(`${API}/admin/login`, {
