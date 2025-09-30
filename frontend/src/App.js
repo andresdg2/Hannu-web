@@ -1132,15 +1132,6 @@ const Home = () => {
       ));
     return matchesCategory && matchesSearch;
   });
-  
-  // DEBUG: Log para verificar productos
-  console.log('🔍 DEBUG Products:', {
-    totalProducts: products.length,
-    selectedCategory,
-    filteredProducts: filteredProducts.length,
-    searchQuery,
-    loading
-  });
 
   const openProductModal = (product) => {
     setSelectedProduct(product);
