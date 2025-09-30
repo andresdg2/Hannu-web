@@ -1256,49 +1256,27 @@ const Home = () => {
               ))}
             </div>
             
-            {/* DEBUG INFO */}
-            <div style={{
-              background: '#ff0000', 
-              color: 'white', 
-              padding: '20px', 
-              fontSize: '18px', 
-              margin: '20px 0'
-            }}>
-              <h3>🔍 DEBUG INFORMACIÓN:</h3>
-              <p><strong>Total productos:</strong> {products.length}</p>
-              <p><strong>Productos filtrados:</strong> {filteredProducts.length}</p>
-              <p><strong>Categoría seleccionada:</strong> {selectedCategory}</p>
-              <p><strong>Loading:</strong> {loading ? 'SÍ' : 'NO'}</p>
-              <p><strong>Búsqueda:</strong> {searchQuery || 'ninguna'}</p>
-            </div>
-
             <div className="products-grid">
               {loading ? (
-                <div className="loading-message" style={{background: '#ff00ff', color: 'white', padding: '50px', fontSize: '24px'}}>
+                <div className="loading-message">
                   <div className="loading"></div>
-                  <p>🔄 CARGANDO PRODUCTOS...</p>
+                  <p>Cargando productos...</p>
                 </div>
               ) : filteredProducts.length === 0 ? (
-                <div className="no-products" style={{background: '#ff4400', color: 'white', padding: '50px', fontSize: '24px'}}>
-                  <p>❌ NO HAY PRODUCTOS EN ESTA CATEGORÍA</p>
-                  <p>Total original: {products.length}, Filtrados: {filteredProducts.length}</p>
+                <div className="no-products">
+                  <p>No hay productos en esta categoría</p>
                 </div>
               ) : (
-                <>
-                  <div style={{background: '#00ff00', color: 'black', padding: '20px', fontSize: '18px'}}>
-                    ✅ RENDERIZANDO {filteredProducts.length} PRODUCTOS
-                  </div>
-                  {filteredProducts.map(product => (
-                    <ProductCard
-                      key={product.id}
-                      product={product}
-                      onView={openProductModal}
-                      isAdmin={isAdmin}
-                      onEdit={handleEditProduct}
-                      onDelete={handleDeleteProduct}
-                    />
-                  ))}
-                </>
+                filteredProducts.map(product => (
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    onView={openProductModal}
+                    isAdmin={isAdmin}
+                    onEdit={handleEditProduct}
+                    onDelete={handleDeleteProduct}
+                  />
+                ))
               )}
             </div>
           </div>
