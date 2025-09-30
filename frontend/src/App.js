@@ -332,7 +332,11 @@ const ProductCard = ({ product, onView, isAdmin, onEdit, onDelete }) => {
   // Función para obtener URL del proxy como respaldo
   const getProxyImage = (originalUrl) => {
     if (!originalUrl) return null;
-    return `${API}/proxy-image?url=${encodeURIComponent(originalUrl)}`;
+    // Use proxy for PostImg URLs automatically
+    if (originalUrl.includes('postimg.cc') || originalUrl.includes('imgur')) {
+      return `${API}/proxy-image?url=${encodeURIComponent(originalUrl)}`;
+    }
+    return null;
   };
 
   const currentImage = getValidImage();
