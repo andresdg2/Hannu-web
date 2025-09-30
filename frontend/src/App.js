@@ -366,7 +366,7 @@ const ProductCard = ({ product, onView, isAdmin, onEdit, onDelete }) => {
         <SmartImage 
           originalSrc={currentImage}
           alt={product.name}
-          proxyUrl={getProxyImage(currentImage)}
+          alternativeUrl={getAlternativeImage(currentImage)}
           productName={product.name}
         />
         {product.images && product.images.length > 1 && (
