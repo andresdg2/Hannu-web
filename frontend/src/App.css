@@ -371,7 +371,8 @@ body {
   opacity: 1 !important;
   height: auto !important;
   overflow: visible !important;
-  z-index: 1 !important;
+  z-index: 100 !important;
+  position: relative !important;
 }
 
 .products.catalog h2 {
