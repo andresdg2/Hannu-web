@@ -13,11 +13,15 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from urllib.parse import urlparse
 import re
 from datetime import datetime
+from dotenv import load_dotenv
+
+# Cargar variables de entorno
+load_dotenv()
 
 # Configuración
 IMGBB_API_KEY = "4b20a326ed0c0200ec705d1d4694c318"  # API key de ImgBB
-MONGO_URL = os.environ.get('MONGO_URL')
-DB_NAME = os.environ.get('DB_NAME', 'hannu_clothes')
+MONGO_URL = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
+DB_NAME = os.environ.get('DB_NAME', 'test_database')
 
 class ImageMigrator:
     def __init__(self):
