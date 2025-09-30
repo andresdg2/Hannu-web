@@ -640,7 +640,7 @@ async def mass_upload_images(
                                     "product_name": product_name,
                                     "status": "success",
                                     "imgbb_url": imgbb_url,
-                                    "message": f"Image uploaded and product updated"
+                                    "message": "Image uploaded and product updated"
                                 })
                                 successful_uploads += 1
                             else:
