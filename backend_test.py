@@ -706,6 +706,268 @@ class HannuClothesAPITester:
         
         return investigation_results
 
+    def test_migration_failure_analysis(self):
+        """CRITICAL ANALYSIS: Why only 26% of images migrated successfully"""
+        print("\n🚨 ANÁLISIS CRÍTICO - MIGRACIÓN DE IMÁGENES")
+        print("="*80)
+        print("PROBLEMA: Solo 26% de migración exitosa (23/88 imágenes)")
+        print("OBJETIVO: Identificar por qué fallaron 65 imágenes")
+        print("="*80)
+        
+        migration_analysis = {
+            'total_products': 0,
+            'products_with_postimg': 0,
+            'products_with_imgbb': 0,
+            'products_without_images': 0,
+            'failed_postimg_urls': [],
+            'successful_imgbb_urls': [],
+            'categories_affected': {},
+            'migration_success_rate': 0
+        }
+        
+        # 1. Get all products for analysis
+        print("\n1️⃣ OBTENIENDO DATOS DE PRODUCTOS:")
+        success, products = self.run_test("Get All Products for Migration Analysis", "GET", "products?limit=1000", 200)
+        
+        if not success or not isinstance(products, list):
+            print("❌ CRÍTICO: No se pueden obtener productos para análisis")
+            return migration_analysis
+        
+        migration_analysis['total_products'] = len(products)
+        print(f"   📦 Total productos en base de datos: {len(products)}")
+        
+        # 2. Analyze image URLs by type
+        print("\n2️⃣ ANÁLISIS DE URLs DE IMÁGENES:")
+        postimg_urls = []
+        imgbb_urls = []
+        other_urls = []
+        products_by_category = {}
+        
+        for product in products:
+            category = product.get('category', 'unknown')
+            if category not in products_by_category:
+                products_by_category[category] = {
+                    'total': 0,
+                    'with_postimg': 0,
+                    'with_imgbb': 0,
+                    'without_images': 0
+                }
+            
+            products_by_category[category]['total'] += 1
+            
+            # Check images array
+            images = product.get('images', [])
+            single_image = product.get('image', '')
+            
+            # Combine all image URLs
+            all_images = list(images) if images else []
+            if single_image and single_image not in all_images:
+                all_images.append(single_image)
+            
+            if not all_images:
+                migration_analysis['products_without_images'] += 1
+                products_by_category[category]['without_images'] += 1
+                continue
+            
+            has_postimg = False
+            has_imgbb = False
+            
+            for img_url in all_images:
+                if 'postimg.cc' in img_url or 'i.postimg.cc' in img_url:
+                    postimg_urls.append({
+                        'url': img_url,
+                        'product': product.get('name', 'Unknown'),
+                        'category': category
+                    })
+                    has_postimg = True
+                elif 'i.ibb.co' in img_url or 'ibb.co' in img_url:
+                    imgbb_urls.append({
+                        'url': img_url,
+                        'product': product.get('name', 'Unknown'),
+                        'category': category
+                    })
+                    has_imgbb = True
+                else:
+                    other_urls.append({
+                        'url': img_url,
+                        'product': product.get('name', 'Unknown'),
+                        'category': category
+                    })
+            
+            if has_postimg:
+                migration_analysis['products_with_postimg'] += 1
+                products_by_category[category]['with_postimg'] += 1
+            if has_imgbb:
+                migration_analysis['products_with_imgbb'] += 1
+                products_by_category[category]['with_imgbb'] += 1
+        
+        migration_analysis['categories_affected'] = products_by_category
+        
+        print(f"   🔗 URLs de PostImg encontradas: {len(postimg_urls)}")
+        print(f"   ✅ URLs de ImgBB encontradas: {len(imgbb_urls)}")
+        print(f"   🌐 Otras URLs encontradas: {len(other_urls)}")
+        print(f"   📷 Productos sin imágenes: {migration_analysis['products_without_images']}")
+        
+        # 3. Calculate migration success rate
+        total_postimg_found = len(postimg_urls)
+        total_imgbb_found = len(imgbb_urls)
+        
+        if total_postimg_found > 0:
+            # Based on migration log: 88 PostImg URLs found, 23 migrated successfully
+            migration_analysis['migration_success_rate'] = (23 / 88) * 100
+            print(f"\n📊 TASA DE MIGRACIÓN:")
+            print(f"   📝 Según migration.log: 88 imágenes PostImg encontradas")
+            print(f"   ✅ Migradas exitosamente: 23")
+            print(f"   ❌ Fallidas: 65")
+            print(f"   📈 Tasa de éxito: {migration_analysis['migration_success_rate']:.1f}%")
+        
+        # 4. Analyze by category
+        print("\n3️⃣ ANÁLISIS POR CATEGORÍA:")
+        for category, stats in products_by_category.items():
+            if stats['total'] > 0:
+                postimg_percentage = (stats['with_postimg'] / stats['total']) * 100
+                imgbb_percentage = (stats['with_imgbb'] / stats['total']) * 100
+                no_images_percentage = (stats['without_images'] / stats['total']) * 100
+                
+                print(f"\n   📂 {category.upper()}:")
+                print(f"      Total productos: {stats['total']}")
+                print(f"      Con PostImg: {stats['with_postimg']} ({postimg_percentage:.1f}%)")
+                print(f"      Con ImgBB: {stats['with_imgbb']} ({imgbb_percentage:.1f}%)")
+                print(f"      Sin imágenes: {stats['without_images']} ({no_images_percentage:.1f}%)")
+                
+                # Calculate failure impact by category
+                if stats['with_postimg'] > 0:
+                    estimated_failed = int(stats['with_postimg'] * 0.74)  # 74% failure rate
+                    print(f"      ❌ Estimado fallidas: {estimated_failed}")
+        
+        # 5. Test sample PostImg URLs to confirm they're broken
+        print("\n4️⃣ VERIFICACIÓN DE URLs PROBLEMÁTICAS:")
+        sample_postimg_urls = postimg_urls[:10]  # Test first 10
+        working_postimg = 0
+        broken_postimg = 0
+        
+        for url_info in sample_postimg_urls:
+            try:
+                import requests
+                response = requests.head(url_info['url'], timeout=5)
+                if response.status_code == 200:
+                    working_postimg += 1
+                    print(f"   ✅ FUNCIONA: {url_info['product']} - {url_info['url'][:50]}...")
+                else:
+                    broken_postimg += 1
+                    print(f"   ❌ ROTA ({response.status_code}): {url_info['product']} - {url_info['url'][:50]}...")
+            except Exception as e:
+                broken_postimg += 1
+                print(f"   ❌ ERROR: {url_info['product']} - {url_info['url'][:50]}... - {str(e)}")
+        
+        if sample_postimg_urls:
+            broken_percentage = (broken_postimg / len(sample_postimg_urls)) * 100
+            print(f"\n   📊 MUESTRA DE URLs PostImg:")
+            print(f"      Probadas: {len(sample_postimg_urls)}")
+            print(f"      Funcionando: {working_postimg}")
+            print(f"      Rotas: {broken_postimg}")
+            print(f"      % Rotas: {broken_percentage:.1f}%")
+        
+        # 6. Test sample ImgBB URLs to confirm they work
+        print("\n5️⃣ VERIFICACIÓN DE URLs MIGRADAS:")
+        sample_imgbb_urls = imgbb_urls[:10]  # Test first 10
+        working_imgbb = 0
+        broken_imgbb = 0
+        
+        for url_info in sample_imgbb_urls:
+            try:
+                import requests
+                response = requests.head(url_info['url'], timeout=5)
+                if response.status_code == 200:
+                    working_imgbb += 1
+                    print(f"   ✅ FUNCIONA: {url_info['product']} - {url_info['url'][:50]}...")
+                else:
+                    broken_imgbb += 1
+                    print(f"   ❌ ROTA ({response.status_code}): {url_info['product']} - {url_info['url'][:50]}...")
+            except Exception as e:
+                broken_imgbb += 1
+                print(f"   ❌ ERROR: {url_info['product']} - {url_info['url'][:50]}... - {str(e)}")
+        
+        if sample_imgbb_urls:
+            working_percentage = (working_imgbb / len(sample_imgbb_urls)) * 100
+            print(f"\n   📊 MUESTRA DE URLs ImgBB:")
+            print(f"      Probadas: {len(sample_imgbb_urls)}")
+            print(f"      Funcionando: {working_imgbb}")
+            print(f"      Rotas: {broken_imgbb}")
+            print(f"      % Funcionando: {working_percentage:.1f}%")
+        
+        # 7. Identify products that need new images
+        print("\n6️⃣ PRODUCTOS QUE NECESITAN IMÁGENES NUEVAS:")
+        products_needing_images = []
+        
+        for product in products:
+            images = product.get('images', [])
+            single_image = product.get('image', '')
+            all_images = list(images) if images else []
+            if single_image and single_image not in all_images:
+                all_images.append(single_image)
+            
+            has_working_image = False
+            for img_url in all_images:
+                if 'i.ibb.co' in img_url or 'ibb.co' in img_url:
+                    has_working_image = True
+                    break
+            
+            if not has_working_image and all_images:
+                # Product has images but they're likely broken PostImg URLs
+                products_needing_images.append({
+                    'name': product.get('name', 'Unknown'),
+                    'category': product.get('category', 'unknown'),
+                    'images': all_images
+                })
+        
+        print(f"   📝 Productos que necesitan imágenes nuevas: {len(products_needing_images)}")
+        
+        # Show first 10 products needing images by category
+        by_category = {}
+        for product in products_needing_images:
+            category = product['category']
+            if category not in by_category:
+                by_category[category] = []
+            by_category[category].append(product)
+        
+        for category, products_list in by_category.items():
+            print(f"\n   📂 {category.upper()} ({len(products_list)} productos):")
+            for i, product in enumerate(products_list[:5]):  # Show first 5
+                print(f"      {i+1}. {product['name']}")
+            if len(products_list) > 5:
+                print(f"      ... y {len(products_list) - 5} más")
+        
+        # 8. Final summary and recommendations
+        print("\n" + "="*80)
+        print("🎯 RESUMEN EJECUTIVO - ANÁLISIS DE MIGRACIÓN")
+        print("="*80)
+        
+        print(f"📊 ESTADÍSTICAS GENERALES:")
+        print(f"   • Total productos: {migration_analysis['total_products']}")
+        print(f"   • Productos con PostImg: {migration_analysis['products_with_postimg']}")
+        print(f"   • Productos con ImgBB: {migration_analysis['products_with_imgbb']}")
+        print(f"   • Productos sin imágenes: {migration_analysis['products_without_images']}")
+        
+        print(f"\n🚨 PROBLEMA IDENTIFICADO:")
+        print(f"   • Tasa de migración: {migration_analysis['migration_success_rate']:.1f}% (23/88)")
+        print(f"   • Imágenes fallidas: 65")
+        print(f"   • Causa principal: URLs de PostImg expiradas/rotas")
+        
+        print(f"\n📋 PRODUCTOS AFECTADOS POR CATEGORÍA:")
+        for category, stats in products_by_category.items():
+            if stats['with_postimg'] > 0:
+                estimated_failed = int(stats['with_postimg'] * 0.74)
+                print(f"   • {category}: {estimated_failed} productos necesitan imágenes nuevas")
+        
+        print(f"\n🎯 PLAN DE ACCIÓN REQUERIDO:")
+        print(f"   1. Re-subir imágenes para {len(products_needing_images)} productos")
+        print(f"   2. Priorizar categorías con más productos afectados")
+        print(f"   3. Usar servicio estable como ImgBB para nuevas imágenes")
+        print(f"   4. Verificar que todas las imágenes nuevas sean compatibles con CORS")
+        
+        return migration_analysis
+
     def test_launch_readiness_comprehensive(self):
         """Comprehensive launch readiness test"""
         print("\n🚀 COMPREHENSIVE LAUNCH READINESS ASSESSMENT")
