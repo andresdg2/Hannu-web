@@ -37,6 +37,7 @@ api_router = APIRouter(prefix="/api")
 security = HTTPBearer()
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 SECRET_KEY = os.getenv("JWT_SECRET_KEY", "hannu-clothes-catalog-secret-key-2024")
+IMGBB_API_KEY = os.getenv("IMGBB_API_KEY")
 
 # Models
 class Product(BaseModel):
