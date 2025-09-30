@@ -544,6 +544,168 @@ class HannuClothesAPITester:
             print("❌ API price validation not working as expected")
             return False
 
+    def test_urgent_product_visibility_investigation(self):
+        """URGENT: Investigate why products are not showing in catalog"""
+        print("\n🚨 URGENT PRODUCT VISIBILITY INVESTIGATION")
+        print("="*60)
+        print("User reports: Only header visible, no products showing in catalog")
+        print("Expected: 117 products should be visible")
+        
+        investigation_results = {
+            'api_connectivity': False,
+            'product_count': 0,
+            'products_returned': False,
+            'image_proxy_working': False,
+            'sample_images_accessible': False
+        }
+        
+        # 1. Test basic API connectivity
+        print("\n1️⃣ TESTING API CONNECTIVITY:")
+        success, response = self.run_test("API Root Connectivity", "GET", "", 200)
+        investigation_results['api_connectivity'] = success
+        
+        if not success:
+            print("❌ CRITICAL: Backend API is not responding!")
+            return investigation_results
+        
+        # 2. Test products endpoint specifically
+        print("\n2️⃣ TESTING PRODUCTS ENDPOINT:")
+        success, products_response = self.run_test("Get All Products", "GET", "products", 200)
+        
+        if success and isinstance(products_response, list):
+            investigation_results['products_returned'] = True
+            investigation_results['product_count'] = len(products_response)
+            print(f"✅ Products endpoint working - returned {len(products_response)} products")
+            
+            if len(products_response) >= 117:
+                print(f"✅ Product count meets expectation ({len(products_response)} >= 117)")
+            else:
+                print(f"⚠️  Product count below expectation ({len(products_response)} < 117)")
+            
+            # Show first few products for verification
+            print("\n📋 FIRST 3 PRODUCTS IN CATALOG:")
+            for i, product in enumerate(products_response[:3]):
+                print(f"   {i+1}. {product.get('name', 'Unknown')} - Category: {product.get('category', 'Unknown')}")
+                print(f"      Images: {len(product.get('images', []))} | Colors: {len(product.get('colors', []))}")
+                if product.get('images'):
+                    print(f"      First image: {product['images'][0][:50]}...")
+        else:
+            print("❌ CRITICAL: Products endpoint not returning valid data!")
+            print(f"   Response type: {type(products_response)}")
+            print(f"   Response preview: {str(products_response)[:200]}...")
+        
+        # 3. Test image proxy endpoint
+        print("\n3️⃣ TESTING IMAGE PROXY ENDPOINT:")
+        test_image_url = "https://i.postimg.cc/test-image.jpg"  # Test URL
+        success, proxy_response = self.run_test(
+            "Image Proxy Test", 
+            "GET", 
+            f"proxy-image?url={test_image_url}", 
+            200
+        )
+        investigation_results['image_proxy_working'] = success
+        
+        if success:
+            print("✅ Image proxy endpoint is responding")
+        else:
+            print("❌ Image proxy endpoint has issues")
+        
+        # 4. Test actual product images accessibility
+        print("\n4️⃣ TESTING ACTUAL PRODUCT IMAGES:")
+        if investigation_results['products_returned'] and len(products_response) > 0:
+            images_tested = 0
+            images_accessible = 0
+            
+            for product in products_response[:5]:  # Test first 5 products
+                if product.get('images'):
+                    for image_url in product['images'][:2]:  # Test first 2 images per product
+                        if image_url and image_url.strip():
+                            images_tested += 1
+                            try:
+                                # Test direct image access
+                                import requests
+                                response = requests.head(image_url, timeout=5)
+                                if response.status_code == 200:
+                                    images_accessible += 1
+                                    print(f"   ✅ Image accessible: {image_url[:50]}...")
+                                else:
+                                    print(f"   ❌ Image not accessible ({response.status_code}): {image_url[:50]}...")
+                            except Exception as e:
+                                print(f"   ❌ Image error: {image_url[:50]}... - {str(e)}")
+                            
+                            if images_tested >= 10:  # Limit to 10 image tests
+                                break
+                if images_tested >= 10:
+                    break
+            
+            if images_tested > 0:
+                accessibility_rate = (images_accessible / images_tested) * 100
+                print(f"\n📊 Image Accessibility: {images_accessible}/{images_tested} ({accessibility_rate:.1f}%)")
+                investigation_results['sample_images_accessible'] = accessibility_rate > 50
+            else:
+                print("⚠️  No images found to test")
+        
+        # 5. Test with different limits to see if it's a pagination issue
+        print("\n5️⃣ TESTING DIFFERENT LIMITS:")
+        for limit in [10, 50, 100, 1000]:
+            success, response = self.run_test(
+                f"Get Products (limit={limit})", 
+                "GET", 
+                f"products?limit={limit}", 
+                200
+            )
+            if success and isinstance(response, list):
+                print(f"   ✅ limit={limit}: {len(response)} products returned")
+            else:
+                print(f"   ❌ limit={limit}: Failed or invalid response")
+        
+        # 6. Test category filtering
+        print("\n6️⃣ TESTING CATEGORY FILTERING:")
+        categories = ["vestidos", "enterizos", "conjuntos", "blusas", "faldas"]
+        for category in categories:
+            success, response = self.run_test(
+                f"Get {category.title()}", 
+                "GET", 
+                f"products?category={category}", 
+                200
+            )
+            if success and isinstance(response, list):
+                print(f"   ✅ {category}: {len(response)} products")
+            else:
+                print(f"   ❌ {category}: Failed")
+        
+        # Summary
+        print("\n" + "="*60)
+        print("🔍 INVESTIGATION SUMMARY:")
+        print("="*60)
+        
+        for key, value in investigation_results.items():
+            status = "✅" if value else "❌"
+            if key == 'product_count':
+                print(f"   📊 Product Count: {value}")
+            else:
+                print(f"   {status} {key.replace('_', ' ').title()}: {value}")
+        
+        # Diagnosis
+        print("\n🩺 DIAGNOSIS:")
+        if not investigation_results['api_connectivity']:
+            print("❌ CRITICAL: Backend API is completely down")
+        elif not investigation_results['products_returned']:
+            print("❌ CRITICAL: Products endpoint is not working")
+        elif investigation_results['product_count'] == 0:
+            print("❌ CRITICAL: No products in database")
+        elif investigation_results['product_count'] < 100:
+            print(f"⚠️  WARNING: Only {investigation_results['product_count']} products (expected ~117)")
+        else:
+            print(f"✅ Backend appears healthy with {investigation_results['product_count']} products")
+            if not investigation_results['sample_images_accessible']:
+                print("⚠️  WARNING: Image accessibility issues detected")
+            else:
+                print("✅ Images appear to be accessible")
+                print("🔍 Issue may be in frontend rendering or user interface")
+        
+        return investigation_results
+
     def test_launch_readiness_comprehensive(self):
         """Comprehensive launch readiness test"""
         print("\n🚀 COMPREHENSIVE LAUNCH READINESS ASSESSMENT")
