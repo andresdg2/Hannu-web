@@ -316,7 +316,6 @@ const ProductCard = ({ product, onView, isAdmin, onEdit, onDelete }) => {
     if (product.images && product.images.length > 0) {
       const img = product.images[currentImageIndex];
       if (img && img.trim() !== '') {
-        // Intentar cargar directamente primero, luego proxy
         return img;
       }
     }
@@ -329,13 +328,21 @@ const ProductCard = ({ product, onView, isAdmin, onEdit, onDelete }) => {
     return defaultImage;
   };
   
-  // Función para obtener URL del proxy como respaldo
-  const getProxyImage = (originalUrl) => {
+  // Función para obtener URL alternativa como respaldo
+  const getAlternativeImage = (originalUrl) => {
     if (!originalUrl) return null;
-    // Use proxy for PostImg URLs automatically
-    if (originalUrl.includes('postimg.cc') || originalUrl.includes('imgur')) {
-      return `${API}/proxy-image?url=${encodeURIComponent(originalUrl)}`;
+    
+    // Para PostImg, intentar diferentes formatos de URL
+    if (originalUrl.includes('i.postimg.cc')) {
+      // Extraer ID de PostImg y generar URL alternativa
+      const match = originalUrl.match(/i\.postimg\.cc\/([a-zA-Z0-9]+)/);
+      if (match) {
+        const imageId = match[1];
+        // Intentar formato directo de PostImg
+        return `https://postimg.cc/${imageId}.jpg`;
+      }
     }
+    
     return null;
   };
 
