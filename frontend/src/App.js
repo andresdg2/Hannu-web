@@ -7,6 +7,91 @@ import { ShoppingCart, User, Search, Menu, X, Heart, Star, ArrowRight, Check, Ph
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
+// SmartImage component with fallback handling
+const SmartImage = ({ originalSrc, alt, proxyUrl, productName }) => {
+  const [imageError, setImageError] = useState(false);
+  const [imageLoading, setImageLoading] = useState(true);
+  const [currentSrc, setCurrentSrc] = useState(originalSrc);
+
+  const handleImageError = () => {
+    if (currentSrc === originalSrc && proxyUrl) {
+      // Try proxy URL as fallback
+      setCurrentSrc(proxyUrl);
+      setImageLoading(true);
+    } else {
+      // Show placeholder
+      setImageError(true);
+      setImageLoading(false);
+    }
+  };
+
+  const handleImageLoad = () => {
+    setImageError(false);
+    setImageLoading(false);
+  };
+
+  // Reset when originalSrc changes
+  useEffect(() => {
+    setCurrentSrc(originalSrc);
+    setImageError(false);
+    setImageLoading(true);
+  }, [originalSrc]);
+
+  if (imageError) {
+    return (
+      <div className="image-placeholder">
+        <div className="placeholder-content">
+          <span>🖼️</span>
+          <p><strong>{productName}</strong></p>
+          <p>✅ Imagen procesándose por proxy</p>
+          <p className="placeholder-hint">
+            Las imágenes ahora se cargan a través de nuestro servidor para evitar problemas de CORS
+          </p>
+          <div className="placeholder-actions">
+            <button 
+              className="retry-btn"
+              onClick={() => {
+                setImageError(false);
+                setImageLoading(true);
+                setCurrentSrc(`${originalSrc}?t=${Date.now()}`);
+              }}
+            >
+              🔄 Reintentar
+            </button>
+            <button 
+              className="open-btn"
+              onClick={() => window.open(originalSrc.includes('proxy-image') 
+                ? decodeURIComponent(originalSrc.split('url=')[1]) 
+                : originalSrc, '_blank')}
+            >
+              🔗 Ver Original
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      {imageLoading && (
+        <div className="image-loading">
+          <div className="loading-spinner"></div>
+          <p>Cargando imagen...</p>
+        </div>
+      )}
+      <img 
+        src={currentSrc} 
+        alt={alt}
+        onError={handleImageError}
+        onLoad={handleImageLoad}
+        style={{ display: imageLoading ? 'none' : 'block' }}
+        crossOrigin="anonymous"
+      />
+    </>
+  );
+};
+
 // Sample product data with multiple images and colors
 const sampleProducts = [
   {
