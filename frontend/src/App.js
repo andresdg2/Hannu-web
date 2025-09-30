@@ -70,24 +70,13 @@ const SmartImage = ({ originalSrc, alt, alternativeUrl, productName }) => {
     return (
       <div className="image-placeholder">
         <div className="placeholder-content">
-          <span>🖼️</span>
+          <span>👗</span>
           <p><strong>{productName}</strong></p>
-          <p>Imagen temporalmente no disponible</p>
+          <p>HANNU CLOTHES</p>
           <p className="placeholder-hint">
-            {loadAttempt > 0 ? 'Se intentó cargar a través del servidor de respaldo' : 'Problema de conectividad con la imagen'}
+            Imagen próximamente disponible
           </p>
           <div className="placeholder-actions">
-            <button 
-              className="retry-btn"
-              onClick={() => {
-                setImageError(false);
-                setImageLoading(true);
-                setLoadAttempt(0);
-                setCurrentSrc(originalSrc);
-              }}
-            >
-              🔄 Reintentar
-            </button>
             <button 
               className="open-btn"
               onClick={() => {
@@ -97,7 +86,7 @@ const SmartImage = ({ originalSrc, alt, alternativeUrl, productName }) => {
                 window.open(urlToOpen, '_blank');
               }}
             >
-              🔗 Ver Original
+              📸 Ver Imagen
             </button>
           </div>
         </div>
