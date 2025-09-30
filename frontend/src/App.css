@@ -2518,6 +2518,167 @@ html {
   font-style: italic;
 }
 
+/* Mass Upload Section Styles */
+.mass-upload-section {
+  background: linear-gradient(135deg, var(--soft-rose), var(--secondary-pink));
+  border-radius: 15px;
+  padding: var(--spacing-xl);
+  margin-bottom: var(--spacing-xl);
+  border: 2px solid var(--deep-pink);
+}
+
+.mass-upload-header h3 {
+  color: var(--charcoal);
+  font-size: 1.5rem;
+  margin-bottom: var(--spacing-sm);
+  font-family: var(--font-heading);
+}
+
+.mass-upload-header p {
+  color: var(--medium-gray);
+  margin-bottom: var(--spacing-lg);
+}
+
+.missing-products-info {
+  background: white;
+  padding: var(--spacing-md);
+  border-radius: 10px;
+  margin-bottom: var(--spacing-lg);
+}
+
+.missing-products-info h4 {
+  color: var(--deep-pink);
+  margin-bottom: var(--spacing-md);
+  font-size: 1.1rem;
+}
+
+.missing-products-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+}
+
+.missing-product-tag {
+  background: var(--accent-pink);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.file-upload-area {
+  text-align: center;
+  padding: var(--spacing-xl);
+  background: rgba(255,255,255,0.9);
+  border: 2px dashed var(--deep-pink);
+  border-radius: 15px;
+  margin-bottom: var(--spacing-lg);
+}
+
+.file-upload-label {
+  display: inline-block;
+  background: linear-gradient(45deg, var(--deep-pink), var(--accent-pink));
+  color: white;
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-radius: 15px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 1.1rem;
+  transition: all 0.3s ease;
+  margin-bottom: var(--spacing-sm);
+}
+
+.file-upload-label:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(212, 165, 165, 0.4);
+}
+
+.files-mapping {
+  background: white;
+  padding: var(--spacing-lg);
+  border-radius: 15px;
+  border: 1px solid var(--secondary-pink);
+}
+
+.files-mapping h4 {
+  color: var(--charcoal);
+  margin-bottom: var(--spacing-md);
+}
+
+.files-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+}
+
+.file-item {
+  text-align: center;
+  padding: var(--spacing-md);
+  border: 2px solid var(--secondary-pink);
+  border-radius: 10px;
+  background: var(--soft-rose);
+}
+
+.file-preview {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: var(--spacing-sm);
+  border: 2px solid var(--accent-pink);
+}
+
+.product-select {
+  width: 100%;
+  padding: var(--spacing-sm);
+  border: 2px solid var(--secondary-pink);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  background: white;
+}
+
+.upload-actions {
+  text-align: center;
+  padding-top: var(--spacing-lg);
+  border-top: 2px solid var(--secondary-pink);
+}
+
+.upload-all-btn {
+  background: linear-gradient(45deg, #10B981, #059669);
+  color: white;
+  border: none;
+  padding: var(--spacing-md) var(--spacing-xl);
+  border-radius: 15px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: var(--spacing-md);
+}
+
+.upload-all-btn:hover:not(:disabled) {
+  background: linear-gradient(45deg, #059669, #047857);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 20px rgba(16, 185, 129, 0.4);
+}
+
+.upload-all-btn:disabled {
+  background: var(--medium-gray);
+  cursor: not-allowed;
+  transform: none;
+}
+
+.upload-progress {
+  background: var(--info);
+  color: white;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: 8px;
+  display: inline-block;
+  font-weight: 500;
+}
+
 /* Mobile Responsive for Manager System */
 @media (max-width: 768px) {
   .manager-login-form {
