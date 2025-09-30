@@ -7,25 +7,38 @@ import { ShoppingCart, User, Search, Menu, X, Heart, Star, ArrowRight, Check, Ph
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
-// SmartImage component with fallback handling
+// SmartImage component with improved fallback handling
 const SmartImage = ({ originalSrc, alt, proxyUrl, productName }) => {
   const [imageError, setImageError] = useState(false);
   const [imageLoading, setImageLoading] = useState(true);
   const [currentSrc, setCurrentSrc] = useState(originalSrc);
+  const [loadAttempt, setLoadAttempt] = useState(0);
 
   const handleImageError = () => {
-    if (currentSrc === originalSrc && proxyUrl) {
-      // Try proxy URL as fallback
+    console.log(`Image load failed for ${productName}:`, currentSrc);
+    
+    if (loadAttempt === 0 && proxyUrl && currentSrc === originalSrc) {
+      // First failure - try proxy URL
+      console.log(`Trying proxy for ${productName}:`, proxyUrl);
       setCurrentSrc(proxyUrl);
+      setLoadAttempt(1);
+      setImageLoading(true);
+    } else if (loadAttempt === 1 && originalSrc !== proxyUrl) {
+      // Second failure - try original URL again with cache buster
+      console.log(`Retrying original with cache buster for ${productName}`);
+      setCurrentSrc(`${originalSrc}?t=${Date.now()}`);
+      setLoadAttempt(2);
       setImageLoading(true);
     } else {
-      // Show placeholder
+      // Final failure - show placeholder
+      console.log(`All attempts failed for ${productName}, showing placeholder`);
       setImageError(true);
       setImageLoading(false);
     }
   };
 
   const handleImageLoad = () => {
+    console.log(`Image loaded successfully for ${productName}:`, currentSrc);
     setImageError(false);
     setImageLoading(false);
   };
@@ -35,7 +48,23 @@ const SmartImage = ({ originalSrc, alt, proxyUrl, productName }) => {
     setCurrentSrc(originalSrc);
     setImageError(false);
     setImageLoading(true);
+    setLoadAttempt(0);
   }, [originalSrc]);
+  
+  // Add timeout for loading state
+  useEffect(() => {
+    if (imageLoading) {
+      const timeout = setTimeout(() => {
+        if (imageLoading) {
+          console.log(`Loading timeout for ${productName}, showing placeholder`);
+          setImageError(true);
+          setImageLoading(false);
+        }
+      }, 15000); // 15 second timeout
+      
+      return () => clearTimeout(timeout);
+    }
+  }, [imageLoading, productName]);
 
   if (imageError) {
     return (
