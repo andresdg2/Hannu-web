@@ -336,77 +336,28 @@ const ProductCard = ({ product, onView, isAdmin, onEdit, onDelete }) => {
   return (
     <div className="product-card">
       <div className="product-image">
-        {!imageError ? (
+        <SmartImage 
+          originalSrc={currentImage}
+          alt={product.name}
+          proxyUrl={getProxyImage(currentImage)}
+          productName={product.name}
+        />
+        {product.images && product.images.length > 1 && (
           <>
-            {imageLoading && (
-              <div className="image-loading">
-                <div className="loading-spinner"></div>
-                <p>Cargando imagen...</p>
-              </div>
-            )}
-            <img 
-              src={currentImage} 
-              alt={product.name}
-              onError={handleImageError}
-              onLoad={handleImageLoad}
-              style={{ display: imageLoading ? 'none' : 'block' }}
-              crossOrigin="anonymous"
-            />
-            {product.images && product.images.length > 1 && !imageError && (
-              <>
-                <button className="image-nav prev" onClick={prevImage}>‹</button>
-                <button className="image-nav next" onClick={nextImage}>›</button>
-                <div className="image-dots">
-                  {product.images.map((_, index) => (
-                    <span 
-                      key={index} 
-                      className={`dot ${index === currentImageIndex ? 'active' : ''}`}
-                      onClick={() => {
-                        setCurrentImageIndex(index);
-                        setImageError(false);
-                        setImageLoading(true);
-                      }}
-                    />
-                  ))}
-                </div>
-              </>
-            )}
-          </>
-        ) : (
-          <div className="image-placeholder">
-            <div className="placeholder-content">
-              <span>🖼️</span>
-              <p><strong>{product.name}</strong></p>
-              <p>✅ Imagen procesándose por proxy</p>
-              <p className="placeholder-hint">
-                Las imágenes ahora se cargan a través de nuestro servidor para evitar problemas de CORS
-              </p>
-              <div className="placeholder-actions">
-                <button 
-                  className="retry-btn"
+            <button className="image-nav prev" onClick={prevImage}>‹</button>
+            <button className="image-nav next" onClick={nextImage}>›</button>
+            <div className="image-dots">
+              {product.images.map((_, index) => (
+                <span 
+                  key={index} 
+                  className={`dot ${index === currentImageIndex ? 'active' : ''}`}
                   onClick={() => {
-                    setImageError(false);
-                    setImageLoading(true);
-                    // Force reload with a timestamp to bypass cache
-                    const img = new Image();
-                    img.onload = () => setImageError(false);
-                    img.onerror = () => setImageError(true);
-                    img.src = `${currentImage}?t=${Date.now()}`;
+                    setCurrentImageIndex(index);
                   }}
-                >
-                  🔄 Reintentar
-                </button>
-                <button 
-                  className="open-btn"
-                  onClick={() => window.open(currentImage.includes('proxy-image') 
-                    ? decodeURIComponent(currentImage.split('url=')[1]) 
-                    : currentImage, '_blank')}
-                >
-                  🔗 Ver Original
-                </button>
-              </div>
+                />
+              ))}
             </div>
-          </div>
+          </>
         )}
         {isAdmin && (
           <div className="admin-controls">
