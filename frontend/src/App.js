@@ -1078,6 +1078,81 @@ const AdminPanel = ({ isOpen, onClose, products, setProducts, productToEdit }) =
           </div>
         </div>
         
+        {showMassUpload && (
+          <div className="mass-upload-section">
+            <div className="mass-upload-header">
+              <h3>🚀 Carga Masiva de Imágenes - Llegar al 100%</h3>
+              <p>Sube las imágenes de los productos que no tienen imágenes funcionando</p>
+            </div>
+
+            <div className="missing-products-info">
+              <h4>📋 Productos que necesitan imágenes ({missingImageProducts.length}):</h4>
+              <div className="missing-products-list">
+                {missingImageProducts.map((product, i) => (
+                  <span key={i} className="missing-product-tag">{product}</span>
+                ))}
+              </div>
+            </div>
+
+            <div className="file-upload-area">
+              <label className="file-upload-label">
+                <input
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  onChange={handleFileSelection}
+                  style={{display: 'none'}}
+                />
+                📁 Seleccionar Imágenes
+              </label>
+              <p>Selecciona las imágenes desde tu computador</p>
+            </div>
+
+            {massUploadFiles.length > 0 && (
+              <div className="files-mapping">
+                <h4>Asigna cada imagen a su producto:</h4>
+                <div className="files-grid">
+                  {massUploadFiles.map((fileData, index) => (
+                    <div key={index} className="file-item">
+                      <img 
+                        src={fileData.preview} 
+                        alt="Preview" 
+                        className="file-preview"
+                      />
+                      <select 
+                        value={fileData.productName}
+                        onChange={(e) => updateProductName(index, e.target.value)}
+                        className="product-select"
+                      >
+                        <option value="">Seleccionar producto</option>
+                        {missingImageProducts.map(product => (
+                          <option key={product} value={product}>{product}</option>
+                        ))}
+                      </select>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="upload-actions">
+                  <button 
+                    className="upload-all-btn"
+                    onClick={handleMassUpload}
+                    disabled={saving || massUploadFiles.some(f => !f.productName)}
+                  >
+                    {saving ? '🔄 Subiendo...' : `🚀 Subir ${massUploadFiles.length} Imágenes`}
+                  </button>
+                  
+                  {uploadProgress && (
+                    <div className="upload-progress">
+                      Subiendo: {uploadProgress.current}/{uploadProgress.total}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         <div className="admin-content">
           <div className="admin-form">
             <h3>{editingProduct ? 'Editar Producto' : 'Nuevo Producto'}</h3>
