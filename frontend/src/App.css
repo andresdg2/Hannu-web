@@ -442,16 +442,10 @@ body {
 }
 
 .products-grid {
-  display: grid !important;
+  display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
   gap: var(--spacing-xl);
   margin-top: var(--spacing-xl);
-  visibility: visible !important;
-  opacity: 1 !important;
-  height: auto !important;
-  overflow: visible !important;
-  position: relative !important;
-  z-index: 200 !important;
 }
 
 /* Product Card */
