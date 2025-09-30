@@ -328,19 +328,36 @@ const ProductCard = ({ product, onView, isAdmin, onEdit, onDelete }) => {
     return defaultImage;
   };
   
+  // Función para convertir URLs problemáticas a formatos mejores
+  const getOptimizedImageUrl = (originalUrl) => {
+    if (!originalUrl) return originalUrl;
+    
+    // Para PostImg i.postimg.cc, convertir a formato directo
+    if (originalUrl.includes('i.postimg.cc/')) {
+      // Extraer el ID y nombre de archivo de la URL de PostImg
+      const match = originalUrl.match(/i\.postimg\.cc\/([a-zA-Z0-9]+)\/(.+?)(\?.*)?$/);
+      if (match) {
+        const [, imageId, filename] = match;
+        // Convertir a URL directa de PostImg que evita algunos problemas de CORS
+        return `https://postimg.cc/${imageId}/${filename}`;
+      }
+    }
+    
+    return originalUrl;
+  };
+  
   // Función para obtener URL alternativa como respaldo
   const getAlternativeImage = (originalUrl) => {
     if (!originalUrl) return null;
     
     // Para PostImg, intentar diferentes formatos de URL
-    if (originalUrl.includes('i.postimg.cc')) {
-      // Extraer ID de PostImg y generar URL alternativa
-      const match = originalUrl.match(/i\.postimg\.cc\/([a-zA-Z0-9]+)/);
-      if (match) {
-        const imageId = match[1];
-        // Intentar formato directo de PostImg
-        return `https://postimg.cc/${imageId}.jpg`;
+    if (originalUrl.includes('postimg.cc')) {
+      // Si es i.postimg.cc, intentar sin el subdominio 'i'
+      if (originalUrl.includes('i.postimg.cc')) {
+        return originalUrl.replace('i.postimg.cc', 'postimg.cc');
       }
+      // Si es postimg.cc, intentar con 'i' subdominio
+      return originalUrl.replace('postimg.cc', 'i.postimg.cc');
     }
     
     return null;
