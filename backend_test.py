@@ -1080,9 +1080,9 @@ def main():
     
     tester = HannuClothesAPITester()
     
-    # Test sequence - prioritizing urgent product visibility investigation
+    # Test sequence - prioritizing migration failure analysis
     tests = [
-        ("🚨 URGENT: Product Visibility Investigation", tester.test_urgent_product_visibility_investigation),
+        ("🚨 CRÍTICO: Análisis de Falla de Migración", tester.test_migration_failure_analysis),
         ("Root Endpoint", tester.test_root_endpoint),
         ("Admin Login", tester.test_admin_login),
         ("Get All Products", tester.test_get_products),
