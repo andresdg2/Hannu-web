@@ -291,7 +291,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Post-Migration Verification Complete"
+    - "Image Migration Analysis - CRITICAL 26% Success Rate Investigation"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
