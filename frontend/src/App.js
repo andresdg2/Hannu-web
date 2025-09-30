@@ -595,6 +595,9 @@ const AdminPanel = ({ isOpen, onClose, products, setProducts, productToEdit }) =
   const [saving, setSaving] = useState(false);
   const [showManagerLogin, setShowManagerLogin] = useState(true);
   const [isManagerAuthenticated, setIsManagerAuthenticated] = useState(false);
+  const [showMassUpload, setShowMassUpload] = useState(false);
+  const [massUploadFiles, setMassUploadFiles] = useState([]);
+  const [uploadProgress, setUploadProgress] = useState(null);
   const [managerCredentials, setManagerCredentials] = useState({
     username: '',
     password: ''
