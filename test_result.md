@@ -212,15 +212,18 @@ backend:
 
   - task: "Image Proxy Functionality - URGENT User Report"
     implemented: true
-    working: true
+    working: false
     file: "/app/backend/server.py"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
     needs_retesting: false
     status_history:
       - working: true
         agent: "testing"
         comment: "🖼️ URGENT IMAGE PROXY TESTING COMPLETED - PROXY IS WORKING CORRECTLY! ✅ COMPREHENSIVE DIAGNOSIS: Tested GET /api/proxy-image endpoint with real product URLs from database. Proxy returns correct CORS headers (Access-Control-Allow-Origin: *), proper Content-Type (image/jpeg), and actual image data. ✅ PERFORMANCE RESULTS: 80% success rate with real PostImg URLs. Working URLs respond in 0.3-2.3 seconds. Some timeouts occur due to external PostImg service issues (404/503 errors), not backend problems. ✅ BACKEND LOGS ANALYSIS: Proxy actively processing requests with mix of 200 (success) and 500 (external service timeout) responses. Backend implementation is correct. ✅ ROOT CAUSE IDENTIFIED: User's 'Imagen procesándose por proxy' placeholder issue is NOT a backend problem. The proxy works correctly - issue is in frontend image loading components not properly handling proxy responses or loading states. ✅ RECOMMENDATION: Frontend image components need proper error handling and loading state management. Backend proxy is fully operational."
+      - working: false
+        agent: "testing"
+        comment: "🚨 CRITICAL ISSUE CONFIRMED: SmartImage system verification shows massive proxy failures. Console logs show hundreds of 500 errors from /api/proxy-image endpoint for PostImg URLs. All PostImg URLs failing with CORS errors first, then proxy returns 500 status. This contradicts previous testing - proxy is NOT working correctly in production. 25 image placeholders visible, 110 loading spinners stuck, indicating widespread image loading failures. The proxy implementation has serious issues that need immediate attention."
 
 frontend:
   - task: "Implement save product functionality in AdminPanel"
