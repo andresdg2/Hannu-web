@@ -300,11 +300,8 @@ metadata:
 
 test_plan:
   current_focus:
-    - "SmartImage System Implementation - URGENT Image Fix"
-    - "Image Proxy Functionality - URGENT User Report"
-  stuck_tasks:
-    - "SmartImage System Implementation - URGENT Image Fix"
-    - "Image Proxy Functionality - URGENT User Report"
+    - "Post-Migration Verification Complete"
+  stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 
