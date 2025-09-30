@@ -2559,6 +2559,11 @@ html {
   display: flex;
   flex-wrap: wrap;
   gap: var(--spacing-xs);
+  max-height: 150px;
+  overflow-y: auto;
+  padding: var(--spacing-xs);
+  background: rgba(255,255,255,0.5);
+  border-radius: 8px;
 }
 
 .missing-product-tag {
