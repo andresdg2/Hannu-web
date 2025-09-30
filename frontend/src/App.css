@@ -368,13 +368,6 @@ body {
 .products.catalog {
   padding: var(--spacing-xxl) 0;
   background: var(--warm-white);
-  display: block !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-  height: auto !important;
-  overflow: visible !important;
-  z-index: 100 !important;
-  position: relative !important;
 }
 
 .products.catalog h2 {
