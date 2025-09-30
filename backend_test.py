@@ -818,18 +818,19 @@ def main():
     
     tester = HannuClothesAPITester()
     
-    # Test sequence - prioritizing price validation for launch readiness
+    # Test sequence - prioritizing urgent product visibility investigation
     tests = [
+        ("🚨 URGENT: Product Visibility Investigation", tester.test_urgent_product_visibility_investigation),
         ("Root Endpoint", tester.test_root_endpoint),
         ("Admin Login", tester.test_admin_login),
-        ("🔥 CRITICAL: Price Validation Check", tester.test_price_validation_comprehensive),
-        ("🔥 CRITICAL: API Price Enforcement", tester.test_price_validation_api_enforcement),
-        ("Get Categories", tester.test_get_categories),
         ("Get All Products", tester.test_get_products),
+        ("Get Categories", tester.test_get_categories),
         ("Get Products by Category", tester.test_get_products_by_category),
         ("Admin Profile", tester.test_admin_profile),
         ("Catalog Statistics", tester.test_catalog_stats),
         ("Search Products", tester.test_search_products),
+        ("🔥 CRITICAL: Price Validation Check", tester.test_price_validation_comprehensive),
+        ("🔥 CRITICAL: API Price Enforcement", tester.test_price_validation_api_enforcement),
         ("Create Product with Images/Colors", tester.test_create_product_with_images_colors),
         ("Create Product Legacy Format", tester.test_create_product_legacy_format),
         ("Data Validation Test", tester.test_data_validation),
