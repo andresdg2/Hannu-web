@@ -316,13 +316,13 @@ const ProductCard = ({ product, onView, isAdmin, onEdit, onDelete }) => {
     if (product.images && product.images.length > 0) {
       const img = product.images[currentImageIndex];
       if (img && img.trim() !== '') {
-        return img;
+        return getOptimizedImageUrl(img);
       }
     }
     
     // Si solo tiene imagen singular
     if (product.image && product.image.trim() !== '') {
-      return product.image;
+      return getOptimizedImageUrl(product.image);
     }
     
     return defaultImage;
