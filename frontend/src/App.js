@@ -1061,6 +1061,13 @@ const AdminPanel = ({ isOpen, onClose, products, setProducts, productToEdit }) =
             <span className="manager-status">
               👤 Manager: {localStorage.getItem('managerUsername') || 'Autorizado'}
             </span>
+            <button 
+              className="mass-upload-btn" 
+              onClick={() => setShowMassUpload(!showMassUpload)}
+              title="Carga masiva de imágenes"
+            >
+              📸 Carga Masiva
+            </button>
             <button className="logout-btn" onClick={logoutManager} title="Cerrar sesión">
               <User size={16} />
               Salir
