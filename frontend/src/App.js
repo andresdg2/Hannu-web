@@ -17,13 +17,13 @@ const SmartImage = ({ originalSrc, alt, alternativeUrl, productName }) => {
   const handleImageError = () => {
     console.log(`Image load failed for ${productName}:`, currentSrc);
     
-    if (loadAttempt === 0 && proxyUrl && currentSrc === originalSrc) {
-      // First failure - try proxy URL
-      console.log(`Trying proxy for ${productName}:`, proxyUrl);
-      setCurrentSrc(proxyUrl);
+    if (loadAttempt === 0 && alternativeUrl && currentSrc === originalSrc) {
+      // First failure - try alternative URL
+      console.log(`Trying alternative URL for ${productName}:`, alternativeUrl);
+      setCurrentSrc(alternativeUrl);
       setLoadAttempt(1);
       setImageLoading(true);
-    } else if (loadAttempt === 1 && originalSrc !== proxyUrl) {
+    } else if (loadAttempt === 1) {
       // Second failure - try original URL again with cache buster
       console.log(`Retrying original with cache buster for ${productName}`);
       setCurrentSrc(`${originalSrc}?t=${Date.now()}`);
