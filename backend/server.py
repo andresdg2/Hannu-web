@@ -481,40 +481,97 @@ async def proxy_image(url: str):
     try:
         from urllib.parse import urlparse
         parsed_url = urlparse(url)
-        domain = parsed_url.netloc.lower()
+        domain = parsed_url.netlnet.lower()
         
         # Check if domain is allowed
         if not any(allowed_domain in domain for allowed_domain in allowed_domains):
             raise HTTPException(status_code=403, detail="Domain not allowed")
         
-        async with httpx.AsyncClient(timeout=30.0) as client:
-            response = await client.get(url, follow_redirects=True)
+        # Create httpx client with better timeout and retry configuration
+        timeout = httpx.Timeout(connect=10.0, read=15.0, write=5.0, pool=10.0)
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+            'Accept': 'image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.9',
+            'Accept-Encoding': 'gzip, deflate, br',
+            'DNT': '1',
+            'Connection': 'keep-alive',
+            'Upgrade-Insecure-Requests': '1'
+        }
+        
+        async with httpx.AsyncClient(
+            timeout=timeout,
+            headers=headers,
+            follow_redirects=True,
+            limits=httpx.Limits(max_keepalive_connections=5, max_connections=10)
+        ) as client:
             
-            if response.status_code != 200:
-                raise HTTPException(status_code=response.status_code, detail="Failed to fetch image")
+            # Try to fetch the image with retries
+            max_retries = 2
+            last_error = None
             
-            # Determine content type
-            content_type = response.headers.get("content-type", "image/jpeg")
+            for attempt in range(max_retries + 1):
+                try:
+                    print(f"Attempting to fetch image (attempt {attempt + 1}): {url}")
+                    response = await client.get(url)
+                    
+                    if response.status_code == 200:
+                        # Determine content type
+                        content_type = response.headers.get("content-type", "image/jpeg")
+                        
+                        # Ensure it's an image or allow certain content types
+                        if not (content_type.startswith("image/") or content_type.startswith("application/octet-stream")):
+                            print(f"Content-Type not image: {content_type}")
+                            # Try anyway for some cases
+                            if len(response.content) > 1000:  # Likely an image if > 1KB
+                                content_type = "image/jpeg"
+                            else:
+                                raise HTTPException(status_code=400, detail=f"URL does not point to an image. Content-Type: {content_type}")
+                        
+                        print(f"Successfully fetched image: {len(response.content)} bytes, Content-Type: {content_type}")
+                        
+                        # Return the image with proper headers
+                        return Response(
+                            content=response.content,
+                            media_type=content_type,
+                            headers={
+                                "Cache-Control": "public, max-age=3600",  # Cache for 1 hour
+                                "Access-Control-Allow-Origin": "*",
+                                "Access-Control-Allow-Methods": "GET, OPTIONS",
+                                "Access-Control-Allow-Headers": "*",
+                                "Content-Length": str(len(response.content))
+                            }
+                        )
+                    else:
+                        print(f"HTTP {response.status_code} response for: {url}")
+                        if attempt < max_retries:
+                            await asyncio.sleep(1)  # Wait before retry
+                            continue
+                        raise HTTPException(status_code=response.status_code, detail=f"Failed to fetch image: HTTP {response.status_code}")
+                        
+                except httpx.TimeoutException as e:
+                    print(f"Timeout on attempt {attempt + 1} for {url}: {str(e)}")
+                    last_error = e
+                    if attempt < max_retries:
+                        await asyncio.sleep(1)
+                        continue
+                    raise HTTPException(status_code=408, detail="Image request timed out")
+                
+                except httpx.RequestError as e:
+                    print(f"Request error on attempt {attempt + 1} for {url}: {str(e)}")
+                    last_error = e
+                    if attempt < max_retries:
+                        await asyncio.sleep(1)
+                        continue
+                    raise HTTPException(status_code=502, detail=f"Error fetching image: {str(e)}")
             
-            # Ensure it's an image
-            if not content_type.startswith("image/"):
-                raise HTTPException(status_code=400, detail="URL does not point to an image")
+            # If we get here, all retries failed
+            raise HTTPException(status_code=500, detail=f"All retry attempts failed. Last error: {str(last_error)}")
             
-            # Return the image with proper headers
-            return Response(
-                content=response.content,
-                media_type=content_type,
-                headers={
-                    "Cache-Control": "public, max-age=3600",  # Cache for 1 hour
-                    "Access-Control-Allow-Origin": "*",
-                    "Access-Control-Allow-Methods": "GET",
-                    "Access-Control-Allow-Headers": "*"
-                }
-            )
-            
-    except httpx.RequestError as e:
-        raise HTTPException(status_code=500, detail=f"Error fetching image: {str(e)}")
+    except HTTPException:
+        raise  # Re-raise HTTP exceptions as-is
     except Exception as e:
+        print(f"Unexpected error in proxy_image: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
 # Include the router in the main app
