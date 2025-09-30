@@ -251,9 +251,6 @@ if __name__ == "__main__":
     print("Migra de PostImg a ImgBB para solucionar problemas de CORS")
     print()
     
-    # Verificar que tenemos la API key
-    if len(sys.argv) > 1:
-        global IMGBB_API_KEY
-        IMGBB_API_KEY = sys.argv[1]
+    # La API key ya está configurada en el archivo
     
     asyncio.run(main())
