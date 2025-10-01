@@ -261,7 +261,7 @@ const Header = ({ selectedCategory, setSelectedCategory, showAdmin, setShowAdmin
               {isAdmin ? 'Admin' : 'Acceso'}
             </button>
             <button className="menu-toggle" onClick={() => setIsMenuOpen(!isMenuOpen)}>
-              {isMenuOpen ? <X size={24} /> : <Menu size={24} >>}
+              {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
           </div>
         </div>
