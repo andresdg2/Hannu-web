@@ -325,13 +325,19 @@ body {
 
 /* Hero Section */
 .hero {
+  background: linear-gradient(135deg, var(--warm-white), var(--soft-rose));
+  padding: var(--spacing-xxl) 0;
+  text-align: center;
   min-height: 70vh;
   display: flex;
   align-items: center;
-  padding: var(--spacing-xl) 0;
-  background: linear-gradient(135deg, var(--cream) 0%, var(--soft-rose) 100%);
-  position: relative;
-  overflow: hidden;
+}
+
+.hero .container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100%;
 }
 
 .hero::before {
