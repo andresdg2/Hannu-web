@@ -859,6 +859,7 @@ class HannuClothesAPITester:
                 broken_postimg_products.append({
                     'name': product.get('name', 'Unknown'),
                     'category': product.get('category', 'unknown'),
+                    'reason': 'PostImg URLs broken',
                     'images': images
                 })
         
