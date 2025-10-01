@@ -178,6 +178,7 @@ const categories = [
 
 const Header = ({ selectedCategory, setSelectedCategory, showAdmin, setShowAdmin, isAdmin, setIsAdmin, searchQuery, setSearchQuery, showSearch, setShowSearch }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [showMainMenu, setShowMainMenu] = useState(false);
 
   return (
     <header className="header">
