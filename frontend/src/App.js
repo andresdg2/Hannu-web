@@ -178,14 +178,13 @@ const categories = [
 
 const Header = ({ selectedCategory, setSelectedCategory, showAdmin, setShowAdmin, isAdmin, setIsAdmin, searchQuery, setSearchQuery, showSearch, setShowSearch }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [showMainMenu, setShowMainMenu] = useState(false);
 
   const scrollToSection = (sectionId) => {
     const section = document.getElementById(sectionId);
     if (section) {
       section.scrollIntoView({ behavior: 'smooth' });
     }
-    setShowMainMenu(false);
+    setIsMenuOpen(false); // Cerrar menú después de navegar
   };
 
   return (
