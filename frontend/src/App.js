@@ -197,6 +197,7 @@ const Header = ({ selectedCategory, setSelectedCategory, showAdmin, setShowAdmin
           </div>
           
           <nav className={`nav ${isMenuOpen ? 'nav-open' : ''}`}>
+            {/* Categorías de productos */}
             {categories.map(category => (
               <button
                 key={category.id}
@@ -204,11 +205,41 @@ const Header = ({ selectedCategory, setSelectedCategory, showAdmin, setShowAdmin
                 onClick={() => {
                   setSelectedCategory(category.id);
                   setIsMenuOpen(false);
+                  scrollToSection('catalog-section');
                 }}
               >
                 {category.name}
               </button>
             ))}
+            
+            {/* Separador visual */}
+            <div className="nav-separator"></div>
+            
+            {/* Secciones adicionales */}
+            <button
+              className="nav-link section-link"
+              onClick={() => scrollToSection('immediate-delivery')}
+            >
+              Entrega Inmediata
+            </button>
+            <button
+              className="nav-link section-link"
+              onClick={() => scrollToSection('policies-section')}
+            >
+              Políticas Hannu
+            </button>
+            <button
+              className="nav-link section-link"
+              onClick={() => scrollToSection('contact-section')}
+            >
+              Contáctanos
+            </button>
+            <button
+              className="nav-link section-link"
+              onClick={() => scrollToSection('objetivo-section')}
+            >
+              Objetivo (Nuestra pasión por la Moda)
+            </button>
           </nav>
 
           <div className="header-actions">
