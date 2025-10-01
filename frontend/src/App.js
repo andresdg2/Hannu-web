@@ -572,39 +572,18 @@ const ProductModal = ({ product, isOpen, onClose }) => {
             <p className="product-description">{product.description}</p>
             
             <div className="product-details">
+              {/* 1. Composición */}
               {product.composition && (
                 <div className="detail-section">
-                  <h4>Composición</h4>
+                  <h4>1. Composición</h4>
                   <p>{product.composition}</p>
                 </div>
               )}
-
-              <div className="detail-section">
-                <h4>📦 Entrega Inmediata 💖</h4>
-                <div className="delivery-info">
-                  <p>LAS PRENDAS PARA ENTREGA INMEDIATA ESTÁN EN NUESTRAS 2 HISTORIAS DESTACADAS DE INSTAGRAM</p>
-                  <a href="https://instagram.com/hannuclothes" target="_blank" rel="noopener noreferrer" className="instagram-link-small">
-                    <Instagram size={16} />
-                    @hannuclothes
-                  </a>
-                </div>
-              </div>
-
-              <div className="detail-section">
-                <h4>💳 Métodos de Pago</h4>
-                <div className="payment-methods">
-                  <div className="payment-method">
-                    <strong>📍 En Medellín:</strong> Contra entrega 🏡
-                  </div>
-                  <div className="payment-method">
-                    <strong>🇨🇴 Resto del país:</strong> Pago anticipado por Bancolombia o Davivienda
-                  </div>
-                </div>
-              </div>
-
+              
+              {/* 2. Colores disponibles */}
               {product.colors && product.colors.length > 0 && (
                 <div className="detail-section">
-                  <h4>Colores Disponibles</h4>
+                  <h4>2. Colores Disponibles</h4>
                   <div className="colors-list">
                     {product.colors.map((color, index) => (
                       <span key={index} className="color-tag">
@@ -615,14 +594,40 @@ const ProductModal = ({ product, isOpen, onClose }) => {
                 </div>
               )}
               
+              {/* 3. Tallas disponibles */}
               <div className="detail-section">
-                <h4>Tallas Disponibles</h4>
+                <h4>3. Tallas Disponibles</h4>
                 <div className="sizes-list">
                   {product.sizes.map(size => (
                     <span key={size} className="size-tag">
                       {size}
                     </span>
                   ))}
+                </div>
+              </div>
+              
+              {/* 4. Entrega inmediata */}
+              <div className="detail-section">
+                <h4>4. 📦 Entrega Inmediata 💖</h4>
+                <div className="delivery-info">
+                  <p>LAS PRENDAS PARA ENTREGA INMEDIATA ESTÁN EN NUESTRAS 2 HISTORIAS DESTACADAS DE INSTAGRAM</p>
+                  <a href="https://instagram.com/hannuclothes" target="_blank" rel="noopener noreferrer" className="instagram-link-small">
+                    <Instagram size={16} />
+                    @hannuclothes
+                  </a>
+                </div>
+              </div>
+              
+              {/* 5. Métodos de pago */}
+              <div className="detail-section">
+                <h4>5. 💳 Métodos de Pago</h4>
+                <div className="payment-methods">
+                  <div className="payment-method">
+                    <strong>📍 En Medellín:</strong> Contra entrega 🏡
+                  </div>
+                  <div className="payment-method">
+                    <strong>🇨🇴 Resto del país:</strong> Pago anticipado por Bancolombia o Davivienda
+                  </div>
                 </div>
               </div>
             </div>
