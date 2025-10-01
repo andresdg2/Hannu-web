@@ -242,13 +242,6 @@ const Header = ({ selectedCategory, setSelectedCategory, showAdmin, setShowAdmin
               <span>WhatsApp</span>
             </a>
             
-            {/* Menú Hamburguesa Principal */}
-            <button 
-              className={`main-menu-btn ${showMainMenu ? 'active' : ''}`}
-              onClick={() => setShowMainMenu(!showMainMenu)}
-            >
-              <Menu size={24} />
-            </button>
             
             <button 
               className={`admin-btn ${showAdmin ? 'active' : ''}`}
