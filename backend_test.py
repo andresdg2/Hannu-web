@@ -706,6 +706,239 @@ class HannuClothesAPITester:
         
         return investigation_results
 
+    def test_mass_upload_investigation(self):
+        """URGENT INVESTIGATION: Mass upload completion analysis"""
+        print("\n🚨 INVESTIGACIÓN URGENTE - CARGA MASIVA INCOMPLETA")
+        print("="*80)
+        print("PROBLEMA: Usuario completó carga masiva pero aún hay placeholders")
+        print("OBJETIVO: Verificar exactamente qué pasó con la carga masiva")
+        print("="*80)
+        
+        investigation_results = {
+            'total_products': 0,
+            'products_with_imgbb': 0,
+            'products_with_postimg': 0,
+            'products_with_placeholders': 0,
+            'recently_updated_products': 0,
+            'upload_endpoint_working': False,
+            'products_needing_images': []
+        }
+        
+        # 1. Get all products and analyze current state
+        print("\n1️⃣ VERIFICANDO PRODUCTOS ACTUALIZADOS:")
+        success, products = self.run_test("Get All Products for Upload Analysis", "GET", "products?limit=1000", 200)
+        
+        if not success or not isinstance(products, list):
+            print("❌ CRÍTICO: No se pueden obtener productos")
+            return investigation_results
+        
+        investigation_results['total_products'] = len(products)
+        print(f"   📦 Total productos en base de datos: {len(products)}")
+        
+        # 2. Analyze products updated recently (today)
+        from datetime import datetime, timedelta
+        today = datetime.utcnow().date()
+        yesterday = today - timedelta(days=1)
+        
+        recently_updated = []
+        imgbb_products = []
+        postimg_products = []
+        placeholder_products = []
+        
+        for product in products:
+            # Check update date
+            updated_at = product.get('updated_at')
+            if updated_at:
+                try:
+                    if isinstance(updated_at, str):
+                        update_date = datetime.fromisoformat(updated_at.replace('Z', '+00:00')).date()
+                    else:
+                        update_date = updated_at.date() if hasattr(updated_at, 'date') else today
+                    
+                    if update_date >= yesterday:
+                        recently_updated.append(product)
+                except:
+                    pass
+            
+            # Analyze image URLs
+            images = product.get('images', [])
+            single_image = product.get('image', '')
+            all_images = list(images) if images else []
+            if single_image and single_image not in all_images:
+                all_images.append(single_image)
+            
+            product_name = product.get('name', 'Unknown')
+            
+            if not all_images:
+                placeholder_products.append({
+                    'name': product_name,
+                    'category': product.get('category', 'unknown'),
+                    'reason': 'No images at all'
+                })
+                continue
+            
+            has_imgbb = False
+            has_postimg = False
+            
+            for img_url in all_images:
+                if 'i.ibb.co' in img_url or 'ibb.co' in img_url:
+                    has_imgbb = True
+                elif 'postimg.cc' in img_url or 'i.postimg.cc' in img_url:
+                    has_postimg = True
+            
+            if has_imgbb:
+                imgbb_products.append(product)
+            elif has_postimg:
+                postimg_products.append(product)
+            else:
+                placeholder_products.append({
+                    'name': product_name,
+                    'category': product.get('category', 'unknown'),
+                    'reason': 'No ImgBB or PostImg URLs'
+                })
+        
+        investigation_results['recently_updated_products'] = len(recently_updated)
+        investigation_results['products_with_imgbb'] = len(imgbb_products)
+        investigation_results['products_with_postimg'] = len(postimg_products)
+        investigation_results['products_with_placeholders'] = len(placeholder_products)
+        
+        print(f"   🔄 Productos actualizados recientemente: {len(recently_updated)}")
+        print(f"   ✅ Productos con ImgBB: {len(imgbb_products)}")
+        print(f"   ⚠️  Productos con PostImg: {len(postimg_products)}")
+        print(f"   ❌ Productos con placeholders: {len(placeholder_products)}")
+        
+        # 3. Show recently updated products
+        if recently_updated:
+            print(f"\n📋 PRODUCTOS ACTUALIZADOS RECIENTEMENTE:")
+            for i, product in enumerate(recently_updated[:10]):
+                images = product.get('images', [])
+                image_type = "ImgBB" if any('ibb.co' in img for img in images) else "PostImg" if any('postimg' in img for img in images) else "Other"
+                print(f"   {i+1}. {product.get('name', 'Unknown')} - {image_type} - {len(images)} imágenes")
+            if len(recently_updated) > 10:
+                print(f"   ... y {len(recently_updated) - 10} más")
+        
+        # 4. Test mass upload endpoint
+        print(f"\n2️⃣ VERIFICANDO ENDPOINT DE CARGA MASIVA:")
+        if not self.token:
+            print("❌ No hay token de admin para probar endpoint")
+        else:
+            # Test endpoint availability (without actually uploading)
+            success, response = self.run_test(
+                "Test Upload Endpoint Availability", 
+                "POST", 
+                "admin/upload-images", 
+                400,  # Expect 400 because we're not sending files
+                data={}
+            )
+            investigation_results['upload_endpoint_working'] = success
+            if success:
+                print("   ✅ Endpoint /api/admin/upload-images está disponible")
+            else:
+                print("   ❌ Endpoint /api/admin/upload-images no responde correctamente")
+        
+        # 5. Analyze products that still need images
+        print(f"\n3️⃣ PRODUCTOS QUE AÚN NECESITAN IMÁGENES:")
+        
+        # Products with broken PostImg URLs
+        broken_postimg_products = []
+        for product in postimg_products[:10]:  # Test first 10
+            images = product.get('images', [])
+            working_images = 0
+            
+            for img_url in images:
+                if 'postimg' in img_url:
+                    try:
+                        import requests
+                        response = requests.head(img_url, timeout=3)
+                        if response.status_code == 200:
+                            working_images += 1
+                    except:
+                        pass
+            
+            if working_images == 0:
+                broken_postimg_products.append({
+                    'name': product.get('name', 'Unknown'),
+                    'category': product.get('category', 'unknown'),
+                    'images': images
+                })
+        
+        investigation_results['products_needing_images'] = placeholder_products + broken_postimg_products
+        
+        print(f"   📝 Productos sin imágenes: {len(placeholder_products)}")
+        print(f"   🔗 Productos con PostImg roto (muestra): {len(broken_postimg_products)}")
+        
+        # Show products by category that need images
+        products_by_category = {}
+        for product_info in investigation_results['products_needing_images']:
+            category = product_info['category']
+            if category not in products_by_category:
+                products_by_category[category] = []
+            products_by_category[category].append(product_info)
+        
+        print(f"\n📂 PRODUCTOS QUE NECESITAN IMÁGENES POR CATEGORÍA:")
+        for category, products_list in products_by_category.items():
+            print(f"\n   {category.upper()} ({len(products_list)} productos):")
+            for i, product_info in enumerate(products_list[:5]):
+                print(f"      {i+1}. {product_info['name']} - {product_info['reason']}")
+            if len(products_list) > 5:
+                print(f"      ... y {len(products_list) - 5} más")
+        
+        # 6. Verify ImgBB images are working
+        print(f"\n4️⃣ VERIFICANDO IMÁGENES IMGBB FUNCIONANDO:")
+        working_imgbb = 0
+        broken_imgbb = 0
+        
+        for product in imgbb_products[:10]:  # Test first 10
+            images = product.get('images', [])
+            for img_url in images:
+                if 'ibb.co' in img_url:
+                    try:
+                        import requests
+                        response = requests.head(img_url, timeout=3)
+                        if response.status_code == 200:
+                            working_imgbb += 1
+                            print(f"   ✅ {product.get('name', 'Unknown')}: {img_url[:50]}...")
+                        else:
+                            broken_imgbb += 1
+                            print(f"   ❌ {product.get('name', 'Unknown')}: {img_url[:50]}... ({response.status_code})")
+                    except Exception as e:
+                        broken_imgbb += 1
+                        print(f"   ❌ {product.get('name', 'Unknown')}: {img_url[:50]}... (Error)")
+                    break  # Only test first image per product
+        
+        if working_imgbb + broken_imgbb > 0:
+            success_rate = (working_imgbb / (working_imgbb + broken_imgbb)) * 100
+            print(f"\n   📊 ImgBB Success Rate: {working_imgbb}/{working_imgbb + broken_imgbb} ({success_rate:.1f}%)")
+        
+        # 7. Final summary and action plan
+        print("\n" + "="*80)
+        print("🎯 RESUMEN EJECUTIVO - ESTADO POST-CARGA MASIVA")
+        print("="*80)
+        
+        total_with_working_images = investigation_results['products_with_imgbb']
+        total_needing_images = len(investigation_results['products_needing_images'])
+        completion_rate = (total_with_working_images / investigation_results['total_products']) * 100
+        
+        print(f"📊 ESTADO ACTUAL:")
+        print(f"   • Total productos: {investigation_results['total_products']}")
+        print(f"   • Con imágenes ImgBB (funcionando): {investigation_results['products_with_imgbb']}")
+        print(f"   • Con imágenes PostImg (problemáticas): {investigation_results['products_with_postimg']}")
+        print(f"   • Necesitan imágenes nuevas: {total_needing_images}")
+        print(f"   • Tasa de completitud: {completion_rate:.1f}%")
+        
+        print(f"\n🚨 PRODUCTOS ESPECÍFICOS QUE FALLAN:")
+        for category, products_list in products_by_category.items():
+            if products_list:
+                print(f"   • {category}: {len(products_list)} productos")
+        
+        print(f"\n📋 PLAN DE ACCIÓN PARA 100%:")
+        print(f"   1. Re-subir imágenes para {total_needing_images} productos identificados")
+        print(f"   2. Priorizar categorías con más productos afectados")
+        print(f"   3. Usar endpoint /api/admin/upload-images para carga masiva")
+        print(f"   4. Verificar que todas las URLs nuevas sean ImgBB")
+        
+        return investigation_results
+
     def test_migration_failure_analysis(self):
         """CRITICAL ANALYSIS: Why only 26% of images migrated successfully"""
         print("\n🚨 ANÁLISIS CRÍTICO - MIGRACIÓN DE IMÁGENES")
