@@ -309,7 +309,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Mass Upload Investigation - Post-Upload Analysis"
+    - "Final Launch Verification - 100% Image Completion"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
