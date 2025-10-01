@@ -260,6 +260,11 @@ body {
 @media (max-width: 768px) {
   .header-content {
     padding: var(--spacing-sm);
+    flex-wrap: wrap;
+  }
+  
+  .header-actions {
+    gap: var(--spacing-xs);
   }
   
   .nav {
@@ -274,6 +279,8 @@ body {
     z-index: 1000;
     flex-direction: column;
     gap: var(--spacing-sm);
+    max-height: 60vh;
+    overflow-y: auto;
   }
   
   .nav-open {
@@ -281,11 +288,25 @@ body {
   }
   
   .search-input {
-    width: 150px;
+    width: 120px;
   }
   
   .search-input-container {
-    right: -20px;
+    right: -10px;
+  }
+  
+  .hero {
+    padding: var(--spacing-lg) 0;
+    min-height: 50vh;
+  }
+  
+  .hero h1 {
+    font-size: 2rem;
+  }
+  
+  .products-grid {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--spacing-md);
   }
 }
 
