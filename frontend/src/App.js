@@ -664,6 +664,25 @@ const AdminPanel = ({ isOpen, onClose, products, setProducts, productToEdit }) =
     onClose();
   };
 
+  const handlePasswordRecovery = () => {
+    const authorizedEmails = ['judaesk8@gmail.com', 'catagui01@gmail.com'];
+    
+    if (!recoveryEmail) {
+      alert('Por favor ingresa tu email');
+      return;
+    }
+    
+    if (!authorizedEmails.includes(recoveryEmail.toLowerCase())) {
+      alert('Email no autorizado para recuperación de contraseña');
+      return;
+    }
+    
+    // Simular envío de email
+    alert(`✅ Se han enviado las credenciales de acceso a ${recoveryEmail}\n\nUsuario: manager\nContraseña: hannu2024`);
+    setShowPasswordRecovery(false);
+    setRecoveryEmail('');
+  };
+
   // Lista FINAL de productos que necesitan imágenes (solo 4 restantes)
   const missingImageProducts = [
     "Babeado Corto", "Nieve", "Sol", "Tira Encaje B"
