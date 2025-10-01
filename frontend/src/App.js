@@ -1721,7 +1721,7 @@ const Home = () => {
           </div>
         </section>
         
-        <section className="contact-section">
+        <section id="contact-section" className="contact-section">
           <div className="container">
             <div className="contact-header">
               <h2>Contáctanos</h2>
