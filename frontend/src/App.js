@@ -662,16 +662,9 @@ const AdminPanel = ({ isOpen, onClose, products, setProducts, productToEdit }) =
     onClose();
   };
 
-  // Lista de productos que necesitan imágenes nuevas
+  // Lista FINAL de productos que necesitan imágenes (solo 4 restantes)
   const missingImageProducts = [
-    // Vestidos
-    "Boston Corto", "Clavel", "Cruzado Corto", "Gabriela", "Gitana", "Jade", 
-    "Lisbeth Corto Manga Larga", "Lisbeth Largo", "Marsella", "Mile Corto", 
-    "Moño", "Nieve", "Nudo Corto", "Pekin", "Picapiedra", "Raquel", "Santorini",
-    // Conjuntos
-    "Bengalina De Falda",
-    // Blusas
-    "Sade"
+    "Babeado Corto", "Nieve", "Sol", "Tira Encaje B"
   ];
 
   const handleMassUpload = async () => {
