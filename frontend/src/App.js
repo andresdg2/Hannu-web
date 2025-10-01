@@ -1034,9 +1034,7 @@ const AdminPanel = ({ isOpen, onClose, products, setProducts, productToEdit }) =
               </div>
               
               <div className="manager-info">
-                <p><strong>👤 Usuario de prueba:</strong> manager</p>
-                <p><strong>🔑 Contraseña de prueba:</strong> hannu2024</p>
-                <small>Contacta al administrador del sistema para obtener credenciales definitivas.</small>
+                <small>Contacta al administrador del sistema si no tienes credenciales de acceso.</small>
               </div>
             </div>
           </div>
