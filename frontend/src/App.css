@@ -76,6 +76,9 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: var(--spacing-sm) 0;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
 }
 
 .logo {
