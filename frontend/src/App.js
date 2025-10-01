@@ -1626,7 +1626,7 @@ const Home = () => {
           </div>
         </section>
         
-        <section className="immediate-delivery">
+        <section id="immediate-delivery" className="immediate-delivery">
           <div className="container">
             <div className="delivery-content">
               <div className="delivery-icons">
