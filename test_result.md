@@ -294,7 +294,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Image Migration Analysis - CRITICAL 26% Success Rate Investigation"
+    - "Mass Upload Investigation - Post-Upload Analysis"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
