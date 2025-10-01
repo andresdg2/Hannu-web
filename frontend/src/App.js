@@ -180,6 +180,14 @@ const Header = ({ selectedCategory, setSelectedCategory, showAdmin, setShowAdmin
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showMainMenu, setShowMainMenu] = useState(false);
 
+  const scrollToSection = (sectionId) => {
+    const section = document.getElementById(sectionId);
+    if (section) {
+      section.scrollIntoView({ behavior: 'smooth' });
+    }
+    setShowMainMenu(false);
+  };
+
   return (
     <header className="header">
       <div className="container">
