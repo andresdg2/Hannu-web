@@ -1656,7 +1656,7 @@ const Home = () => {
       <main>
         <Hero />
         
-        <section className="products catalog">
+        <section id="catalog-section" className="products catalog">
           <div className="container">
             <h2>Catálogo de Productos</h2>
             <div className="catalog-stats">
