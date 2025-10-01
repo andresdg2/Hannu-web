@@ -241,6 +241,15 @@ const Header = ({ selectedCategory, setSelectedCategory, showAdmin, setShowAdmin
               <MessageCircle size={20} />
               <span>WhatsApp</span>
             </a>
+            
+            {/* Menú Hamburguesa Principal */}
+            <button 
+              className={`main-menu-btn ${showMainMenu ? 'active' : ''}`}
+              onClick={() => setShowMainMenu(!showMainMenu)}
+            >
+              <Menu size={24} />
+            </button>
+            
             <button 
               className={`admin-btn ${showAdmin ? 'active' : ''}`}
               onClick={() => {
@@ -252,7 +261,7 @@ const Header = ({ selectedCategory, setSelectedCategory, showAdmin, setShowAdmin
               {isAdmin ? 'Admin' : 'Acceso'}
             </button>
             <button className="menu-toggle" onClick={() => setIsMenuOpen(!isMenuOpen)}>
-              {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+              {isMenuOpen ? <X size={24} /> : <Menu size={24} >>}
             </button>
           </div>
         </div>
