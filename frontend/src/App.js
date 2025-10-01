@@ -1667,7 +1667,7 @@ const Home = () => {
           </div>
         </section>
         
-        <section className="policies">
+        <section id="policies-section" className="policies">
           <div className="container">
             <h2>Políticas Hannu</h2>
             <div className="policies-grid">
