@@ -2848,6 +2848,25 @@ html {
   transform: translateX(5px);
 }
 
+/* Nav Separator and Section Links */
+.nav-separator {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--secondary-pink), transparent);
+  margin: var(--spacing-sm) 0;
+}
+
+.section-link {
+  color: var(--accent-pink) !important;
+  font-style: italic;
+  font-size: 0.9rem !important;
+  padding: var(--spacing-xs) var(--spacing-sm) !important;
+}
+
+.section-link:hover {
+  background: var(--soft-rose) !important;
+  color: var(--deep-pink) !important;
+}
+
 /* Mobile Responsive for Manager System */
 @media (max-width: 768px) {
   .manager-login-form {
