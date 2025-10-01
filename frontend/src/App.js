@@ -1055,10 +1055,59 @@ const AdminPanel = ({ isOpen, onClose, products, setProducts, productToEdit }) =
                 </button>
               </div>
               
+              <div className="recovery-section">
+                <button 
+                  className="recovery-link"
+                  onClick={() => setShowPasswordRecovery(true)}
+                >
+                  ¿Olvidaste tu contraseña?
+                </button>
+              </div>
+              
               <div className="manager-info">
                 <small>Contacta al administrador del sistema si no tienes credenciales de acceso.</small>
               </div>
             </div>
+            ) : (
+            <div className="password-recovery-form">
+              <h3>Recuperar Contraseña</h3>
+              <p>Ingresa tu email autorizado para recibir las credenciales de acceso.</p>
+              
+              <div className="form-group">
+                <label>Email Autorizado</label>
+                <input
+                  type="email"
+                  value={recoveryEmail}
+                  onChange={(e) => setRecoveryEmail(e.target.value)}
+                  placeholder="Ingresa tu email"
+                  onKeyPress={(e) => e.key === 'Enter' && handlePasswordRecovery()}
+                />
+              </div>
+              
+              <div className="form-actions">
+                <button 
+                  className="save-btn" 
+                  onClick={handlePasswordRecovery}
+                  disabled={!recoveryEmail}
+                >
+                  📧 Enviar Credenciales
+                </button>
+                <button 
+                  className="cancel-btn" 
+                  onClick={() => {
+                    setShowPasswordRecovery(false);
+                    setRecoveryEmail('');
+                  }}
+                >
+                  Volver al Login
+                </button>
+              </div>
+              
+              <div className="manager-info">
+                <small>Solo emails autorizados pueden recuperar credenciales de acceso.</small>
+              </div>
+            </div>
+            )}
           </div>
         </div>
       </div>
