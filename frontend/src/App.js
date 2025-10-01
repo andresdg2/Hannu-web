@@ -1008,6 +1008,7 @@ const AdminPanel = ({ isOpen, onClose, products, setProducts, productToEdit }) =
           </div>
           
           <div className="admin-content">
+            {!showPasswordRecovery ? (
             <div className="manager-login-form">
               <h3>Autenticación Requerida</h3>
               <p>Solo usuarios autorizados pueden acceder al panel de administración del catálogo.</p>
