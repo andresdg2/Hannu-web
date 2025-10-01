@@ -1313,12 +1313,13 @@ def main():
     
     tester = HannuClothesAPITester()
     
-    # Test sequence - prioritizing migration failure analysis
+    # Test sequence - prioritizing mass upload investigation
     tests = [
-        ("🚨 CRÍTICO: Análisis de Falla de Migración", tester.test_migration_failure_analysis),
+        ("🚨 URGENTE: Investigación Carga Masiva", tester.test_mass_upload_investigation),
         ("Root Endpoint", tester.test_root_endpoint),
         ("Admin Login", tester.test_admin_login),
         ("Get All Products", tester.test_get_products),
+        ("🚨 CRÍTICO: Análisis de Falla de Migración", tester.test_migration_failure_analysis),
         ("Get Categories", tester.test_get_categories),
         ("Get Products by Category", tester.test_get_products_by_category),
         ("Admin Profile", tester.test_admin_profile),
