@@ -1645,7 +1645,7 @@ const Home = () => {
           </div>
         </section>
         
-        <section className="featured-product">
+        <section id="objetivo-section" className="featured-product">
           <div className="container">
             <div className="featured-content">
               <div className="featured-text">
