@@ -940,6 +940,288 @@ class HannuClothesAPITester:
         
         return investigation_results
 
+    def test_imperio_product_investigation(self):
+        """CRITICAL INVESTIGATION: Imperio product not editable and missing image"""
+        print("\n🚨 INVESTIGACIÓN CRÍTICA - PRODUCTO 'IMPERIO'")
+        print("="*80)
+        print("PROBLEMA URGENTE: Producto 'Imperio' no tiene imagen y no se puede editar")
+        print("IMPACTO: Las clientas ya lo vieron - afecta profesionalidad del catálogo")
+        print("="*80)
+        
+        imperio_investigation = {
+            'product_found': False,
+            'product_data': None,
+            'has_valid_id': False,
+            'has_images': False,
+            'images_working': False,
+            'can_be_edited': False,
+            'can_be_deleted': False,
+            'data_corruption': False,
+            'recommended_action': 'unknown'
+        }
+        
+        # 1. Search for Imperio product in database
+        print("\n1️⃣ BUSCANDO PRODUCTO 'IMPERIO' EN BASE DE DATOS:")
+        success, products = self.run_test("Get All Products to Find Imperio", "GET", "products?limit=1000", 200)
+        
+        if not success or not isinstance(products, list):
+            print("❌ CRÍTICO: No se pueden obtener productos de la base de datos")
+            return imperio_investigation
+        
+        print(f"   📦 Total productos en base de datos: {len(products)}")
+        
+        # Search for Imperio product (case insensitive)
+        imperio_product = None
+        for product in products:
+            product_name = product.get('name', '').lower()
+            if 'imperio' in product_name:
+                imperio_product = product
+                break
+        
+        if imperio_product:
+            imperio_investigation['product_found'] = True
+            imperio_investigation['product_data'] = imperio_product
+            print(f"   ✅ PRODUCTO ENCONTRADO: '{imperio_product.get('name', 'Unknown')}'")
+            print(f"   🆔 ID: {imperio_product.get('id', 'No ID')}")
+            print(f"   📂 Categoría: {imperio_product.get('category', 'Unknown')}")
+            print(f"   💰 Precio Retail: {imperio_product.get('retail_price', 'No price')}")
+            print(f"   💰 Precio Mayorista: {imperio_product.get('wholesale_price', 'No price')}")
+            print(f"   📝 Descripción: {imperio_product.get('description', 'No description')[:100]}...")
+        else:
+            print("   ❌ PRODUCTO 'IMPERIO' NO ENCONTRADO EN BASE DE DATOS")
+            print("   🔍 Buscando variaciones del nombre...")
+            
+            # Search for similar names
+            similar_products = []
+            for product in products:
+                product_name = product.get('name', '').lower()
+                if any(term in product_name for term in ['imp', 'emper', 'empo']):
+                    similar_products.append(product)
+            
+            if similar_products:
+                print(f"   📋 Productos similares encontrados ({len(similar_products)}):")
+                for i, product in enumerate(similar_products[:5]):
+                    print(f"      {i+1}. '{product.get('name', 'Unknown')}' - ID: {product.get('id', 'No ID')}")
+            else:
+                print("   ❌ No se encontraron productos similares")
+            
+            return imperio_investigation
+        
+        # 2. Validate product ID
+        print("\n2️⃣ VALIDANDO ID DEL PRODUCTO:")
+        product_id = imperio_product.get('id')
+        if product_id and len(str(product_id)) > 10:  # UUID should be longer
+            imperio_investigation['has_valid_id'] = True
+            print(f"   ✅ ID válido: {product_id}")
+        else:
+            print(f"   ❌ ID inválido o corrupto: {product_id}")
+            imperio_investigation['data_corruption'] = True
+        
+        # 3. Analyze images
+        print("\n3️⃣ ANÁLISIS DE IMÁGENES:")
+        images = imperio_product.get('images', [])
+        single_image = imperio_product.get('image', '')
+        
+        print(f"   📷 Campo 'image': {single_image if single_image else 'VACÍO'}")
+        print(f"   📷 Campo 'images': {images if images else 'VACÍO'}")
+        
+        all_images = list(images) if images else []
+        if single_image and single_image not in all_images:
+            all_images.append(single_image)
+        
+        if all_images:
+            imperio_investigation['has_images'] = True
+            print(f"   📊 Total URLs de imágenes: {len(all_images)}")
+            
+            # Test each image URL
+            working_images = 0
+            for i, img_url in enumerate(all_images):
+                print(f"\n   🔍 Probando imagen {i+1}: {img_url[:60]}...")
+                try:
+                    import requests
+                    response = requests.head(img_url, timeout=5)
+                    if response.status_code == 200:
+                        working_images += 1
+                        print(f"      ✅ FUNCIONA (Status: {response.status_code})")
+                    else:
+                        print(f"      ❌ ROTA (Status: {response.status_code})")
+                        
+                        # Try with proxy
+                        proxy_success, _ = self.run_test(
+                            f"Test Image via Proxy {i+1}", 
+                            "GET", 
+                            f"proxy-image?url={img_url}", 
+                            200
+                        )
+                        if proxy_success:
+                            print(f"      ✅ Funciona a través del proxy")
+                            working_images += 1
+                        else:
+                            print(f"      ❌ También falla a través del proxy")
+                            
+                except Exception as e:
+                    print(f"      ❌ ERROR: {str(e)}")
+            
+            if working_images > 0:
+                imperio_investigation['images_working'] = True
+                print(f"\n   📊 RESULTADO: {working_images}/{len(all_images)} imágenes funcionando")
+            else:
+                print(f"\n   ❌ CRÍTICO: NINGUNA imagen funciona ({len(all_images)} URLs rotas)")
+        else:
+            print("   ❌ CRÍTICO: NO HAY IMÁGENES ASIGNADAS AL PRODUCTO")
+        
+        # 4. Test if product can be edited
+        print("\n4️⃣ PROBANDO CAPACIDAD DE EDICIÓN:")
+        if not self.token:
+            print("   ❌ No hay token de admin para probar edición")
+        else:
+            # Try to update a non-critical field
+            test_update = {
+                "description": f"Producto Imperio - Actualizado para prueba {datetime.now().strftime('%H:%M:%S')}"
+            }
+            
+            success, response = self.run_test(
+                "Test Imperio Product Edit",
+                "PUT",
+                f"products/{product_id}",
+                200,
+                data=test_update
+            )
+            
+            if success:
+                imperio_investigation['can_be_edited'] = True
+                print("   ✅ PRODUCTO SE PUEDE EDITAR correctamente")
+                
+                # Verify the update was applied
+                success_verify, updated_product = self.run_test(
+                    "Verify Imperio Product Update",
+                    "GET",
+                    f"products/{product_id}",
+                    200
+                )
+                
+                if success_verify and isinstance(updated_product, dict):
+                    if test_update["description"] in updated_product.get("description", ""):
+                        print("   ✅ Actualización verificada correctamente")
+                    else:
+                        print("   ⚠️  Actualización no se aplicó correctamente")
+                else:
+                    print("   ⚠️  No se pudo verificar la actualización")
+            else:
+                print("   ❌ CRÍTICO: PRODUCTO NO SE PUEDE EDITAR")
+                print(f"      Error: {response}")
+        
+        # 5. Test if product can be deleted (for potential recreation)
+        print("\n5️⃣ PROBANDO CAPACIDAD DE ELIMINACIÓN:")
+        if not self.token:
+            print("   ❌ No hay token de admin para probar eliminación")
+        else:
+            # Note: We won't actually delete, just test the endpoint response
+            print("   ℹ️  Nota: Solo probamos el endpoint, NO eliminaremos el producto")
+            
+            # Test with a fake ID first to see the error response
+            success, response = self.run_test(
+                "Test Delete Endpoint (Fake ID)",
+                "DELETE",
+                "products/fake-id-test",
+                404  # Expect 404 for non-existent product
+            )
+            
+            if success:
+                print("   ✅ Endpoint de eliminación funciona (responde correctamente a ID inexistente)")
+                imperio_investigation['can_be_deleted'] = True
+            else:
+                print("   ❌ Endpoint de eliminación tiene problemas")
+        
+        # 6. Data integrity check
+        print("\n6️⃣ VERIFICACIÓN DE INTEGRIDAD DE DATOS:")
+        required_fields = ['id', 'name', 'category', 'retail_price', 'wholesale_price']
+        missing_fields = []
+        corrupted_fields = []
+        
+        for field in required_fields:
+            value = imperio_product.get(field)
+            if value is None or value == '':
+                missing_fields.append(field)
+            elif field in ['retail_price', 'wholesale_price']:
+                try:
+                    price = float(value)
+                    if price <= 0:
+                        corrupted_fields.append(f"{field} (valor: {price})")
+                except (ValueError, TypeError):
+                    corrupted_fields.append(f"{field} (no numérico: {value})")
+        
+        if missing_fields:
+            print(f"   ❌ Campos faltantes: {', '.join(missing_fields)}")
+            imperio_investigation['data_corruption'] = True
+        
+        if corrupted_fields:
+            print(f"   ❌ Campos corruptos: {', '.join(corrupted_fields)}")
+            imperio_investigation['data_corruption'] = True
+        
+        if not missing_fields and not corrupted_fields:
+            print("   ✅ Integridad de datos básica correcta")
+        
+        # 7. Determine recommended action
+        print("\n7️⃣ DETERMINANDO ACCIÓN RECOMENDADA:")
+        
+        if not imperio_investigation['product_found']:
+            imperio_investigation['recommended_action'] = 'recreate'
+            print("   🎯 ACCIÓN: RECREAR producto desde cero")
+        elif imperio_investigation['data_corruption']:
+            imperio_investigation['recommended_action'] = 'delete_and_recreate'
+            print("   🎯 ACCIÓN: ELIMINAR y RECREAR (datos corruptos)")
+        elif not imperio_investigation['has_images']:
+            imperio_investigation['recommended_action'] = 'add_images'
+            print("   🎯 ACCIÓN: AGREGAR imágenes al producto existente")
+        elif not imperio_investigation['images_working']:
+            imperio_investigation['recommended_action'] = 'replace_images'
+            print("   🎯 ACCIÓN: REEMPLAZAR imágenes rotas con nuevas URLs")
+        elif not imperio_investigation['can_be_edited']:
+            imperio_investigation['recommended_action'] = 'fix_permissions'
+            print("   🎯 ACCIÓN: INVESTIGAR problemas de permisos/autenticación")
+        else:
+            imperio_investigation['recommended_action'] = 'minor_fixes'
+            print("   🎯 ACCIÓN: Correcciones menores necesarias")
+        
+        # 8. Final summary and action plan
+        print("\n" + "="*80)
+        print("🎯 RESUMEN EJECUTIVO - PRODUCTO 'IMPERIO'")
+        print("="*80)
+        
+        print(f"📊 ESTADO ACTUAL:")
+        print(f"   • Producto encontrado: {'✅ SÍ' if imperio_investigation['product_found'] else '❌ NO'}")
+        print(f"   • ID válido: {'✅ SÍ' if imperio_investigation['has_valid_id'] else '❌ NO'}")
+        print(f"   • Tiene imágenes: {'✅ SÍ' if imperio_investigation['has_images'] else '❌ NO'}")
+        print(f"   • Imágenes funcionan: {'✅ SÍ' if imperio_investigation['images_working'] else '❌ NO'}")
+        print(f"   • Se puede editar: {'✅ SÍ' if imperio_investigation['can_be_edited'] else '❌ NO'}")
+        print(f"   • Datos corruptos: {'❌ SÍ' if imperio_investigation['data_corruption'] else '✅ NO'}")
+        
+        print(f"\n🚨 ACCIÓN RECOMENDADA: {imperio_investigation['recommended_action'].upper().replace('_', ' ')}")
+        
+        if imperio_investigation['recommended_action'] == 'add_images':
+            print(f"\n📋 PASOS ESPECÍFICOS:")
+            print(f"   1. Subir nueva imagen para 'Imperio' usando /api/admin/upload-images")
+            print(f"   2. Actualizar producto con nueva URL de ImgBB")
+            print(f"   3. Verificar que la imagen se muestre correctamente en catálogo")
+        elif imperio_investigation['recommended_action'] == 'replace_images':
+            print(f"\n📋 PASOS ESPECÍFICOS:")
+            print(f"   1. Eliminar URLs rotas actuales")
+            print(f"   2. Subir nueva imagen usando /api/admin/upload-images")
+            print(f"   3. Actualizar producto con nueva URL de ImgBB")
+            print(f"   4. Verificar funcionamiento en catálogo")
+        elif imperio_investigation['recommended_action'] == 'delete_and_recreate':
+            print(f"\n📋 PASOS ESPECÍFICOS:")
+            print(f"   1. ELIMINAR producto actual (datos corruptos)")
+            print(f"   2. RECREAR producto 'Imperio' con datos correctos")
+            print(f"   3. Subir imagen nueva usando ImgBB")
+            print(f"   4. Verificar que aparezca correctamente en catálogo")
+        
+        print(f"\n⚡ URGENCIA: CRÍTICA - Resolver INMEDIATAMENTE")
+        print(f"   Las clientas ya vieron el problema - afecta credibilidad")
+        
+        return imperio_investigation
+
     def test_migration_failure_analysis(self):
         """CRITICAL ANALYSIS: Why only 26% of images migrated successfully"""
         print("\n🚨 ANÁLISIS CRÍTICO - MIGRACIÓN DE IMÁGENES")
