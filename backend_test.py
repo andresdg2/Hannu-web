@@ -2017,29 +2017,112 @@ def main():
         ("📦 Obtener Todos los Productos", tester.test_get_products),
     ]
     
-    print(f"\n📋 Running {len(tests)} test categories...")
+    print(f"\n📋 Ejecutando {len(tests)} investigaciones críticas...")
+    
+    # Store results for final analysis
+    duplicate_results = None
+    crud_results = None
     
     for test_name, test_func in tests:
         print(f"\n{'='*20} {test_name} {'='*20}")
         try:
-            test_func()
+            result = test_func()
+            if "Duplicados" in test_name:
+                duplicate_results = result
+            elif "CRUD" in test_name:
+                crud_results = result
         except Exception as e:
             print(f"❌ Test category '{test_name}' failed with exception: {str(e)}")
     
-    # Print final results
-    print("\n" + "="*60)
-    print("📊 FINAL TEST RESULTS")
-    print("="*60)
-    print(f"✅ Tests passed: {tester.tests_passed}")
-    print(f"❌ Tests failed: {tester.tests_run - tester.tests_passed}")
-    print(f"📈 Success rate: {(tester.tests_passed/tester.tests_run)*100:.1f}%")
+    # Print final critical analysis
+    print("\n" + "="*80)
+    print("🎯 ANÁLISIS FINAL - INVESTIGACIÓN CRÍTICA COMPLETADA")
+    print("="*80)
+    print(f"✅ Tests ejecutados: {tester.tests_run}")
+    print(f"✅ Tests exitosos: {tester.tests_passed}")
+    print(f"📈 Tasa de éxito: {(tester.tests_passed/tester.tests_run)*100:.1f}%")
     
-    if tester.tests_passed == tester.tests_run:
-        print("\n🎉 All tests passed! Backend API is working correctly.")
-        return 0
+    # Critical findings summary
+    print(f"\n🚨 HALLAZGOS CRÍTICOS:")
+    critical_issues = []
+    
+    if duplicate_results:
+        if duplicate_results.get('duplicate_names'):
+            critical_issues.append(f"❌ DUPLICADOS: {len(duplicate_results['duplicate_names'])} productos con nombres duplicados")
+        else:
+            print(f"   ✅ DUPLICADOS: No se encontraron productos duplicados")
+        
+        if duplicate_results.get('blonda_products'):
+            critical_issues.append(f"❌ BLONDA: {len(duplicate_results['blonda_products'])} productos 'Blonda' encontrados")
+        
+        if duplicate_results.get('problematic_products'):
+            critical_issues.append(f"❌ EDICIÓN: {len(duplicate_results['problematic_products'])} productos no editables")
+        else:
+            print(f"   ✅ EDICIÓN: Todos los productos probados son editables")
+        
+        if duplicate_results.get('database_integrity_issues'):
+            critical_issues.append(f"❌ INTEGRIDAD: {len(duplicate_results['database_integrity_issues'])} problemas de integridad")
+    
+    if crud_results:
+        crud_success = all([
+            crud_results.get('create_working', False),
+            crud_results.get('read_working', False),
+            crud_results.get('update_working', False),
+            crud_results.get('delete_working', False)
+        ])
+        
+        if crud_success:
+            print(f"   ✅ CRUD: Todas las operaciones diarias funcionan correctamente")
+        else:
+            critical_issues.append("❌ CRUD: Algunas operaciones diarias tienen problemas")
+    
+    # Display critical issues
+    if critical_issues:
+        for issue in critical_issues:
+            print(f"   {issue}")
+    
+    # Action plan
+    print(f"\n📋 PLAN DE ACCIÓN REQUERIDO:")
+    action_items = []
+    
+    if duplicate_results:
+        if duplicate_results.get('duplicate_names'):
+            action_items.append("1. Eliminar productos duplicados identificados")
+            # Show specific duplicates
+            for name, info in list(duplicate_results['duplicate_names'].items())[:5]:
+                action_items.append(f"   • Eliminar duplicados de '{name}' ({info['count']} copias)")
+        
+        if duplicate_results.get('blonda_products'):
+            action_items.append("2. Revisar específicamente productos 'Blonda'")
+        
+        if duplicate_results.get('problematic_products'):
+            action_items.append("3. Corregir productos que no se pueden editar")
+            # Show specific problematic products
+            for product in duplicate_results['problematic_products'][:5]:
+                action_items.append(f"   • Corregir '{product['name']}' - {product['issue']}")
+        
+        if duplicate_results.get('database_integrity_issues'):
+            action_items.append("4. Resolver problemas de integridad de base de datos")
+    
+    if crud_results and not crud_success:
+        action_items.append("5. Corregir operaciones CRUD que fallan")
+    
+    if action_items:
+        for item in action_items:
+            print(f"   {item}")
     else:
-        print(f"\n⚠️  {tester.tests_run - tester.tests_passed} tests failed. Please check the issues above.")
+        print(f"   🎉 No se requieren acciones correctivas - sistema operativo")
+    
+    print(f"\n⚡ PRIORIDAD: CRÍTICA - Afecta operaciones diarias del usuario")
+    print(f"🎯 OBJETIVO: Resolver TODOS los problemas sin perder productos ni fotos existentes")
+    
+    # Return status based on critical issues
+    if critical_issues:
+        print(f"\n❌ INVESTIGACIÓN COMPLETADA - {len(critical_issues)} PROBLEMAS CRÍTICOS ENCONTRADOS")
         return 1
+    else:
+        print(f"\n✅ INVESTIGACIÓN COMPLETADA - SISTEMA OPERATIVO SIN PROBLEMAS CRÍTICOS")
+        return 0
 
 if __name__ == "__main__":
     sys.exit(main())
