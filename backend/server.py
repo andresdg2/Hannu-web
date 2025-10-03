@@ -43,11 +43,11 @@ IMGBB_API_KEY = os.getenv("IMGBB_API_KEY")
 class Product(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     name: str
-    description: str
+    description: str = ""
     retail_price: Union[int, float]  # Accept both int and float
     wholesale_price: Union[int, float]  # Accept both int and float
     category: str  # vestidos, enterizos, conjuntos, blusas, faldas, pantalones
-    image: str  # Keep for backward compatibility
+    image: str = ""  # Keep for backward compatibility, make optional
     images: List[str] = Field(default_factory=list)  # Support multiple images
     colors: List[str] = Field(default_factory=list)  # Support multiple colors
     specifications: str = ""
@@ -59,6 +59,50 @@ class Product(BaseModel):
     stock: Dict[str, int] = Field(default_factory=dict)  # size -> quantity
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
+    
+    @classmethod
+    def from_dict(cls, data: dict):
+        """Create Product from dict with data cleaning"""
+        # Clean up the data to handle inconsistencies
+        cleaned_data = data.copy()
+        
+        # Remove MongoDB _id field if present
+        if '_id' in cleaned_data:
+            del cleaned_data['_id']
+        
+        # Ensure image field exists
+        if 'image' not in cleaned_data:
+            cleaned_data['image'] = ""
+        
+        # Handle colors field - convert empty string to empty list
+        if 'colors' in cleaned_data:
+            if isinstance(cleaned_data['colors'], str):
+                if cleaned_data['colors'].strip():
+                    cleaned_data['colors'] = [c.strip() for c in cleaned_data['colors'].split(',') if c.strip()]
+                else:
+                    cleaned_data['colors'] = []
+        
+        # Handle sizes field - convert empty string to empty list
+        if 'sizes' in cleaned_data:
+            if isinstance(cleaned_data['sizes'], str):
+                if cleaned_data['sizes'].strip():
+                    cleaned_data['sizes'] = [s.strip() for s in cleaned_data['sizes'].split(',') if s.strip()]
+                else:
+                    cleaned_data['sizes'] = []
+        
+        # Handle images field - ensure it's a list
+        if 'images' in cleaned_data:
+            if isinstance(cleaned_data['images'], str):
+                if cleaned_data['images'].strip():
+                    cleaned_data['images'] = [cleaned_data['images']]
+                else:
+                    cleaned_data['images'] = []
+        
+        # Ensure description exists
+        if 'description' not in cleaned_data:
+            cleaned_data['description'] = ""
+        
+        return cls(**cleaned_data)
 
 class ProductCreate(BaseModel):
     name: str
