@@ -326,6 +326,18 @@ test_plan:
         agent: "testing"
         comment: "🚨 INVESTIGACIÓN CRÍTICA COMPLETADA - PROBLEMA IDENTIFICADO: ✅ PRODUCTO ENCONTRADO: 'Imperio' existe en BD con ID válido (a5a01846-f43f-42f3-87dc-71293c998e77), categoría vestidos, precios correctos (retail: 105000, wholesale: 90000). ❌ PROBLEMA CRÍTICO: TODAS las 5 imágenes están ROTAS (URLs PostImg con error 404). URLs problemáticas: https://i.postimg.cc/MTZJCpWM/Vestido-Tira-Lazo-Amarillo.jpg y 4 más. ❌ PROXY TAMBIÉN FALLA: Endpoint /api/proxy-image devuelve 404 para todas las URLs. ✅ DATOS ÍNTEGROS: No hay corrupción de datos, estructura correcta. ✅ PRODUCTO EDITABLE: Funcionalidad de edición disponible (probada con admin/admin123). 🎯 ACCIÓN RECOMENDADA: REEMPLAZAR IMÁGENES - Eliminar URLs PostImg rotas, subir nuevas imágenes usando /api/admin/upload-images con ImgBB, actualizar producto. ⚡ URGENCIA CRÍTICA: Las clientas ya vieron el problema - afecta credibilidad del catálogo."
 
+  - task: "INVESTIGACIÓN CRÍTICA: Productos duplicados y no editables - Análisis completo"
+    implemented: true
+    working: false
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: false
+        agent: "testing"
+        comment: "🚨 INVESTIGACIÓN CRÍTICA COMPLETADA - PROBLEMAS IDENTIFICADOS: ✅ ANÁLISIS EXHAUSTIVO: 143 productos analizados en base de datos. ❌ PRODUCTOS DUPLICADOS CONFIRMADOS: 5 nombres duplicados encontrados - 'Sol' (2 copias), 'Jade' (2 copias), 'Blonda' (2 copias), 'Amelia' (2 copias), 'Abigail' (2 copias). ✅ PRODUCTOS 'BLONDA' EDITABLES: Ambos productos 'Blonda' (IDs: 8045f7a9... y a523368e...) SON EDITABLES - no hay problemas de edición. ✅ FUNCIONALIDAD CRUD 100% OPERATIVA: Todas las operaciones diarias (Crear, Leer, Actualizar, Eliminar) funcionan perfectamente. ✅ CAPACIDAD DE EDICIÓN VERIFICADA: 15/15 productos probados son editables sin problemas. ❌ INTEGRIDAD BD: 2 problemas encontrados - producto 'Aloruh' tiene wholesale_price=0 (inválido). 🎯 CAUSA RAÍZ: Los duplicados tienen IDs diferentes pero nombres idénticos, sugiriendo creación múltiple accidental. ⚡ ACCIÓN REQUERIDA: 1) Eliminar productos duplicados manteniendo el más reciente/completo, 2) Corregir precio mayorista de 'Aloruh', 3) Implementar validación para prevenir duplicados futuros."
+
 agent_communication:
   - agent: "main"
     message: "Identified critical bug in product creation. Backend models don't match frontend expectations for images/colors arrays. Save button in admin panel is not functional. Will fix backend models first, then frontend functionality, then test complete flow."
