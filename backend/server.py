@@ -498,7 +498,7 @@ async def search_products(query: str, category: Optional[str] = None, limit: int
         search_filter["category"] = category
     
     products = await db.products.find(search_filter).limit(limit).to_list(limit)
-    return [Product(**product) for product in products]
+    return [Product.from_dict(product) for product in products]
 
 # Image Proxy Endpoint to solve CORS issues
 @api_router.get("/proxy-image")
