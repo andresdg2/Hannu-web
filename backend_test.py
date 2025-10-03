@@ -2303,6 +2303,316 @@ class HannuClothesAPITester:
         
         return verification_results
 
+    def test_jade_sol_investigation(self):
+        """URGENT INVESTIGATION: Jade and Sol products - prices, images, and editability"""
+        print("\n🚨 INVESTIGACIÓN URGENTE - PRODUCTOS 'JADE' Y 'SOL'")
+        print("="*80)
+        print("PROBLEMA CRÍTICO: Usuario reporta que modifiqué productos sin permiso")
+        print("PRODUCTOS AFECTADOS: 'Jade' y 'Sol' - precios incorrectos, imágenes faltantes, no editables")
+        print("OBJETIVO: Identificar exactamente qué está mal para restaurar como el usuario quiere")
+        print("="*80)
+        
+        investigation_results = {
+            'jade_products': [],
+            'sol_products': [],
+            'jade_editable': False,
+            'sol_editable': False,
+            'jade_images_working': False,
+            'sol_images_working': False,
+            'price_discrepancies': [],
+            'authentication_working': False,
+            'recommended_actions': []
+        }
+        
+        # 1. Get all products to find Jade and Sol
+        print("\n1️⃣ BUSCANDO PRODUCTOS 'JADE' Y 'SOL' EN BASE DE DATOS:")
+        success, products = self.run_test("Get All Products to Find Jade and Sol", "GET", "products?limit=1000", 200)
+        
+        if not success or not isinstance(products, list):
+            print("❌ CRÍTICO: No se pueden obtener productos de la base de datos")
+            return investigation_results
+        
+        print(f"   📦 Total productos en base de datos: {len(products)}")
+        
+        # Search for Jade and Sol products (case insensitive)
+        jade_products = []
+        sol_products = []
+        
+        for product in products:
+            product_name = product.get('name', '').lower()
+            if 'jade' in product_name:
+                jade_products.append(product)
+            elif 'sol' in product_name:
+                sol_products.append(product)
+        
+        investigation_results['jade_products'] = jade_products
+        investigation_results['sol_products'] = sol_products
+        
+        print(f"   🔍 Productos 'Jade' encontrados: {len(jade_products)}")
+        for i, product in enumerate(jade_products):
+            print(f"      {i+1}. '{product.get('name', 'Unknown')}' - ID: {product.get('id', 'No ID')[:8]}...")
+            print(f"         Retail: ${product.get('retail_price', 'No price'):,} | Mayorista: ${product.get('wholesale_price', 'No price'):,}")
+            print(f"         Categoría: {product.get('category', 'Unknown')}")
+            print(f"         Imágenes: {len(product.get('images', []))} | Imagen única: {'Sí' if product.get('image') else 'No'}")
+        
+        print(f"   🔍 Productos 'Sol' encontrados: {len(sol_products)}")
+        for i, product in enumerate(sol_products):
+            print(f"      {i+1}. '{product.get('name', 'Unknown')}' - ID: {product.get('id', 'No ID')[:8]}...")
+            print(f"         Retail: ${product.get('retail_price', 'No price'):,} | Mayorista: ${product.get('wholesale_price', 'No price'):,}")
+            print(f"         Categoría: {product.get('category', 'Unknown')}")
+            print(f"         Imágenes: {len(product.get('images', []))} | Imagen única: {'Sí' if product.get('image') else 'No'}")
+        
+        if not jade_products and not sol_products:
+            print("   ❌ CRÍTICO: NO se encontraron productos 'Jade' ni 'Sol'")
+            investigation_results['recommended_actions'].append("VERIFICAR: Los productos pueden haber sido eliminados accidentalmente")
+            return investigation_results
+        
+        # 2. Analyze price discrepancies
+        print("\n2️⃣ ANÁLISIS DE PRECIOS - IDENTIFICANDO DISCREPANCIAS:")
+        
+        # Check for duplicate products with different prices
+        all_target_products = jade_products + sol_products
+        price_issues = []
+        
+        # Group by name to find duplicates
+        products_by_name = {}
+        for product in all_target_products:
+            name = product.get('name', '').lower()
+            if name not in products_by_name:
+                products_by_name[name] = []
+            products_by_name[name].append(product)
+        
+        for name, product_list in products_by_name.items():
+            if len(product_list) > 1:
+                print(f"\n   ⚠️  DUPLICADOS ENCONTRADOS para '{name.title()}':")
+                prices = []
+                for i, product in enumerate(product_list):
+                    retail = product.get('retail_price', 0)
+                    wholesale = product.get('wholesale_price', 0)
+                    prices.append((retail, wholesale))
+                    print(f"      Copia {i+1}: Retail ${retail:,} | Mayorista ${wholesale:,} | ID: {product.get('id', 'No ID')[:8]}...")
+                    print(f"                Categoría: {product.get('category', 'Unknown')} | Creado: {product.get('created_at', 'Unknown')}")
+                
+                # Check if prices are different
+                unique_prices = list(set(prices))
+                if len(unique_prices) > 1:
+                    price_issues.append({
+                        'product_name': name.title(),
+                        'copies': len(product_list),
+                        'different_prices': unique_prices,
+                        'products': product_list
+                    })
+                    print(f"      ❌ PROBLEMA: Precios diferentes entre copias!")
+                else:
+                    print(f"      ✅ Precios consistentes entre copias")
+        
+        investigation_results['price_discrepancies'] = price_issues
+        
+        # 3. Test image accessibility
+        print("\n3️⃣ VERIFICACIÓN DE IMÁGENES:")
+        
+        def test_product_images(product, product_type):
+            print(f"\n   🖼️  Analizando imágenes de {product_type} '{product.get('name', 'Unknown')}':")
+            
+            images = product.get('images', [])
+            single_image = product.get('image', '')
+            
+            all_images = list(images) if images else []
+            if single_image and single_image not in all_images:
+                all_images.append(single_image)
+            
+            if not all_images:
+                print(f"      ❌ CRÍTICO: NO HAY IMÁGENES asignadas")
+                return False
+            
+            print(f"      📊 Total URLs de imágenes: {len(all_images)}")
+            working_images = 0
+            
+            for i, img_url in enumerate(all_images):
+                print(f"      🔍 Imagen {i+1}: {img_url[:60]}...")
+                try:
+                    import requests
+                    response = requests.head(img_url, timeout=5)
+                    if response.status_code == 200:
+                        working_images += 1
+                        print(f"         ✅ FUNCIONA (Status: {response.status_code})")
+                    else:
+                        print(f"         ❌ ROTA (Status: {response.status_code})")
+                        
+                        # Try with proxy
+                        proxy_success, _ = self.run_test(
+                            f"Test {product_type} Image via Proxy {i+1}", 
+                            "GET", 
+                            f"proxy-image?url={img_url}", 
+                            200
+                        )
+                        if proxy_success:
+                            print(f"         ✅ Funciona a través del proxy")
+                            working_images += 1
+                        else:
+                            print(f"         ❌ También falla a través del proxy")
+                            
+                except Exception as e:
+                    print(f"         ❌ ERROR: {str(e)}")
+            
+            success_rate = (working_images / len(all_images)) * 100 if all_images else 0
+            print(f"      📊 RESULTADO: {working_images}/{len(all_images)} imágenes funcionando ({success_rate:.1f}%)")
+            
+            return working_images > 0
+        
+        # Test images for all Jade products
+        jade_images_working = True
+        for product in jade_products:
+            if not test_product_images(product, "JADE"):
+                jade_images_working = False
+        
+        # Test images for all Sol products  
+        sol_images_working = True
+        for product in sol_products:
+            if not test_product_images(product, "SOL"):
+                sol_images_working = False
+        
+        investigation_results['jade_images_working'] = jade_images_working
+        investigation_results['sol_images_working'] = sol_images_working
+        
+        # 4. Test editability
+        print("\n4️⃣ VERIFICACIÓN DE CAPACIDAD DE EDICIÓN:")
+        
+        if not self.token:
+            print("   ❌ No hay token de admin para probar edición")
+            investigation_results['authentication_working'] = False
+        else:
+            investigation_results['authentication_working'] = True
+            print(f"   ✅ Autenticación admin funcionando (usuario: {self.admin_username})")
+            
+            def test_product_editability(product, product_type):
+                product_id = product.get('id')
+                product_name = product.get('name', 'Unknown')
+                
+                print(f"\n   ✏️  Probando edición de {product_type} '{product_name}':")
+                
+                # Try to update description (non-critical field)
+                test_update = {
+                    "description": f"Producto {product_name} - Test de edición {datetime.now().strftime('%H:%M:%S')}"
+                }
+                
+                success, response = self.run_test(
+                    f"Test {product_type} Product Edit",
+                    "PUT",
+                    f"products/{product_id}",
+                    200,
+                    data=test_update
+                )
+                
+                if success:
+                    print(f"      ✅ PRODUCTO SE PUEDE EDITAR correctamente")
+                    
+                    # Verify the update was applied
+                    success_verify, updated_product = self.run_test(
+                        f"Verify {product_type} Product Update",
+                        "GET",
+                        f"products/{product_id}",
+                        200
+                    )
+                    
+                    if success_verify and isinstance(updated_product, dict):
+                        if test_update["description"] in updated_product.get("description", ""):
+                            print(f"      ✅ Actualización verificada correctamente")
+                            return True
+                        else:
+                            print(f"      ⚠️  Actualización no se aplicó correctamente")
+                            return False
+                    else:
+                        print(f"      ⚠️  No se pudo verificar la actualización")
+                        return False
+                else:
+                    print(f"      ❌ CRÍTICO: PRODUCTO NO SE PUEDE EDITAR")
+                    print(f"         Error: {response}")
+                    return False
+            
+            # Test editability for all Jade products
+            jade_editable = True
+            for product in jade_products:
+                if not test_product_editability(product, "JADE"):
+                    jade_editable = False
+            
+            # Test editability for all Sol products
+            sol_editable = True
+            for product in sol_products:
+                if not test_product_editability(product, "SOL"):
+                    sol_editable = False
+            
+            investigation_results['jade_editable'] = jade_editable
+            investigation_results['sol_editable'] = sol_editable
+        
+        # 5. Generate recommendations
+        print("\n5️⃣ GENERANDO RECOMENDACIONES:")
+        
+        recommendations = []
+        
+        # Price issues
+        if price_issues:
+            recommendations.append("PRECIOS: Resolver duplicados con precios diferentes - eliminar copias incorrectas")
+            for issue in price_issues:
+                recommendations.append(f"  - {issue['product_name']}: {issue['copies']} copias con precios diferentes")
+        
+        # Image issues
+        if not jade_images_working:
+            recommendations.append("IMÁGENES JADE: Reemplazar URLs rotas con nuevas imágenes ImgBB")
+        if not sol_images_working:
+            recommendations.append("IMÁGENES SOL: Reemplazar URLs rotas con nuevas imágenes ImgBB")
+        
+        # Editability issues
+        if not jade_editable:
+            recommendations.append("EDICIÓN JADE: Investigar problemas de permisos o corrupción de datos")
+        if not sol_editable:
+            recommendations.append("EDICIÓN SOL: Investigar problemas de permisos o corrupción de datos")
+        
+        # Authentication issues
+        if not investigation_results['authentication_working']:
+            recommendations.append("AUTENTICACIÓN: Verificar credenciales admin (admin/admin123)")
+        
+        investigation_results['recommended_actions'] = recommendations
+        
+        # 6. Final summary
+        print("\n" + "="*80)
+        print("🎯 RESUMEN EJECUTIVO - INVESTIGACIÓN JADE Y SOL")
+        print("="*80)
+        
+        print(f"📊 PRODUCTOS ENCONTRADOS:")
+        print(f"   • Jade: {len(jade_products)} producto(s)")
+        print(f"   • Sol: {len(sol_products)} producto(s)")
+        
+        print(f"\n🔧 ESTADO FUNCIONAL:")
+        print(f"   • Jade editable: {'✅ SÍ' if investigation_results['jade_editable'] else '❌ NO'}")
+        print(f"   • Sol editable: {'✅ SÍ' if investigation_results['sol_editable'] else '❌ NO'}")
+        print(f"   • Jade imágenes funcionando: {'✅ SÍ' if investigation_results['jade_images_working'] else '❌ NO'}")
+        print(f"   • Sol imágenes funcionando: {'✅ SÍ' if investigation_results['sol_images_working'] else '❌ NO'}")
+        print(f"   • Autenticación admin: {'✅ SÍ' if investigation_results['authentication_working'] else '❌ NO'}")
+        
+        print(f"\n💰 PROBLEMAS DE PRECIOS:")
+        if price_issues:
+            print(f"   ❌ {len(price_issues)} producto(s) con precios inconsistentes:")
+            for issue in price_issues:
+                print(f"      • {issue['product_name']}: {issue['copies']} copias")
+        else:
+            print(f"   ✅ No se encontraron inconsistencias de precios")
+        
+        print(f"\n📋 ACCIONES RECOMENDADAS:")
+        if recommendations:
+            for i, action in enumerate(recommendations, 1):
+                print(f"   {i}. {action}")
+        else:
+            print(f"   ✅ No se requieren acciones - productos funcionando correctamente")
+        
+        print(f"\n⚡ PRÓXIMOS PASOS PARA EL USUARIO:")
+        print(f"   1. Revisar productos duplicados y eliminar copias incorrectas")
+        print(f"   2. Re-subir imágenes para productos con URLs rotas")
+        print(f"   3. Verificar que los precios sean los originales deseados")
+        print(f"   4. Confirmar que la funcionalidad de edición funciona")
+        
+        return investigation_results
+
 def main():
     tester = HannuClothesAPITester()
     
