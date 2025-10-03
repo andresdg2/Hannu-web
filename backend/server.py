@@ -227,7 +227,7 @@ async def get_product(product_id: str):
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
     
-    return Product(**product)
+    return Product.from_dict(product)
 
 @api_router.post("/products", response_model=Product)
 async def create_product(product: ProductCreate, admin: Admin = Depends(get_current_admin)):
