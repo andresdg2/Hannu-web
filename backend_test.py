@@ -2639,8 +2639,10 @@ def main():
             tester.test_final_verification_complete()
         elif test_type == "editing_verification":
             tester.test_complete_editing_functionality_verification()
+        elif test_type == "jade_sol":
+            tester.test_jade_sol_investigation()
         else:
-            print("Available test types: urgent, mass_upload, imperio, migration, duplicates, final_verification, editing_verification")
+            print("Available test types: urgent, mass_upload, imperio, migration, duplicates, final_verification, editing_verification, jade_sol")
             return 1
     else:
         # Default: Run the original critical investigation
