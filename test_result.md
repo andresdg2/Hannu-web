@@ -350,6 +350,18 @@ test_plan:
         agent: "testing"
         comment: "🎉 VERIFICACIÓN URGENTE COMPLETADA - FUNCIONALIDAD DE EDICIÓN 100% OPERATIVA PARA USO DIARIO: ✅ CONTEO TOTAL VERIFICADO: 140 productos confirmados en base de datos (cumple expectativa). ✅ PRODUCTOS OBJETIVO ENCONTRADOS: Todos los productos solicitados localizados - Blonda (1), Sol (2), Jade (2), Amelia (1), Abigail (1) - total 5/5 productos objetivo encontrados. ✅ FUNCIONALIDAD EDICIÓN PERFECTA: 5/5 productos editados exitosamente con verificación completa de cambios aplicados (precios, descripciones actualizadas correctamente). ✅ CREACIÓN DE PRODUCTOS NUEVA: Producto de prueba creado exitosamente, aparece inmediatamente en catálogo con todas las características (imágenes múltiples, colores, precios, categoría). ✅ ELIMINACIÓN FUNCIONAL: Producto eliminado correctamente y verificado que ya no existe (404 confirmado). ✅ INTEGRIDAD DE DATOS EXCELENTE: 50/50 productos probados tienen datos válidos, precios correctos, campos requeridos completos. ✅ OPERACIONES CRUD 100% OPERATIVAS: 4/4 operaciones funcionando (Crear ✅, Leer ✅, Actualizar ✅, Eliminar ✅). ⚠️ SISTEMA CARGA MASIVA: Endpoint disponible pero requiere archivos específicos (comportamiento esperado). 🎯 VEREDICTO FINAL: LISTO PARA USO DIARIO 83.3% (5/6 verificaciones pasadas). Sistema mayormente listo con funcionalidad completa para operaciones comerciales diarias. El usuario tiene CONTROL TOTAL sobre crear/editar/eliminar productos. Productos duplicados con diferentes categorías son válidos y editables. Sistema completamente operativo para uso comercial inmediato."
 
+  - task: "CORRECCIÓN URGENTE: Investigación productos Jade y Sol - Precios y edición"
+    implemented: true
+    working: false
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: false
+        agent: "testing"
+        comment: "🚨 INVESTIGACIÓN CRÍTICA COMPLETADA - PROBLEMAS IDENTIFICADOS CON JADE Y SOL: ✅ PRODUCTOS ENCONTRADOS: 2 productos 'Jade' y 2 productos 'Sol' en base de datos (140 productos totales). ❌ PROBLEMA CRÍTICO CONFIRMADO: Productos duplicados con precios diferentes - Jade: $61,000 vs $105,000 (conjuntos vs vestidos), Sol: $101,000 vs $80,000 (enterizos vs vestidos). ❌ IMÁGENES PROBLEMÁTICAS: 2 productos tienen URLs vacías (sin imágenes), 2 productos tienen imágenes funcionando correctamente (ImgBB y PostImg). ✅ FUNCIONALIDAD EDICIÓN VERIFICADA: TODOS los productos Jade y Sol SON EDITABLES - autenticación admin (admin/admin123) funciona correctamente, operaciones PUT exitosas, cambios verificados. ✅ BACKEND OPERATIVO: Sistema backend 100% funcional para edición. 🎯 CAUSA RAÍZ: Productos duplicados creados accidentalmente con diferentes precios y categorías. Algunos tienen imágenes, otros no. ⚡ ACCIÓN REQUERIDA INMEDIATA: 1) Eliminar productos duplicados incorrectos, 2) Re-subir imágenes para productos sin URLs, 3) Restaurar precios originales según preferencia del usuario. El sistema está funcionando - solo necesita limpieza de datos duplicados."
+
 agent_communication:
   - agent: "main"
     message: "Identified critical bug in product creation. Backend models don't match frontend expectations for images/colors arrays. Save button in admin panel is not functional. Will fix backend models first, then frontend functionality, then test complete flow."
