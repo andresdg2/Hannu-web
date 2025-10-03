@@ -309,7 +309,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Final Launch Verification - 100% Image Completion"
+    - "Complete Editing Functionality Verification"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
