@@ -2568,9 +2568,9 @@ class HannuClothesAPITester:
             recommendations.append("IMÁGENES SOL: Reemplazar URLs rotas con nuevas imágenes ImgBB")
         
         # Editability issues
-        if not jade_editable:
+        if not investigation_results['jade_editable']:
             recommendations.append("EDICIÓN JADE: Investigar problemas de permisos o corrupción de datos")
-        if not sol_editable:
+        if not investigation_results['sol_editable']:
             recommendations.append("EDICIÓN SOL: Investigar problemas de permisos o corrupción de datos")
         
         # Authentication issues
