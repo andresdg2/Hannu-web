@@ -301,7 +301,7 @@ async def update_product(product_id: str, product_update: ProductUpdate, admin: 
     await db.products.update_one({"id": product_id}, {"$set": update_data})
     
     updated_product = await db.products.find_one({"id": product_id})
-    return Product(**updated_product)
+    return Product.from_dict(updated_product)
 
 @api_router.delete("/products/{product_id}")
 async def delete_product(product_id: str, admin: Admin = Depends(get_current_admin)):
