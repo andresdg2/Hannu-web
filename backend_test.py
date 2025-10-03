@@ -1992,6 +1992,317 @@ class HannuClothesAPITester:
         
         return crud_results
 
+    def test_complete_editing_functionality_verification(self):
+        """URGENT VERIFICATION: Complete editing functionality for daily commercial use"""
+        print("\n🚨 VERIFICACIÓN URGENTE - FUNCIONALIDAD DE EDICIÓN COMPLETA")
+        print("="*80)
+        print("OBJETIVO: Verificar que TODAS las funcionalidades de edición estén funcionando")
+        print("CONTEXTO: Después de restaurar productos eliminados incorrectamente")
+        print("NECESIDAD: Control TOTAL sobre crear/editar/eliminar para uso diario")
+        print("="*80)
+        
+        verification_results = {
+            'total_products_count': 0,
+            'target_products_found': {},
+            'edit_functionality_working': False,
+            'create_functionality_working': False,
+            'delete_functionality_working': False,
+            'mass_upload_working': False,
+            'data_integrity_ok': False,
+            'crud_operations_ready': False
+        }
+        
+        if not self.token:
+            print("❌ CRÍTICO: No hay token de admin - no se puede verificar funcionalidad")
+            return verification_results
+        
+        # 1. Verify total product count (~140 expected)
+        print("\n1️⃣ VERIFICANDO CONTEO TOTAL DE PRODUCTOS:")
+        success, products = self.run_test("Get All Products for Count Verification", "GET", "products?limit=1000", 200)
+        
+        if success and isinstance(products, list):
+            verification_results['total_products_count'] = len(products)
+            print(f"   📊 Total productos en base de datos: {len(products)}")
+            
+            if len(products) >= 135:  # Close to expected 140
+                print(f"   ✅ Conteo de productos correcto (>= 135)")
+            else:
+                print(f"   ⚠️  Conteo menor al esperado ({len(products)} < 135)")
+        else:
+            print("   ❌ CRÍTICO: No se pueden obtener productos")
+            return verification_results
+        
+        # 2. Find and verify specific target products
+        print("\n2️⃣ BUSCANDO PRODUCTOS OBJETIVO ESPECÍFICOS:")
+        target_products = ["Blonda", "Sol", "Jade", "Amelia", "Abigail"]
+        
+        for target_name in target_products:
+            found_products = []
+            for product in products:
+                product_name = product.get('name', '').lower()
+                if target_name.lower() in product_name:
+                    found_products.append(product)
+            
+            verification_results['target_products_found'][target_name] = found_products
+            
+            if found_products:
+                print(f"   ✅ '{target_name}': {len(found_products)} producto(s) encontrado(s)")
+                for i, product in enumerate(found_products):
+                    print(f"      {i+1}. '{product.get('name', 'Unknown')}' - {product.get('category', 'unknown')} - ID: {product.get('id', 'No ID')[:8]}...")
+            else:
+                print(f"   ❌ '{target_name}': NO encontrado")
+        
+        # 3. Test editing functionality on target products
+        print("\n3️⃣ PROBANDO FUNCIONALIDAD DE EDICIÓN:")
+        edit_tests_passed = 0
+        edit_tests_total = 0
+        
+        for target_name, found_products in verification_results['target_products_found'].items():
+            if found_products:
+                # Test editing the first found product of each type
+                product = found_products[0]
+                product_id = product.get('id')
+                
+                if product_id:
+                    edit_tests_total += 1
+                    
+                    # Test updating description and prices
+                    test_update = {
+                        "description": f"Producto {target_name} - Actualizado para verificación {datetime.now().strftime('%H:%M:%S')}",
+                        "retail_price": product.get('retail_price', 100000) + 1000,  # Small price increase
+                        "wholesale_price": product.get('wholesale_price', 70000) + 700
+                    }
+                    
+                    success, response = self.run_test(
+                        f"Edit {target_name} Product",
+                        "PUT",
+                        f"products/{product_id}",
+                        200,
+                        data=test_update
+                    )
+                    
+                    if success:
+                        edit_tests_passed += 1
+                        print(f"   ✅ '{target_name}' editado exitosamente")
+                        
+                        # Verify the edit was applied
+                        success_verify, updated_product = self.run_test(
+                            f"Verify {target_name} Edit",
+                            "GET",
+                            f"products/{product_id}",
+                            200
+                        )
+                        
+                        if success_verify and isinstance(updated_product, dict):
+                            if test_update["description"] in updated_product.get("description", ""):
+                                print(f"      ✅ Cambios verificados correctamente")
+                            else:
+                                print(f"      ⚠️  Cambios no se aplicaron correctamente")
+                    else:
+                        print(f"   ❌ '{target_name}' NO se pudo editar")
+        
+        verification_results['edit_functionality_working'] = edit_tests_passed == edit_tests_total and edit_tests_total > 0
+        print(f"\n   📊 RESULTADO EDICIÓN: {edit_tests_passed}/{edit_tests_total} productos editados exitosamente")
+        
+        # 4. Test creating new products
+        print("\n4️⃣ PROBANDO CREACIÓN DE PRODUCTOS NUEVOS:")
+        
+        test_product_data = {
+            "name": f"Producto de Prueba Completa {datetime.now().strftime('%H%M%S')}",
+            "description": "Producto creado para verificar funcionalidad completa de creación",
+            "retail_price": 95000,
+            "wholesale_price": 66500,
+            "category": "vestidos",
+            "images": ["https://i.ibb.co/test1.jpg", "https://i.ibb.co/test2.jpg"],
+            "colors": ["Rojo", "Azul", "Verde"],
+            "composition": "95% Algodón, 5% Elastano",
+            "sizes": ["S", "M", "L", "XL"],
+            "stock": {"S": 5, "M": 10, "L": 8, "XL": 3}
+        }
+        
+        success, created_product = self.run_test(
+            "Create Complete Test Product",
+            "POST",
+            "products",
+            200,
+            data=test_product_data
+        )
+        
+        if success and isinstance(created_product, dict) and 'id' in created_product:
+            verification_results['create_functionality_working'] = True
+            self.test_product_id = created_product['id']
+            print(f"   ✅ Producto creado exitosamente - ID: {self.test_product_id[:8]}...")
+            
+            # Verify it appears in catalog immediately
+            success_catalog, catalog_products = self.run_test(
+                "Verify New Product in Catalog",
+                "GET",
+                "products?limit=10",
+                200
+            )
+            
+            if success_catalog and isinstance(catalog_products, list):
+                new_product_found = any(p.get('id') == self.test_product_id for p in catalog_products)
+                if new_product_found:
+                    print(f"   ✅ Producto aparece inmediatamente en catálogo")
+                else:
+                    print(f"   ⚠️  Producto no aparece inmediatamente en catálogo")
+        else:
+            print(f"   ❌ CRÍTICO: No se pudo crear producto de prueba")
+        
+        # 5. Test deletion functionality
+        print("\n5️⃣ PROBANDO FUNCIONALIDAD DE ELIMINACIÓN:")
+        
+        if hasattr(self, 'test_product_id'):
+            success, response = self.run_test(
+                "Delete Test Product",
+                "DELETE",
+                f"products/{self.test_product_id}",
+                200
+            )
+            
+            if success:
+                verification_results['delete_functionality_working'] = True
+                print(f"   ✅ Producto eliminado exitosamente")
+                
+                # Verify it's actually deleted
+                success_verify, response_verify = self.run_test(
+                    "Verify Product Deleted",
+                    "GET",
+                    f"products/{self.test_product_id}",
+                    404  # Should return 404 Not Found
+                )
+                
+                if success_verify:
+                    print(f"   ✅ Eliminación verificada - producto ya no existe")
+                else:
+                    print(f"   ⚠️  Producto aún existe después de eliminación")
+            else:
+                print(f"   ❌ CRÍTICO: No se pudo eliminar producto")
+        else:
+            print(f"   ⚠️  No hay producto de prueba para eliminar")
+        
+        # 6. Test mass upload endpoint availability
+        print("\n6️⃣ VERIFICANDO SISTEMA DE CARGA MASIVA:")
+        
+        # Test endpoint availability (without actually uploading files)
+        success, response = self.run_test(
+            "Test Mass Upload Endpoint",
+            "POST",
+            "admin/upload-images",
+            400,  # Expect 400 because we're not sending proper files
+            data={}
+        )
+        
+        if success:
+            verification_results['mass_upload_working'] = True
+            print(f"   ✅ Endpoint de carga masiva disponible y respondiendo")
+        else:
+            print(f"   ❌ Endpoint de carga masiva no disponible")
+        
+        # 7. Data integrity verification
+        print("\n7️⃣ VERIFICANDO INTEGRIDAD DE DATOS:")
+        
+        integrity_issues = []
+        valid_products = 0
+        
+        for product in products[:50]:  # Check first 50 products for performance
+            # Check required fields
+            required_fields = ['id', 'name', 'category', 'retail_price', 'wholesale_price']
+            missing_fields = []
+            
+            for field in required_fields:
+                if not product.get(field):
+                    missing_fields.append(field)
+            
+            if missing_fields:
+                integrity_issues.append(f"Producto '{product.get('name', 'Unknown')}': campos faltantes {missing_fields}")
+            
+            # Check price validity
+            retail_price = product.get('retail_price', 0)
+            wholesale_price = product.get('wholesale_price', 0)
+            
+            try:
+                retail_price = float(retail_price)
+                wholesale_price = float(wholesale_price)
+                
+                if wholesale_price <= 0:
+                    integrity_issues.append(f"Producto '{product.get('name', 'Unknown')}': precio mayorista inválido ({wholesale_price})")
+                elif wholesale_price >= retail_price:
+                    integrity_issues.append(f"Producto '{product.get('name', 'Unknown')}': precio mayorista >= precio retail")
+                else:
+                    valid_products += 1
+            except (ValueError, TypeError):
+                integrity_issues.append(f"Producto '{product.get('name', 'Unknown')}': precios no numéricos")
+        
+        if len(integrity_issues) == 0:
+            verification_results['data_integrity_ok'] = True
+            print(f"   ✅ Integridad de datos correcta ({valid_products} productos válidos)")
+        else:
+            print(f"   ❌ Problemas de integridad encontrados:")
+            for issue in integrity_issues[:5]:  # Show first 5 issues
+                print(f"      • {issue}")
+            if len(integrity_issues) > 5:
+                print(f"      ... y {len(integrity_issues) - 5} problemas más")
+        
+        # 8. Overall CRUD readiness assessment
+        print("\n8️⃣ EVALUACIÓN GENERAL DE OPERACIONES CRUD:")
+        
+        crud_checks = [
+            verification_results['edit_functionality_working'],
+            verification_results['create_functionality_working'], 
+            verification_results['delete_functionality_working'],
+            verification_results['data_integrity_ok']
+        ]
+        
+        crud_passed = sum(crud_checks)
+        crud_total = len(crud_checks)
+        
+        verification_results['crud_operations_ready'] = crud_passed == crud_total
+        
+        print(f"   📊 Operaciones CRUD: {crud_passed}/{crud_total} funcionando")
+        print(f"   • Editar: {'✅' if verification_results['edit_functionality_working'] else '❌'}")
+        print(f"   • Crear: {'✅' if verification_results['create_functionality_working'] else '❌'}")
+        print(f"   • Eliminar: {'✅' if verification_results['delete_functionality_working'] else '❌'}")
+        print(f"   • Integridad: {'✅' if verification_results['data_integrity_ok'] else '❌'}")
+        
+        # 9. Final assessment
+        print("\n" + "="*80)
+        print("🎯 VEREDICTO FINAL - FUNCIONALIDAD DE EDICIÓN COMPLETA")
+        print("="*80)
+        
+        total_checks = 6  # Main functionality areas
+        passed_checks = sum([
+            verification_results['total_products_count'] >= 135,
+            len([p for p in verification_results['target_products_found'].values() if p]) >= 3,  # At least 3 target products found
+            verification_results['edit_functionality_working'],
+            verification_results['create_functionality_working'],
+            verification_results['delete_functionality_working'],
+            verification_results['mass_upload_working']
+        ])
+        
+        readiness_percentage = (passed_checks / total_checks) * 100
+        
+        print(f"📊 ESTADO GENERAL:")
+        print(f"   • Total productos: {verification_results['total_products_count']}")
+        print(f"   • Productos objetivo encontrados: {len([p for p in verification_results['target_products_found'].values() if p])}/5")
+        print(f"   • Funcionalidad edición: {'✅ OPERATIVA' if verification_results['edit_functionality_working'] else '❌ FALLA'}")
+        print(f"   • Funcionalidad creación: {'✅ OPERATIVA' if verification_results['create_functionality_working'] else '❌ FALLA'}")
+        print(f"   • Funcionalidad eliminación: {'✅ OPERATIVA' if verification_results['delete_functionality_working'] else '❌ FALLA'}")
+        print(f"   • Sistema carga masiva: {'✅ DISPONIBLE' if verification_results['mass_upload_working'] else '❌ NO DISPONIBLE'}")
+        print(f"   • Integridad de datos: {'✅ CORRECTA' if verification_results['data_integrity_ok'] else '❌ PROBLEMAS'}")
+        
+        print(f"\n🎯 LISTO PARA USO DIARIO: {readiness_percentage:.1f}% ({passed_checks}/{total_checks} verificaciones pasadas)")
+        
+        if readiness_percentage >= 90:
+            print(f"✅ EXCELENTE: Sistema completamente listo para operaciones comerciales diarias")
+        elif readiness_percentage >= 75:
+            print(f"⚠️  BUENO: Sistema mayormente listo, algunos ajustes menores necesarios")
+        else:
+            print(f"❌ CRÍTICO: Sistema necesita correcciones importantes antes del uso diario")
+        
+        return verification_results
+
 def main():
     print("🚨 INVESTIGACIÓN CRÍTICA - PRODUCTOS DUPLICADOS Y NO EDITABLES")
     print("=" * 80)
