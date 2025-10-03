@@ -1993,34 +1993,28 @@ class HannuClothesAPITester:
         return crud_results
 
 def main():
-    print("🚀 Starting HANNU CLOTHES API Testing...")
-    print("=" * 60)
+    print("🚨 INVESTIGACIÓN CRÍTICA - PRODUCTOS DUPLICADOS Y NO EDITABLES")
+    print("=" * 80)
+    print("PROBLEMA REPORTADO: Productos 'Blonda' duplicados y otros productos no editables")
+    print("OBJETIVO: Identificar TODOS los problemas y entregar plan de acción completo")
+    print("=" * 80)
     
     tester = HannuClothesAPITester()
     
-    # Test sequence - prioritizing Imperio product investigation
+    # Login first
+    if not tester.test_admin_login():
+        print("❌ CRITICAL: Admin login failed")
+        return 1
+    
+    # Critical investigation tests as requested in review
     tests = [
-        ("🚨 CRÍTICO URGENTE: Investigación Producto 'Imperio'", tester.test_imperio_product_investigation),
-        ("Root Endpoint", tester.test_root_endpoint),
-        ("Admin Login", tester.test_admin_login),
-        ("Get All Products", tester.test_get_products),
-        ("🚨 URGENTE: Investigación Carga Masiva", tester.test_mass_upload_investigation),
-        ("🚨 CRÍTICO: Análisis de Falla de Migración", tester.test_migration_failure_analysis),
-        ("Get Categories", tester.test_get_categories),
-        ("Get Products by Category", tester.test_get_products_by_category),
-        ("Admin Profile", tester.test_admin_profile),
-        ("Catalog Statistics", tester.test_catalog_stats),
-        ("Search Products", tester.test_search_products),
-        ("🔥 CRITICAL: Price Validation Check", tester.test_price_validation_comprehensive),
-        ("🔥 CRITICAL: API Price Enforcement", tester.test_price_validation_api_enforcement),
-        ("Create Product with Images/Colors", tester.test_create_product_with_images_colors),
-        ("Create Product Legacy Format", tester.test_create_product_legacy_format),
-        ("Data Validation Test", tester.test_data_validation),
-        ("Get Single Product", tester.test_get_single_product),
-        ("Update Product", tester.test_update_product),
-        ("Product Appears in Catalog", tester.test_product_appears_in_catalog),
-        ("🚀 LAUNCH READINESS ASSESSMENT", tester.test_launch_readiness_comprehensive),
-        ("Cleanup Test Products", tester.cleanup_test_products),
+        ("🚨 CRÍTICO: Investigación Productos Duplicados", tester.test_duplicate_products_investigation),
+        ("🔧 CRÍTICO: Operaciones CRUD Completas", tester.test_comprehensive_crud_operations),
+        ("🔍 Verificación Integridad BD", tester.test_price_validation_comprehensive),
+        ("📊 Estadísticas del Catálogo", tester.test_catalog_stats),
+        ("🔍 Búsqueda de Productos", tester.test_search_products),
+        ("📂 Categorías de Productos", tester.test_get_categories),
+        ("📦 Obtener Todos los Productos", tester.test_get_products),
     ]
     
     print(f"\n📋 Running {len(tests)} test categories...")
