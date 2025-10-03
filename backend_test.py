@@ -2530,7 +2530,7 @@ class HannuClothesAPITester:
                     print(f"         Error: {response}")
                     return False
             
-            # Test editability for all Jade products
+                # Test editability for all Jade products
             jade_editable = True
             for product in jade_products:
                 if not test_product_editability(product, "JADE"):
@@ -2544,6 +2544,11 @@ class HannuClothesAPITester:
             
             investigation_results['jade_editable'] = jade_editable
             investigation_results['sol_editable'] = sol_editable
+        
+        # Initialize variables if authentication failed
+        if not investigation_results['authentication_working']:
+            jade_editable = False
+            sol_editable = False
         
         # 5. Generate recommendations
         print("\n5️⃣ GENERANDO RECOMENDACIONES:")
