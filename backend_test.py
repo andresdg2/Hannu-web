@@ -1590,6 +1590,408 @@ class HannuClothesAPITester:
         """Legacy test method - redirects to new comprehensive tests"""
         return self.test_create_product_with_images_colors()
 
+    def test_duplicate_products_investigation(self):
+        """CRITICAL INVESTIGATION: Find duplicate products, especially 'Blonda'"""
+        print("\n🚨 INVESTIGACIÓN CRÍTICA - PRODUCTOS DUPLICADOS")
+        print("="*80)
+        print("PROBLEMA REPORTADO: Productos 'Blonda' duplicados y otros productos no editables")
+        print("OBJETIVO: Identificar todos los productos duplicados y problemas de edición")
+        print("="*80)
+        
+        duplicate_investigation = {
+            'total_products': 0,
+            'duplicate_names': {},
+            'blonda_products': [],
+            'products_with_same_data': [],
+            'problematic_products': [],
+            'database_integrity_issues': []
+        }
+        
+        # 1. Get all products for analysis
+        print("\n1️⃣ OBTENIENDO TODOS LOS PRODUCTOS:")
+        success, products = self.run_test("Get All Products for Duplicate Analysis", "GET", "products?limit=1000", 200)
+        
+        if not success or not isinstance(products, list):
+            print("❌ CRÍTICO: No se pueden obtener productos para análisis")
+            return duplicate_investigation
+        
+        duplicate_investigation['total_products'] = len(products)
+        print(f"   📦 Total productos en base de datos: {len(products)}")
+        
+        # 2. Analyze for duplicate names
+        print("\n2️⃣ ANÁLISIS DE NOMBRES DUPLICADOS:")
+        name_counts = {}
+        products_by_name = {}
+        
+        for product in products:
+            name = product.get('name', '').strip().lower()
+            if name:
+                if name not in name_counts:
+                    name_counts[name] = 0
+                    products_by_name[name] = []
+                name_counts[name] += 1
+                products_by_name[name].append(product)
+        
+        # Find duplicates
+        duplicates_found = 0
+        for name, count in name_counts.items():
+            if count > 1:
+                duplicates_found += 1
+                duplicate_investigation['duplicate_names'][name] = {
+                    'count': count,
+                    'products': products_by_name[name]
+                }
+                
+                print(f"   ❌ DUPLICADO: '{name}' aparece {count} veces")
+                for i, product in enumerate(products_by_name[name]):
+                    print(f"      {i+1}. ID: {product.get('id', 'No ID')[:8]}... - Precio: ${product.get('retail_price', 'N/A')}")
+                    
+                    # Special attention to Blonda products
+                    if 'blonda' in name:
+                        duplicate_investigation['blonda_products'].append(product)
+        
+        if duplicates_found == 0:
+            print("   ✅ No se encontraron nombres duplicados")
+        else:
+            print(f"   📊 Total nombres duplicados: {duplicates_found}")
+        
+        # 3. Special focus on Blonda products
+        print("\n3️⃣ ANÁLISIS ESPECÍFICO DE PRODUCTOS 'BLONDA':")
+        blonda_products = [p for p in products if 'blonda' in p.get('name', '').lower()]
+        
+        if blonda_products:
+            print(f"   📋 Productos 'Blonda' encontrados: {len(blonda_products)}")
+            for i, product in enumerate(blonda_products):
+                print(f"\n   🔍 BLONDA {i+1}:")
+                print(f"      ID: {product.get('id', 'No ID')}")
+                print(f"      Nombre exacto: '{product.get('name', 'No name')}'")
+                print(f"      Categoría: {product.get('category', 'No category')}")
+                print(f"      Precio retail: ${product.get('retail_price', 'N/A')}")
+                print(f"      Precio mayorista: ${product.get('wholesale_price', 'N/A')}")
+                print(f"      Imágenes: {len(product.get('images', []))}")
+                print(f"      Colores: {len(product.get('colors', []))}")
+                print(f"      Creado: {product.get('created_at', 'N/A')}")
+                
+                # Check if this Blonda can be edited
+                if self.token:
+                    test_update = {"description": f"Test edit {datetime.now().strftime('%H:%M:%S')}"}
+                    edit_success, _ = self.run_test(
+                        f"Test Edit Blonda {i+1}",
+                        "PUT",
+                        f"products/{product.get('id')}",
+                        200,
+                        data=test_update
+                    )
+                    if edit_success:
+                        print(f"      ✅ SE PUEDE EDITAR")
+                    else:
+                        print(f"      ❌ NO SE PUEDE EDITAR")
+                        duplicate_investigation['problematic_products'].append({
+                            'name': product.get('name'),
+                            'id': product.get('id'),
+                            'issue': 'Cannot be edited'
+                        })
+        else:
+            print("   ℹ️  No se encontraron productos 'Blonda' en la base de datos")
+        
+        # 4. Test editing functionality on random products
+        print("\n4️⃣ PRUEBA DE FUNCIONALIDAD DE EDICIÓN:")
+        if not self.token:
+            print("   ❌ No hay token de admin para probar edición")
+        else:
+            # Test editing on a sample of products
+            sample_products = products[:15]  # Test first 15 products
+            editable_count = 0
+            non_editable_count = 0
+            
+            for i, product in enumerate(sample_products):
+                product_id = product.get('id')
+                product_name = product.get('name', 'Unknown')
+                
+                if not product_id:
+                    print(f"   ❌ Producto sin ID: '{product_name}'")
+                    duplicate_investigation['problematic_products'].append({
+                        'name': product_name,
+                        'id': 'MISSING',
+                        'issue': 'No ID field'
+                    })
+                    continue
+                
+                # Try a minimal edit
+                test_update = {
+                    "description": f"Test edit {datetime.now().strftime('%H:%M:%S')}"
+                }
+                
+                success, response = self.run_test(
+                    f"Test Edit Product {i+1}",
+                    "PUT",
+                    f"products/{product_id}",
+                    200,
+                    data=test_update
+                )
+                
+                if success:
+                    editable_count += 1
+                    print(f"   ✅ EDITABLE: '{product_name}' - ID: {product_id[:8]}...")
+                else:
+                    non_editable_count += 1
+                    print(f"   ❌ NO EDITABLE: '{product_name}' - ID: {product_id[:8]}...")
+                    duplicate_investigation['problematic_products'].append({
+                        'name': product_name,
+                        'id': product_id,
+                        'issue': f'Edit failed: {response}'
+                    })
+            
+            print(f"\n   📊 RESULTADOS DE EDICIÓN:")
+            print(f"      Productos editables: {editable_count}")
+            print(f"      Productos NO editables: {non_editable_count}")
+            
+            if non_editable_count > 0:
+                print(f"      ⚠️  {non_editable_count} productos tienen problemas de edición")
+        
+        # 5. Database integrity checks
+        print("\n5️⃣ VERIFICACIÓN DE INTEGRIDAD DE BASE DE DATOS:")
+        integrity_issues = []
+        
+        for product in products:
+            product_name = product.get('name', 'Unknown')
+            
+            # Check for missing required fields
+            required_fields = ['id', 'name', 'retail_price', 'wholesale_price', 'category']
+            for field in required_fields:
+                if not product.get(field):
+                    integrity_issues.append(f"'{product_name}': Missing {field}")
+            
+            # Check for invalid prices
+            retail_price = product.get('retail_price')
+            wholesale_price = product.get('wholesale_price')
+            
+            if retail_price is not None and wholesale_price is not None:
+                try:
+                    retail = float(retail_price)
+                    wholesale = float(wholesale_price)
+                    
+                    if wholesale <= 0:
+                        integrity_issues.append(f"'{product_name}': Invalid wholesale price ({wholesale})")
+                    if retail <= 0:
+                        integrity_issues.append(f"'{product_name}': Invalid retail price ({retail})")
+                    if wholesale >= retail:
+                        integrity_issues.append(f"'{product_name}': Wholesale >= retail ({wholesale} >= {retail})")
+                except (ValueError, TypeError):
+                    integrity_issues.append(f"'{product_name}': Non-numeric prices")
+            
+            # Check for duplicate IDs
+            product_id = product.get('id')
+            if product_id:
+                id_count = sum(1 for p in products if p.get('id') == product_id)
+                if id_count > 1:
+                    integrity_issues.append(f"'{product_name}': Duplicate ID {product_id}")
+        
+        duplicate_investigation['database_integrity_issues'] = integrity_issues
+        
+        if integrity_issues:
+            print(f"   ❌ PROBLEMAS DE INTEGRIDAD ENCONTRADOS: {len(integrity_issues)}")
+            for issue in integrity_issues[:10]:  # Show first 10
+                print(f"      • {issue}")
+            if len(integrity_issues) > 10:
+                print(f"      ... y {len(integrity_issues) - 10} más")
+        else:
+            print("   ✅ No se encontraron problemas de integridad básica")
+        
+        # 6. Final summary and recommendations
+        print("\n" + "="*80)
+        print("🎯 RESUMEN EJECUTIVO - INVESTIGACIÓN DE DUPLICADOS")
+        print("="*80)
+        
+        print(f"📊 HALLAZGOS PRINCIPALES:")
+        print(f"   • Total productos: {duplicate_investigation['total_products']}")
+        print(f"   • Nombres duplicados: {len(duplicate_investigation['duplicate_names'])}")
+        print(f"   • Productos 'Blonda': {len(duplicate_investigation['blonda_products'])}")
+        print(f"   • Productos problemáticos: {len(duplicate_investigation['problematic_products'])}")
+        print(f"   • Problemas de integridad: {len(duplicate_investigation['database_integrity_issues'])}")
+        
+        # Specific recommendations
+        print(f"\n🎯 RECOMENDACIONES ESPECÍFICAS:")
+        
+        if duplicate_investigation['duplicate_names']:
+            print(f"   1. ELIMINAR DUPLICADOS: {len(duplicate_investigation['duplicate_names'])} nombres duplicados encontrados")
+            for name, info in list(duplicate_investigation['duplicate_names'].items())[:3]:
+                print(f"      • '{name}': {info['count']} copias")
+        
+        if duplicate_investigation['blonda_products']:
+            print(f"   2. REVISAR BLONDA: {len(duplicate_investigation['blonda_products'])} productos 'Blonda' requieren atención")
+        
+        if duplicate_investigation['problematic_products']:
+            print(f"   3. CORREGIR EDICIÓN: {len(duplicate_investigation['problematic_products'])} productos no se pueden editar")
+        
+        if duplicate_investigation['database_integrity_issues']:
+            print(f"   4. INTEGRIDAD BD: {len(duplicate_investigation['database_integrity_issues'])} problemas de datos")
+        
+        print(f"\n⚡ PRIORIDAD: CRÍTICA - Afecta operaciones diarias del usuario")
+        
+        return duplicate_investigation
+
+    def test_comprehensive_crud_operations(self):
+        """Test complete CRUD operations for daily operations"""
+        print("\n🔧 PRUEBA COMPLETA DE OPERACIONES CRUD")
+        print("="*60)
+        print("OBJETIVO: Verificar que todas las operaciones diarias funcionen correctamente")
+        
+        crud_results = {
+            'create_working': False,
+            'read_working': False,
+            'update_working': False,
+            'delete_working': False,
+            'test_product_id': None
+        }
+        
+        if not self.token:
+            print("❌ No hay token de admin para pruebas CRUD")
+            return crud_results
+        
+        # 1. CREATE - Test product creation
+        print("\n1️⃣ PROBANDO CREACIÓN DE PRODUCTO:")
+        test_product = {
+            "name": "Producto Prueba CRUD",
+            "description": "Producto para probar operaciones CRUD completas",
+            "retail_price": 95000,
+            "wholesale_price": 66500,
+            "category": "vestidos",
+            "images": ["https://i.ibb.co/test-image.jpg"],
+            "colors": ["Azul", "Rojo"],
+            "composition": "95% Algodón, 5% Elastano",
+            "sizes": ["S", "M", "L"],
+            "stock": {"S": 5, "M": 8, "L": 6}
+        }
+        
+        success, response = self.run_test(
+            "CREATE - New Product",
+            "POST",
+            "products",
+            200,
+            data=test_product
+        )
+        
+        if success and isinstance(response, dict) and 'id' in response:
+            crud_results['create_working'] = True
+            crud_results['test_product_id'] = response['id']
+            print(f"   ✅ CREACIÓN EXITOSA - ID: {response['id'][:8]}...")
+        else:
+            print(f"   ❌ CREACIÓN FALLÓ")
+            return crud_results
+        
+        # 2. READ - Test reading the created product
+        print("\n2️⃣ PROBANDO LECTURA DE PRODUCTO:")
+        success, response = self.run_test(
+            "READ - Get Created Product",
+            "GET",
+            f"products/{crud_results['test_product_id']}",
+            200
+        )
+        
+        if success and isinstance(response, dict):
+            crud_results['read_working'] = True
+            print(f"   ✅ LECTURA EXITOSA - Nombre: {response.get('name', 'Unknown')}")
+            
+            # Verify data integrity
+            if response.get('name') == test_product['name']:
+                print(f"   ✅ Datos íntegros - Nombre correcto")
+            else:
+                print(f"   ⚠️  Posible problema de datos - Nombre: {response.get('name')}")
+        else:
+            print(f"   ❌ LECTURA FALLÓ")
+        
+        # 3. UPDATE - Test updating the product
+        print("\n3️⃣ PROBANDO ACTUALIZACIÓN DE PRODUCTO:")
+        update_data = {
+            "name": "Producto Prueba CRUD - ACTUALIZADO",
+            "retail_price": 105000,
+            "wholesale_price": 73500,
+            "colors": ["Azul", "Rojo", "Verde"],
+            "description": "Producto actualizado para pruebas CRUD"
+        }
+        
+        success, response = self.run_test(
+            "UPDATE - Modify Product",
+            "PUT",
+            f"products/{crud_results['test_product_id']}",
+            200,
+            data=update_data
+        )
+        
+        if success and isinstance(response, dict):
+            crud_results['update_working'] = True
+            print(f"   ✅ ACTUALIZACIÓN EXITOSA")
+            
+            # Verify updates were applied
+            if response.get('name') == update_data['name']:
+                print(f"   ✅ Nombre actualizado correctamente")
+            if response.get('retail_price') == update_data['retail_price']:
+                print(f"   ✅ Precio actualizado correctamente")
+            if len(response.get('colors', [])) == 3:
+                print(f"   ✅ Colores actualizados correctamente")
+        else:
+            print(f"   ❌ ACTUALIZACIÓN FALLÓ")
+        
+        # 4. DELETE - Test deleting the product
+        print("\n4️⃣ PROBANDO ELIMINACIÓN DE PRODUCTO:")
+        success, response = self.run_test(
+            "DELETE - Remove Product",
+            "DELETE",
+            f"products/{crud_results['test_product_id']}",
+            200
+        )
+        
+        if success:
+            crud_results['delete_working'] = True
+            print(f"   ✅ ELIMINACIÓN EXITOSA")
+            
+            # Verify product is gone
+            success_verify, response_verify = self.run_test(
+                "VERIFY DELETE - Try to Get Deleted Product",
+                "GET",
+                f"products/{crud_results['test_product_id']}",
+                404  # Should return 404 Not Found
+            )
+            
+            if success_verify:
+                print(f"   ✅ Producto correctamente eliminado de la base de datos")
+            else:
+                print(f"   ⚠️  Producto podría no haberse eliminado completamente")
+        else:
+            print(f"   ❌ ELIMINACIÓN FALLÓ")
+        
+        # 5. Summary
+        print("\n" + "="*60)
+        print("📊 RESUMEN DE OPERACIONES CRUD:")
+        print("="*60)
+        
+        operations = [
+            ("CREATE (Crear)", crud_results['create_working']),
+            ("READ (Leer)", crud_results['read_working']),
+            ("UPDATE (Actualizar)", crud_results['update_working']),
+            ("DELETE (Eliminar)", crud_results['delete_working'])
+        ]
+        
+        working_operations = 0
+        for operation, working in operations:
+            status = "✅ FUNCIONA" if working else "❌ FALLA"
+            print(f"   {operation}: {status}")
+            if working:
+                working_operations += 1
+        
+        success_rate = (working_operations / len(operations)) * 100
+        print(f"\n📈 TASA DE ÉXITO CRUD: {working_operations}/{len(operations)} ({success_rate:.1f}%)")
+        
+        if success_rate == 100:
+            print("🎉 TODAS LAS OPERACIONES CRUD FUNCIONAN CORRECTAMENTE")
+            print("✅ El sistema está listo para operaciones diarias")
+        else:
+            print("⚠️  ALGUNAS OPERACIONES CRUD TIENEN PROBLEMAS")
+            print("❌ Requiere corrección antes de uso comercial")
+        
+        return crud_results
+
 def main():
     print("🚀 Starting HANNU CLOTHES API Testing...")
     print("=" * 60)
