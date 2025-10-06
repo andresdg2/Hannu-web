@@ -309,7 +309,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Complete Editing Functionality Verification"
+    - "Specific Products Editing Investigation - Málaga, Enterizo Lisbeth, Nudo Cuello Bandeja, Aída, Katia"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
