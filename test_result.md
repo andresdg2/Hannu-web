@@ -362,6 +362,18 @@ test_plan:
         agent: "testing"
         comment: "🚨 INVESTIGACIÓN CRÍTICA COMPLETADA - PROBLEMAS IDENTIFICADOS CON JADE Y SOL: ✅ PRODUCTOS ENCONTRADOS: 2 productos 'Jade' y 2 productos 'Sol' en base de datos (140 productos totales). ❌ PROBLEMA CRÍTICO CONFIRMADO: Productos duplicados con precios diferentes - Jade: $61,000 vs $105,000 (conjuntos vs vestidos), Sol: $101,000 vs $80,000 (enterizos vs vestidos). ❌ IMÁGENES PROBLEMÁTICAS: 2 productos tienen URLs vacías (sin imágenes), 2 productos tienen imágenes funcionando correctamente (ImgBB y PostImg). ✅ FUNCIONALIDAD EDICIÓN VERIFICADA: TODOS los productos Jade y Sol SON EDITABLES - autenticación admin (admin/admin123) funciona correctamente, operaciones PUT exitosas, cambios verificados. ✅ BACKEND OPERATIVO: Sistema backend 100% funcional para edición. 🎯 CAUSA RAÍZ: Productos duplicados creados accidentalmente con diferentes precios y categorías. Algunos tienen imágenes, otros no. ⚡ ACCIÓN REQUERIDA INMEDIATA: 1) Eliminar productos duplicados incorrectos, 2) Re-subir imágenes para productos sin URLs, 3) Restaurar precios originales según preferencia del usuario. El sistema está funcionando - solo necesita limpieza de datos duplicados."
 
+  - task: "URGENTE: Investigación productos específicos no editables - Málaga, Enterizo Lisbeth, Nudo Cuello Bandeja, Aída, Katia"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "🚨 INVESTIGACIÓN URGENTE COMPLETADA - BACKEND 100% FUNCIONAL PARA PRODUCTOS ESPECÍFICOS: ✅ PRODUCTOS ENCONTRADOS: 4/5 productos localizados en base de datos (138 productos totales) - 'Enterizo Lisbeth', 'Nudo Cuello Bandeja', 'Aida' (sin acento), 'Katia'. ❌ PRODUCTO FALTANTE: 'Málaga' no existe en base de datos. ✅ FUNCIONALIDAD EDICIÓN PERFECTA: 4/4 productos encontrados SON COMPLETAMENTE EDITABLES - PUT /api/products/{id} funciona correctamente, cambios se persisten, verificación exitosa. ✅ INTEGRIDAD DE DATOS EXCELENTE: Todos los productos tienen IDs válidos, precios correctos (retail > wholesale), imágenes funcionando, categorías válidas. ✅ SISTEMA BACKEND OPERATIVO: 100% de productos de control editables, autenticación admin (admin/admin123) funcional, todas las operaciones CRUD trabajando. 🎯 DIAGNÓSTICO FINAL: PROBLEMA NO ES EN BACKEND - todos los productos reportados como no editables SÍ son editables desde API. ⚡ CONCLUSIÓN CRÍTICA: Issue es en FRONTEND - investigar interfaz de usuario, JavaScript, botones de edición, manejo de eventos. Backend está 100% funcional para edición de estos productos específicos."
+
 agent_communication:
   - agent: "main"
     message: "Identified critical bug in product creation. Backend models don't match frontend expectations for images/colors arrays. Save button in admin panel is not functional. Will fix backend models first, then frontend functionality, then test complete flow."
