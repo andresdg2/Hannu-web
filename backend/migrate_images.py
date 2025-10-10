@@ -19,7 +19,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Configuración
-IMGBB_API_KEY = "4b20a326ed0c0200ec705d1d4694c318"  # API key de ImgBB
+IMGBB_API_KEY = os.environ.get('IMGBB_API_KEY')
 MONGO_URL = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
 DB_NAME = os.environ.get('DB_NAME', 'test_database')
 
