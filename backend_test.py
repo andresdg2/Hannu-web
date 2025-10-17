@@ -3890,8 +3890,21 @@ def main():
             tester.test_first_4_products_editing_issue()
         elif test_type == "specific_investigation":
             tester.test_specific_product_investigation()
+        elif test_type == "critical_review":
+            # Run the critical review tests
+            critical_results = tester.run_critical_review_tests()
+            critical_issues = [name for name, result in critical_results.items() if not result]
+            
+            if critical_issues:
+                print(f"\n⚠️  {len(critical_issues)} critical issue(s) need attention:")
+                for issue in critical_issues:
+                    print(f"   - {issue}")
+                return 1
+            else:
+                print("\n🎉 All critical tests completed successfully!")
+                return 0
         else:
-            print("Available test types: urgent, mass_upload, imperio, migration, duplicates, final_verification, editing_verification, jade_sol, first_4_products, specific_investigation")
+            print("Available test types: urgent, mass_upload, imperio, migration, duplicates, final_verification, editing_verification, jade_sol, first_4_products, specific_investigation, critical_review")
             return 1
     else:
         # Default: Run the original critical investigation
