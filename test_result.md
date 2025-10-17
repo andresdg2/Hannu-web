@@ -314,7 +314,31 @@ test_plan:
   test_all: false
   test_priority: "high_first"
 
-  - task: "CRÍTICO URGENTE: Investigación Producto 'Imperio' - Sin imagen y no editable"
+  - task: "CRÍTICO: Investigación 24/7 Deployment - App se cae cuando agente 'duerme'"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ 24/7 DEPLOYMENT VERIFICADO: API respondiendo correctamente, servicio persistente (3/3 tests exitosos), maneja concurrencia perfectamente (5/5 requests concurrentes exitosos). ⚠️ JWT_SECRET_KEY posiblemente hardcodeado detectado - tokens tienen misma longitud. Recomendaciones: 1) Verificar JWT_SECRET_KEY en .env, 2) Confirmar supervisor autostart/autorestart, 3) Implementar health check endpoint."
+
+  - task: "CRÍTICO: Primeros 4 productos no editables - Pluma, Paoly, Grecia Corto, Alea"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ PRIMEROS 4 PRODUCTOS COMPLETAMENTE EDITABLES: Todos los productos objetivo (Pluma, Paoly, Grecia Corto, Alea) encontrados por ID exacto y SON COMPLETAMENTE EDITABLES desde backend API. Productos de comparación (posiciones 5, 10, 15, 20) también editables. Backend funciona correctamente para edición - problema NO reproducido."
+
+  - task: "CRÍTICO: Imágenes rotas Imperio y Velvet - URLs PostImg"
     implemented: true
     working: false
     file: "/app/backend/server.py"
@@ -324,7 +348,7 @@ test_plan:
     status_history:
       - working: false
         agent: "testing"
-        comment: "🚨 INVESTIGACIÓN CRÍTICA COMPLETADA - PROBLEMA IDENTIFICADO: ✅ PRODUCTO ENCONTRADO: 'Imperio' existe en BD con ID válido (a5a01846-f43f-42f3-87dc-71293c998e77), categoría vestidos, precios correctos (retail: 105000, wholesale: 90000). ❌ PROBLEMA CRÍTICO: TODAS las 5 imágenes están ROTAS (URLs PostImg con error 404). URLs problemáticas: https://i.postimg.cc/MTZJCpWM/Vestido-Tira-Lazo-Amarillo.jpg y 4 más. ❌ PROXY TAMBIÉN FALLA: Endpoint /api/proxy-image devuelve 404 para todas las URLs. ✅ DATOS ÍNTEGROS: No hay corrupción de datos, estructura correcta. ✅ PRODUCTO EDITABLE: Funcionalidad de edición disponible (probada con admin/admin123). 🎯 ACCIÓN RECOMENDADA: REEMPLAZAR IMÁGENES - Eliminar URLs PostImg rotas, subir nuevas imágenes usando /api/admin/upload-images con ImgBB, actualizar producto. ⚡ URGENCIA CRÍTICA: Las clientas ya vieron el problema - afecta credibilidad del catálogo."
+        comment: "❌ IMÁGENES ROTAS CONFIRMADAS: Imperio 5/6 imágenes funcionando (1 rota: Vestido-Tira-Lazo-Amarillo.jpg), Velvet 0/1 imágenes funcionando (1 rota: Vestido-Velvet.jpg). URLs PostImg devuelven 404. ✅ Endpoint carga masiva /api/admin/upload-images disponible. Acción requerida: Reemplazar 2 URLs rotas con ImgBB usando endpoint de carga masiva."
 
   - task: "INVESTIGACIÓN CRÍTICA: Productos duplicados y no editables - Análisis completo"
     implemented: true
