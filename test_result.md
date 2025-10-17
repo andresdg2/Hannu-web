@@ -309,7 +309,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Specific Products Editing Investigation - Málaga, Enterizo Lisbeth, Nudo Cuello Bandeja, Aída, Katia"
+    - "CRÍTICO: Primeros 4 productos no editables - Investigación completa"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
