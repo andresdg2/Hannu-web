@@ -6,7 +6,7 @@ import time
 
 def test_proxy_endpoint():
     """Quick test of the image proxy endpoint"""
-    base_url = "https://fashion-admin-4.preview.emergentagent.com/api"
+    base_url = "https://fashion-admin-6.preview.emergentagent.com/api"
     
     print("🔍 QUICK IMAGE PROXY DIAGNOSIS")
     print("="*50)

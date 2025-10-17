@@ -14,7 +14,7 @@ from datetime import datetime
 
 class DatabaseDiagnostic:
     def __init__(self):
-        self.base_url = "https://fashion-admin-4.preview.emergentagent.com"
+        self.base_url = "https://fashion-admin-6.preview.emergentagent.com"
         self.api_url = f"{self.base_url}/api"
         self.token = None
         
