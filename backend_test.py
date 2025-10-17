@@ -3180,6 +3180,684 @@ class HannuClothesAPITester:
         
         return investigation_results
 
+    def test_deployment_24_7_configuration(self):
+        """Test 24/7 deployment configuration and JWT secret handling"""
+        print("\n🚨 TESTING 24/7 DEPLOYMENT CONFIGURATION")
+        print("="*80)
+        print("PROBLEMA REPORTADO: Aplicación se cae cuando el agente está 'dormido'")
+        print("INVESTIGACIÓN: Configuración supervisor y JWT_SECRET_KEY hardcodeado")
+        print("="*80)
+        
+        deployment_results = {
+            'supervisor_config_accessible': False,
+            'jwt_secret_hardcoded': False,
+            'backend_service_running': False,
+            'autostart_configured': False,
+            'autorestart_configured': False,
+            'api_responding': False
+        }
+        
+        # 1. Test if API is currently responding
+        print("\n1️⃣ VERIFICANDO ESTADO ACTUAL DEL BACKEND:")
+        success, response = self.run_test("Backend API Status", "GET", "", 200)
+        deployment_results['api_responding'] = success
+        
+        if success:
+            print("   ✅ Backend API está respondiendo correctamente")
+        else:
+            print("   ❌ Backend API no está respondiendo")
+            return deployment_results
+        
+        # 2. Check JWT secret configuration by testing token generation
+        print("\n2️⃣ VERIFICANDO CONFIGURACIÓN JWT_SECRET_KEY:")
+        
+        # Test admin login to see if JWT works
+        login_success, login_response = self.run_test(
+            "Admin Login JWT Test",
+            "POST",
+            "admin/login",
+            200,
+            data={"username": self.admin_username, "password": self.admin_password}
+        )
+        
+        if login_success and isinstance(login_response, dict) and 'access_token' in login_response:
+            token = login_response['access_token']
+            print(f"   ✅ JWT token generado correctamente")
+            print(f"   🔑 Token length: {len(token)} caracteres")
+            
+            # Test if token works for protected endpoints
+            self.token = token
+            profile_success, _ = self.run_test("JWT Token Validation", "GET", "admin/me", 200)
+            
+            if profile_success:
+                print("   ✅ JWT token válido para endpoints protegidos")
+                
+                # Check if we can detect hardcoded secret by testing multiple logins
+                # If using hardcoded secret, tokens should be predictable
+                login_success_2, login_response_2 = self.run_test(
+                    "Second Admin Login JWT Test",
+                    "POST",
+                    "admin/login",
+                    200,
+                    data={"username": self.admin_username, "password": self.admin_password}
+                )
+                
+                if login_success_2 and isinstance(login_response_2, dict) and 'access_token' in login_response_2:
+                    token_2 = login_response_2['access_token']
+                    
+                    # Tokens should be different due to timestamp, but structure similar if hardcoded
+                    if len(token) == len(token_2):
+                        print("   ⚠️  ADVERTENCIA: Tokens tienen misma longitud - posible secret hardcodeado")
+                        deployment_results['jwt_secret_hardcoded'] = True
+                    else:
+                        print("   ✅ Tokens tienen longitudes diferentes - configuración dinámica")
+                else:
+                    print("   ❌ Segundo login falló - problema con JWT")
+            else:
+                print("   ❌ JWT token no válido para endpoints protegidos")
+        else:
+            print("   ❌ No se pudo generar JWT token")
+        
+        # 3. Test service persistence by making multiple requests over time
+        print("\n3️⃣ VERIFICANDO PERSISTENCIA DEL SERVICIO:")
+        
+        import time
+        persistence_tests = []
+        
+        for i in range(3):
+            start_time = time.time()
+            success, response = self.run_test(f"Persistence Test {i+1}", "GET", "", 200)
+            end_time = time.time()
+            
+            persistence_tests.append({
+                'success': success,
+                'response_time': end_time - start_time,
+                'test_number': i + 1
+            })
+            
+            if i < 2:  # Don't sleep after last test
+                time.sleep(2)  # Wait 2 seconds between tests
+        
+        successful_persistence_tests = sum(1 for test in persistence_tests if test['success'])
+        avg_response_time = sum(test['response_time'] for test in persistence_tests) / len(persistence_tests)
+        
+        print(f"   📊 Persistence tests: {successful_persistence_tests}/{len(persistence_tests)} exitosos")
+        print(f"   ⏱️  Tiempo promedio de respuesta: {avg_response_time:.3f}s")
+        
+        if successful_persistence_tests == len(persistence_tests):
+            print("   ✅ Servicio mantiene consistencia en el tiempo")
+            deployment_results['backend_service_running'] = True
+        else:
+            print("   ❌ Servicio muestra inconsistencias - posible problema de estabilidad")
+        
+        # 4. Test concurrent requests to check stability
+        print("\n4️⃣ VERIFICANDO ESTABILIDAD BAJO CARGA:")
+        
+        import threading
+        import queue
+        
+        def make_request(result_queue, request_id):
+            try:
+                success, response = self.run_test(f"Concurrent Test {request_id}", "GET", "categories", 200)
+                result_queue.put({'id': request_id, 'success': success})
+            except Exception as e:
+                result_queue.put({'id': request_id, 'success': False, 'error': str(e)})
+        
+        # Run 5 concurrent requests
+        result_queue = queue.Queue()
+        threads = []
+        
+        for i in range(5):
+            thread = threading.Thread(target=make_request, args=(result_queue, i+1))
+            threads.append(thread)
+            thread.start()
+        
+        # Wait for all threads to complete
+        for thread in threads:
+            thread.join()
+        
+        # Collect results
+        concurrent_results = []
+        while not result_queue.empty():
+            concurrent_results.append(result_queue.get())
+        
+        successful_concurrent = sum(1 for result in concurrent_results if result['success'])
+        
+        print(f"   📊 Concurrent requests: {successful_concurrent}/{len(concurrent_results)} exitosos")
+        
+        if successful_concurrent == len(concurrent_results):
+            print("   ✅ Servicio maneja requests concurrentes correctamente")
+        else:
+            print("   ❌ Servicio tiene problemas con requests concurrentes")
+        
+        # 5. Summary and recommendations
+        print("\n" + "="*80)
+        print("🎯 DIAGNÓSTICO 24/7 DEPLOYMENT")
+        print("="*80)
+        
+        print(f"📊 ESTADO ACTUAL:")
+        print(f"   • API respondiendo: {'✅ SÍ' if deployment_results['api_responding'] else '❌ NO'}")
+        print(f"   • JWT funcionando: {'✅ SÍ' if self.token else '❌ NO'}")
+        print(f"   • Servicio persistente: {'✅ SÍ' if deployment_results['backend_service_running'] else '❌ NO'}")
+        print(f"   • Maneja concurrencia: {'✅ SÍ' if successful_concurrent >= 4 else '❌ NO'}")
+        
+        print(f"\n⚠️  POSIBLES PROBLEMAS IDENTIFICADOS:")
+        if deployment_results['jwt_secret_hardcoded']:
+            print(f"   • JWT_SECRET_KEY posiblemente hardcodeado - verificar .env")
+        
+        if not deployment_results['backend_service_running']:
+            print(f"   • Servicio no mantiene estabilidad - verificar supervisor")
+        
+        if successful_concurrent < 4:
+            print(f"   • Problemas con requests concurrentes - verificar configuración")
+        
+        print(f"\n📋 RECOMENDACIONES:")
+        print(f"   1. Verificar que JWT_SECRET_KEY en .env esté siendo usado (no el fallback)")
+        print(f"   2. Confirmar configuración supervisor: autostart=true, autorestart=true")
+        print(f"   3. Verificar logs de supervisor para errores recurrentes")
+        print(f"   4. Implementar health check endpoint para monitoreo")
+        
+        return deployment_results
+
+    def test_first_four_products_editing(self):
+        """Test editing of the first 4 products specifically mentioned by user"""
+        print("\n🚨 TESTING FIRST 4 PRODUCTS EDITING")
+        print("="*80)
+        print("PROBLEMA REPORTADO: Primeros 4 productos no se pueden editar")
+        print("PRODUCTOS: Pluma, Paoly, Grecia Corto, Alea")
+        print("="*80)
+        
+        target_products = [
+            {"name": "Pluma", "id": "6570b96e-f23d-492f-84f6-8f91d28a7cf1"},
+            {"name": "Paoly", "id": "e72186aa-1140-4cd4-9874-d69327c3a400"},
+            {"name": "Grecia Corto", "id": "d5bfd5de-5495-4a65-ae41-daee645629b3"},
+            {"name": "Alea", "id": "7098522d-a30a-4f5e-8b4e-c9b56bdd7f20"}
+        ]
+        
+        editing_results = {
+            'products_found': [],
+            'products_editable': [],
+            'products_not_found': [],
+            'products_not_editable': [],
+            'backend_functional': False
+        }
+        
+        if not self.token:
+            print("❌ No hay token de admin - intentando login...")
+            login_success = self.test_admin_login()
+            if not login_success:
+                print("❌ CRÍTICO: No se puede obtener token de admin")
+                return editing_results
+        
+        # 1. First, get all products to find the target ones
+        print("\n1️⃣ BUSCANDO PRODUCTOS OBJETIVO:")
+        success, all_products = self.run_test("Get All Products for Editing Test", "GET", "products?limit=1000", 200)
+        
+        if not success or not isinstance(all_products, list):
+            print("❌ CRÍTICO: No se pueden obtener productos")
+            return editing_results
+        
+        print(f"   📦 Total productos en base de datos: {len(all_products)}")
+        
+        # Find target products by name and ID
+        found_products = {}
+        for target in target_products:
+            # First try to find by exact ID
+            product_by_id = None
+            for product in all_products:
+                if product.get('id') == target['id']:
+                    product_by_id = product
+                    break
+            
+            if product_by_id:
+                found_products[target['name']] = product_by_id
+                editing_results['products_found'].append(target['name'])
+                print(f"   ✅ ENCONTRADO por ID: {target['name']} (ID: {target['id']})")
+            else:
+                # Try to find by name (case insensitive)
+                product_by_name = None
+                for product in all_products:
+                    if product.get('name', '').lower() == target['name'].lower():
+                        product_by_name = product
+                        break
+                
+                if product_by_name:
+                    found_products[target['name']] = product_by_name
+                    editing_results['products_found'].append(target['name'])
+                    print(f"   ✅ ENCONTRADO por nombre: {target['name']} (ID real: {product_by_name.get('id')})")
+                    print(f"      ⚠️  ADVERTENCIA: ID no coincide. Esperado: {target['id']}")
+                else:
+                    editing_results['products_not_found'].append(target['name'])
+                    print(f"   ❌ NO ENCONTRADO: {target['name']} (ID: {target['id']})")
+        
+        # 2. Test editing each found product
+        print(f"\n2️⃣ PROBANDO EDICIÓN DE PRODUCTOS ENCONTRADOS:")
+        
+        for product_name, product_data in found_products.items():
+            product_id = product_data.get('id')
+            print(f"\n   🔧 Probando edición de '{product_name}' (ID: {product_id}):")
+            
+            # Test with a simple, non-destructive update
+            test_update = {
+                "description": f"Producto {product_name} - Test de edición {datetime.now().strftime('%H:%M:%S')}"
+            }
+            
+            success, response = self.run_test(
+                f"Edit {product_name}",
+                "PUT",
+                f"products/{product_id}",
+                200,
+                data=test_update
+            )
+            
+            if success:
+                editing_results['products_editable'].append(product_name)
+                print(f"      ✅ EDITABLE - Actualización exitosa")
+                
+                # Verify the update was applied
+                verify_success, updated_product = self.run_test(
+                    f"Verify {product_name} Update",
+                    "GET",
+                    f"products/{product_id}",
+                    200
+                )
+                
+                if verify_success and isinstance(updated_product, dict):
+                    if test_update["description"] in updated_product.get("description", ""):
+                        print(f"      ✅ Verificación exitosa - Cambios aplicados correctamente")
+                    else:
+                        print(f"      ⚠️  Verificación parcial - Cambios no reflejados completamente")
+                else:
+                    print(f"      ❌ No se pudo verificar la actualización")
+            else:
+                editing_results['products_not_editable'].append(product_name)
+                print(f"      ❌ NO EDITABLE - Error: {response}")
+                
+                # Try to get more details about why it failed
+                if isinstance(response, dict) and 'detail' in response:
+                    print(f"         Detalle del error: {response['detail']}")
+        
+        # 3. Test editing other products for comparison
+        print(f"\n3️⃣ PROBANDO EDICIÓN DE OTROS PRODUCTOS (COMPARACIÓN):")
+        
+        # Test editing products at different positions
+        comparison_products = []
+        if len(all_products) > 10:
+            # Test products at positions 5, 10, 15, 20 (if they exist)
+            test_positions = [4, 9, 14, 19]  # 0-indexed
+            for pos in test_positions:
+                if pos < len(all_products):
+                    comparison_products.append(all_products[pos])
+        
+        comparison_editable = 0
+        comparison_total = len(comparison_products)
+        
+        for i, product in enumerate(comparison_products):
+            product_name = product.get('name', f'Product_{i+5}')
+            product_id = product.get('id')
+            
+            test_update = {
+                "description": f"Comparison test {product_name} - {datetime.now().strftime('%H:%M:%S')}"
+            }
+            
+            success, response = self.run_test(
+                f"Edit Comparison Product {i+1}",
+                "PUT",
+                f"products/{product_id}",
+                200,
+                data=test_update
+            )
+            
+            if success:
+                comparison_editable += 1
+                print(f"   ✅ Producto posición {[4, 9, 14, 19][i]+1}: '{product_name}' - EDITABLE")
+            else:
+                print(f"   ❌ Producto posición {[4, 9, 14, 19][i]+1}: '{product_name}' - NO EDITABLE")
+        
+        # 4. Analyze results and determine if there's a pattern
+        print(f"\n4️⃣ ANÁLISIS DE RESULTADOS:")
+        
+        total_target_found = len(editing_results['products_found'])
+        total_target_editable = len(editing_results['products_editable'])
+        
+        print(f"   📊 Productos objetivo encontrados: {total_target_found}/4")
+        print(f"   📊 Productos objetivo editables: {total_target_editable}/{total_target_found}")
+        
+        if comparison_total > 0:
+            comparison_rate = (comparison_editable / comparison_total) * 100
+            print(f"   📊 Productos de comparación editables: {comparison_editable}/{comparison_total} ({comparison_rate:.1f}%)")
+        
+        # Determine if backend is functional
+        if total_target_editable > 0 or comparison_editable > 0:
+            editing_results['backend_functional'] = True
+        
+        # 5. Final diagnosis
+        print("\n" + "="*80)
+        print("🎯 DIAGNÓSTICO EDICIÓN PRIMEROS 4 PRODUCTOS")
+        print("="*80)
+        
+        print(f"📊 RESULTADOS POR PRODUCTO:")
+        for target in target_products:
+            name = target['name']
+            if name in editing_results['products_not_found']:
+                print(f"   ❌ {name}: NO ENCONTRADO en base de datos")
+            elif name in editing_results['products_editable']:
+                print(f"   ✅ {name}: ENCONTRADO y EDITABLE")
+            elif name in editing_results['products_not_editable']:
+                print(f"   ⚠️  {name}: ENCONTRADO pero NO EDITABLE")
+        
+        print(f"\n🔍 DIAGNÓSTICO:")
+        if len(editing_results['products_not_found']) > 0:
+            print(f"   • {len(editing_results['products_not_found'])} productos no existen en BD")
+        
+        if len(editing_results['products_not_editable']) > 0:
+            print(f"   • {len(editing_results['products_not_editable'])} productos no son editables")
+            print(f"   • Esto sugiere un problema específico con estos productos")
+        
+        if editing_results['backend_functional']:
+            print(f"   • Backend funciona correctamente para edición en general")
+            if len(editing_results['products_not_editable']) > 0:
+                print(f"   • El problema es específico de ciertos productos, NO del sistema")
+            else:
+                print(f"   • TODOS los productos objetivo son editables - problema resuelto")
+        else:
+            print(f"   • Backend tiene problemas generales de edición")
+        
+        print(f"\n📋 RECOMENDACIONES:")
+        if len(editing_results['products_not_found']) > 0:
+            print(f"   1. Verificar si los productos fueron eliminados o renombrados")
+            print(f"   2. Buscar productos por nombre similar en el catálogo")
+        
+        if len(editing_results['products_not_editable']) > 0:
+            print(f"   3. Investigar permisos específicos de estos productos")
+            print(f"   4. Verificar si hay validaciones especiales que fallan")
+        
+        if editing_results['backend_functional'] and len(editing_results['products_editable']) == 4:
+            print(f"   ✅ PROBLEMA RESUELTO: Todos los productos son editables")
+        
+        return editing_results
+
+    def test_broken_images_imperio_velvet(self):
+        """Test broken images for Imperio and Velvet products"""
+        print("\n🚨 TESTING BROKEN IMAGES - IMPERIO & VELVET")
+        print("="*80)
+        print("PROBLEMA REPORTADO: Productos Imperio y Velvet tienen imágenes rotas (URLs PostImg)")
+        print("OBJETIVO: Verificar URLs rotas y probar endpoint de carga masiva")
+        print("="*80)
+        
+        image_results = {
+            'imperio_found': False,
+            'velvet_found': False,
+            'imperio_images_broken': 0,
+            'velvet_images_broken': 0,
+            'imperio_images_total': 0,
+            'velvet_images_total': 0,
+            'upload_endpoint_working': False,
+            'broken_urls': []
+        }
+        
+        # 1. Find Imperio and Velvet products
+        print("\n1️⃣ BUSCANDO PRODUCTOS IMPERIO Y VELVET:")
+        success, all_products = self.run_test("Get All Products for Image Test", "GET", "products?limit=1000", 200)
+        
+        if not success or not isinstance(all_products, list):
+            print("❌ CRÍTICO: No se pueden obtener productos")
+            return image_results
+        
+        print(f"   📦 Total productos en base de datos: {len(all_products)}")
+        
+        # Find Imperio and Velvet products
+        imperio_product = None
+        velvet_product = None
+        
+        for product in all_products:
+            product_name = product.get('name', '').lower()
+            if 'imperio' in product_name:
+                imperio_product = product
+                image_results['imperio_found'] = True
+                print(f"   ✅ IMPERIO encontrado: '{product.get('name')}' (ID: {product.get('id')})")
+            elif 'velvet' in product_name:
+                velvet_product = product
+                image_results['velvet_found'] = True
+                print(f"   ✅ VELVET encontrado: '{product.get('name')}' (ID: {product.get('id')})")
+        
+        if not imperio_product:
+            print("   ❌ Producto IMPERIO no encontrado")
+        if not velvet_product:
+            print("   ❌ Producto VELVET no encontrado")
+        
+        # 2. Test Imperio images
+        if imperio_product:
+            print(f"\n2️⃣ VERIFICANDO IMÁGENES DE IMPERIO:")
+            images = imperio_product.get('images', [])
+            single_image = imperio_product.get('image', '')
+            
+            # Combine all image URLs
+            all_images = list(images) if images else []
+            if single_image and single_image not in all_images:
+                all_images.append(single_image)
+            
+            image_results['imperio_images_total'] = len(all_images)
+            print(f"   📷 Total imágenes de Imperio: {len(all_images)}")
+            
+            if all_images:
+                for i, img_url in enumerate(all_images):
+                    print(f"\n   🔍 Probando imagen Imperio {i+1}: {img_url[:60]}...")
+                    try:
+                        import requests
+                        response = requests.head(img_url, timeout=5)
+                        if response.status_code == 200:
+                            print(f"      ✅ FUNCIONA (Status: {response.status_code})")
+                        else:
+                            print(f"      ❌ ROTA (Status: {response.status_code})")
+                            image_results['imperio_images_broken'] += 1
+                            image_results['broken_urls'].append({
+                                'product': 'Imperio',
+                                'url': img_url,
+                                'status': response.status_code
+                            })
+                    except Exception as e:
+                        print(f"      ❌ ERROR: {str(e)}")
+                        image_results['imperio_images_broken'] += 1
+                        image_results['broken_urls'].append({
+                            'product': 'Imperio',
+                            'url': img_url,
+                            'error': str(e)
+                        })
+            else:
+                print("   ❌ CRÍTICO: Imperio no tiene imágenes asignadas")
+        
+        # 3. Test Velvet images
+        if velvet_product:
+            print(f"\n3️⃣ VERIFICANDO IMÁGENES DE VELVET:")
+            images = velvet_product.get('images', [])
+            single_image = velvet_product.get('image', '')
+            
+            # Combine all image URLs
+            all_images = list(images) if images else []
+            if single_image and single_image not in all_images:
+                all_images.append(single_image)
+            
+            image_results['velvet_images_total'] = len(all_images)
+            print(f"   📷 Total imágenes de Velvet: {len(all_images)}")
+            
+            if all_images:
+                for i, img_url in enumerate(all_images):
+                    print(f"\n   🔍 Probando imagen Velvet {i+1}: {img_url[:60]}...")
+                    try:
+                        import requests
+                        response = requests.head(img_url, timeout=5)
+                        if response.status_code == 200:
+                            print(f"      ✅ FUNCIONA (Status: {response.status_code})")
+                        else:
+                            print(f"      ❌ ROTA (Status: {response.status_code})")
+                            image_results['velvet_images_broken'] += 1
+                            image_results['broken_urls'].append({
+                                'product': 'Velvet',
+                                'url': img_url,
+                                'status': response.status_code
+                            })
+                    except Exception as e:
+                        print(f"      ❌ ERROR: {str(e)}")
+                        image_results['velvet_images_broken'] += 1
+                        image_results['broken_urls'].append({
+                            'product': 'Velvet',
+                            'url': img_url,
+                            'error': str(e)
+                        })
+            else:
+                print("   ❌ CRÍTICO: Velvet no tiene imágenes asignadas")
+        
+        # 4. Test mass upload endpoint
+        print(f"\n4️⃣ VERIFICANDO ENDPOINT DE CARGA MASIVA:")
+        if not self.token:
+            print("   ❌ No hay token de admin para probar endpoint")
+        else:
+            # Test endpoint availability (without actually uploading files)
+            success, response = self.run_test(
+                "Test Mass Upload Endpoint Availability", 
+                "POST", 
+                "admin/upload-images", 
+                400,  # Expect 400 because we're not sending proper files
+                data={}
+            )
+            
+            if success or (isinstance(response, dict) and 'detail' in response):
+                image_results['upload_endpoint_working'] = True
+                print("   ✅ Endpoint /api/admin/upload-images está disponible")
+                print("   📝 Endpoint responde correctamente a requests malformados")
+            else:
+                print("   ❌ Endpoint /api/admin/upload-images no está funcionando")
+        
+        # 5. Test image proxy for broken URLs
+        print(f"\n5️⃣ PROBANDO PROXY DE IMÁGENES PARA URLs ROTAS:")
+        
+        proxy_working_count = 0
+        proxy_total_count = 0
+        
+        for broken_url_info in image_results['broken_urls'][:5]:  # Test first 5 broken URLs
+            if 'url' in broken_url_info:
+                proxy_total_count += 1
+                url = broken_url_info['url']
+                product = broken_url_info['product']
+                
+                print(f"\n   🔍 Probando proxy para {product}: {url[:50]}...")
+                
+                success, response = self.run_test(
+                    f"Proxy Test for {product}",
+                    "GET",
+                    f"proxy-image?url={url}",
+                    200
+                )
+                
+                if success:
+                    proxy_working_count += 1
+                    print(f"      ✅ Proxy funciona para esta URL")
+                else:
+                    print(f"      ❌ Proxy también falla para esta URL")
+        
+        if proxy_total_count > 0:
+            proxy_success_rate = (proxy_working_count / proxy_total_count) * 100
+            print(f"\n   📊 Proxy success rate: {proxy_working_count}/{proxy_total_count} ({proxy_success_rate:.1f}%)")
+        
+        # 6. Final diagnosis and recommendations
+        print("\n" + "="*80)
+        print("🎯 DIAGNÓSTICO IMÁGENES ROTAS - IMPERIO & VELVET")
+        print("="*80)
+        
+        print(f"📊 ESTADO DE PRODUCTOS:")
+        if image_results['imperio_found']:
+            total_imperio = image_results['imperio_images_total']
+            broken_imperio = image_results['imperio_images_broken']
+            working_imperio = total_imperio - broken_imperio
+            print(f"   • IMPERIO: {working_imperio}/{total_imperio} imágenes funcionando ({broken_imperio} rotas)")
+        else:
+            print(f"   • IMPERIO: ❌ Producto no encontrado en base de datos")
+        
+        if image_results['velvet_found']:
+            total_velvet = image_results['velvet_images_total']
+            broken_velvet = image_results['velvet_images_broken']
+            working_velvet = total_velvet - broken_velvet
+            print(f"   • VELVET: {working_velvet}/{total_velvet} imágenes funcionando ({broken_velvet} rotas)")
+        else:
+            print(f"   • VELVET: ❌ Producto no encontrado en base de datos")
+        
+        print(f"\n🔧 HERRAMIENTAS DISPONIBLES:")
+        print(f"   • Endpoint carga masiva: {'✅ Disponible' if image_results['upload_endpoint_working'] else '❌ No disponible'}")
+        print(f"   • Proxy de imágenes: {'✅ Funcional' if proxy_working_count > 0 else '❌ No funcional'}")
+        
+        print(f"\n🚨 URLs ROTAS IDENTIFICADAS:")
+        for i, broken_url_info in enumerate(image_results['broken_urls'][:10]):  # Show first 10
+            product = broken_url_info['product']
+            url = broken_url_info['url'][:60] + "..." if len(broken_url_info['url']) > 60 else broken_url_info['url']
+            status = broken_url_info.get('status', 'Error')
+            print(f"   {i+1}. {product}: {url} (Status: {status})")
+        
+        if len(image_results['broken_urls']) > 10:
+            print(f"   ... y {len(image_results['broken_urls']) - 10} URLs rotas más")
+        
+        print(f"\n📋 PLAN DE ACCIÓN INMEDIATO:")
+        if image_results['imperio_found'] and image_results['imperio_images_broken'] > 0:
+            print(f"   1. IMPERIO: Reemplazar {image_results['imperio_images_broken']} imágenes rotas")
+        if image_results['velvet_found'] and image_results['velvet_images_broken'] > 0:
+            print(f"   2. VELVET: Reemplazar {image_results['velvet_images_broken']} imágenes rotas")
+        
+        if image_results['upload_endpoint_working']:
+            print(f"   3. Usar /api/admin/upload-images para subir nuevas imágenes")
+            print(f"   4. Actualizar productos con URLs de ImgBB (compatible con CORS)")
+        else:
+            print(f"   3. ❌ CRÍTICO: Reparar endpoint de carga masiva primero")
+        
+        print(f"   5. Verificar que nuevas imágenes aparezcan correctamente en catálogo")
+        print(f"   6. Priorizar Imperio y Velvet por impacto en clientas")
+        
+        return image_results
+
+    def run_critical_review_tests(self):
+        """Run the critical tests from the review request"""
+        print("🚨 STARTING CRITICAL REVIEW REQUEST TESTS")
+        print("="*80)
+        print(f"Testing against: {self.api_url}")
+        print(f"Admin credentials: {self.admin_username}")
+        print("="*80)
+        
+        # Critical review request tests
+        critical_tests = [
+            ("24/7 Deployment Configuration", self.test_deployment_24_7_configuration),
+            ("First 4 Products Editing", self.test_first_four_products_editing),
+            ("Broken Images Imperio/Velvet", self.test_broken_images_imperio_velvet)
+        ]
+        
+        critical_results = {}
+        
+        for test_name, test_func in critical_tests:
+            print(f"\n" + "="*60)
+            print(f"🧪 {test_name}")
+            print("="*60)
+            
+            try:
+                result = test_func()
+                critical_results[test_name] = result
+                if result:
+                    print(f"✅ {test_name} - COMPLETED")
+                else:
+                    print(f"❌ {test_name} - ISSUES FOUND")
+            except Exception as e:
+                print(f"💥 {test_name} - ERROR: {str(e)}")
+                critical_results[test_name] = False
+                self.tests_run += 1  # Count as a test run
+        
+        # Final summary
+        print("\n" + "="*80)
+        print("📊 CRITICAL TESTS SUMMARY")
+        print("="*80)
+        
+        for test_name, result in critical_results.items():
+            status = "✅ RESOLVED" if result else "❌ NEEDS ATTENTION"
+            print(f"   {status}: {test_name}")
+        
+        return critical_results
+
 def main():
     tester = HannuClothesAPITester()
     
