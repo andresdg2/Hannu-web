@@ -2909,6 +2909,277 @@ class HannuClothesAPITester:
         
         return investigation_results
 
+    def test_specific_product_investigation(self):
+        """URGENT INVESTIGATION: Specific products Imperio and Velvet + first 4 products editability"""
+        print("\n🚨 INVESTIGACIÓN ESPECÍFICA - PRODUCTOS SIN IMÁGENES Y PROBLEMA DE EDICIÓN POR POSICIÓN")
+        print("="*100)
+        print("PROBLEMA 1: Productos sin imágenes - 'Imperio' y 'Velvet' muestran placeholder")
+        print("PROBLEMA 2: Productos no editables por posición - primeros en grid NO se pueden editar")
+        print("="*100)
+        
+        investigation_results = {
+            'imperio_found': False,
+            'velvet_found': False,
+            'imperio_images_working': False,
+            'velvet_images_working': False,
+            'first_4_products': [],
+            'first_4_editable': [],
+            'products_order': [],
+            'backend_editability': True,
+            'image_issues': [],
+            'position_pattern': False
+        }
+        
+        # 1. Get all products to analyze order and find specific products
+        print("\n1️⃣ OBTENIENDO PRODUCTOS Y ANALIZANDO ORDEN:")
+        success, products = self.run_test("Get All Products for Investigation", "GET", "products?limit=1000", 200)
+        
+        if not success or not isinstance(products, list):
+            print("❌ CRÍTICO: No se pueden obtener productos")
+            return investigation_results
+        
+        print(f"   📦 Total productos encontrados: {len(products)}")
+        investigation_results['products_order'] = [p.get('name', 'Unknown') for p in products]
+        
+        # 2. Search for Imperio and Velvet specifically
+        print("\n2️⃣ BUSCANDO PRODUCTOS ESPECÍFICOS:")
+        imperio_product = None
+        velvet_product = None
+        
+        for product in products:
+            name = product.get('name', '').lower()
+            if 'imperio' in name:
+                imperio_product = product
+                investigation_results['imperio_found'] = True
+                print(f"   ✅ IMPERIO ENCONTRADO: '{product.get('name')}' - ID: {product.get('id')}")
+            elif 'velvet' in name:
+                velvet_product = product
+                investigation_results['velvet_found'] = True
+                print(f"   ✅ VELVET ENCONTRADO: '{product.get('name')}' - ID: {product.get('id')}")
+        
+        if not imperio_product:
+            print("   ❌ IMPERIO NO ENCONTRADO en base de datos")
+        if not velvet_product:
+            print("   ❌ VELVET NO ENCONTRADO en base de datos")
+        
+        # 3. Analyze images for Imperio and Velvet
+        print("\n3️⃣ VERIFICANDO IMÁGENES DE PRODUCTOS ESPECÍFICOS:")
+        
+        for product_name, product_data in [("Imperio", imperio_product), ("Velvet", velvet_product)]:
+            if product_data:
+                print(f"\n   🔍 Analizando {product_name.upper()}:")
+                images = product_data.get('images', [])
+                single_image = product_data.get('image', '')
+                
+                all_images = list(images) if images else []
+                if single_image and single_image not in all_images:
+                    all_images.append(single_image)
+                
+                print(f"      📷 Total URLs de imagen: {len(all_images)}")
+                
+                if all_images:
+                    working_images = 0
+                    for i, img_url in enumerate(all_images):
+                        print(f"      🔗 Imagen {i+1}: {img_url[:60]}...")
+                        try:
+                            import requests
+                            response = requests.head(img_url, timeout=5)
+                            if response.status_code == 200:
+                                working_images += 1
+                                print(f"         ✅ FUNCIONA")
+                            else:
+                                print(f"         ❌ ROTA (Status: {response.status_code})")
+                                investigation_results['image_issues'].append({
+                                    'product': product_name,
+                                    'url': img_url,
+                                    'status': response.status_code
+                                })
+                        except Exception as e:
+                            print(f"         ❌ ERROR: {str(e)}")
+                            investigation_results['image_issues'].append({
+                                'product': product_name,
+                                'url': img_url,
+                                'error': str(e)
+                            })
+                    
+                    if working_images > 0:
+                        if product_name.lower() == 'imperio':
+                            investigation_results['imperio_images_working'] = True
+                        else:
+                            investigation_results['velvet_images_working'] = True
+                        print(f"      ✅ {working_images}/{len(all_images)} imágenes funcionando")
+                    else:
+                        print(f"      ❌ TODAS las imágenes están ROTAS")
+                else:
+                    print(f"      ❌ NO HAY IMÁGENES asignadas")
+        
+        # 4. Analyze first 4 products in order
+        print("\n4️⃣ ANALIZANDO PRIMEROS 4 PRODUCTOS EN EL GRID:")
+        first_4 = products[:4]
+        investigation_results['first_4_products'] = [
+            {
+                'name': p.get('name', 'Unknown'),
+                'id': p.get('id', 'No ID'),
+                'category': p.get('category', 'Unknown'),
+                'position': i + 1
+            }
+            for i, p in enumerate(first_4)
+        ]
+        
+        for i, product in enumerate(first_4):
+            print(f"   {i+1}. {product.get('name', 'Unknown')} (ID: {product.get('id', 'No ID')[:8]}...)")
+            print(f"      Categoría: {product.get('category', 'Unknown')}")
+            print(f"      Precios: Retail ${product.get('retail_price', 0):,} | Mayorista ${product.get('wholesale_price', 0):,}")
+        
+        # 5. Test editability of first 4 products from backend
+        print("\n5️⃣ PROBANDO EDICIÓN DE PRIMEROS 4 PRODUCTOS DESDE BACKEND:")
+        if not self.token:
+            print("   ❌ No hay token de admin para probar edición")
+        else:
+            for i, product in enumerate(first_4):
+                product_id = product.get('id')
+                product_name = product.get('name', 'Unknown')
+                
+                print(f"\n   🔧 Probando edición de '{product_name}' (Posición {i+1}):")
+                
+                # Try a simple update
+                test_update = {
+                    "description": f"Test de edición - {datetime.now().strftime('%H:%M:%S')}"
+                }
+                
+                success, response = self.run_test(
+                    f"Edit Product Position {i+1}",
+                    "PUT",
+                    f"products/{product_id}",
+                    200,
+                    data=test_update
+                )
+                
+                if success:
+                    investigation_results['first_4_editable'].append({
+                        'name': product_name,
+                        'position': i + 1,
+                        'editable': True
+                    })
+                    print(f"      ✅ EDITABLE desde backend API")
+                    
+                    # Verify the change was applied
+                    verify_success, updated_product = self.run_test(
+                        f"Verify Edit Position {i+1}",
+                        "GET",
+                        f"products/{product_id}",
+                        200
+                    )
+                    
+                    if verify_success and isinstance(updated_product, dict):
+                        if test_update["description"] in updated_product.get("description", ""):
+                            print(f"      ✅ Cambio verificado correctamente")
+                        else:
+                            print(f"      ⚠️  Cambio no se aplicó correctamente")
+                else:
+                    investigation_results['first_4_editable'].append({
+                        'name': product_name,
+                        'position': i + 1,
+                        'editable': False,
+                        'error': response
+                    })
+                    print(f"      ❌ NO EDITABLE desde backend API")
+                    print(f"         Error: {response}")
+                    investigation_results['backend_editability'] = False
+        
+        # 6. Test products after scroll (positions 5-8) for comparison
+        print("\n6️⃣ PROBANDO PRODUCTOS DESPUÉS DEL SCROLL (POSICIONES 5-8):")
+        if len(products) > 4 and self.token:
+            scroll_products = products[4:8]
+            for i, product in enumerate(scroll_products):
+                product_id = product.get('id')
+                product_name = product.get('name', 'Unknown')
+                position = i + 5
+                
+                print(f"\n   🔧 Probando edición de '{product_name}' (Posición {position}):")
+                
+                test_update = {
+                    "description": f"Test scroll position - {datetime.now().strftime('%H:%M:%S')}"
+                }
+                
+                success, response = self.run_test(
+                    f"Edit Product Position {position}",
+                    "PUT",
+                    f"products/{product_id}",
+                    200,
+                    data=test_update
+                )
+                
+                if success:
+                    print(f"      ✅ EDITABLE desde backend API")
+                else:
+                    print(f"      ❌ NO EDITABLE desde backend API")
+                    investigation_results['backend_editability'] = False
+        
+        # 7. Analyze pattern
+        print("\n7️⃣ ANÁLISIS DE PATRÓN:")
+        editable_count = len([p for p in investigation_results['first_4_editable'] if p.get('editable', False)])
+        
+        if editable_count == 4:
+            print("   ✅ TODOS los primeros 4 productos SON EDITABLES desde backend")
+            print("   🔍 El problema reportado NO es del backend - es del frontend")
+        elif editable_count == 0:
+            print("   ❌ NINGUNO de los primeros 4 productos es editable desde backend")
+            print("   🚨 PROBLEMA CRÍTICO en backend o autenticación")
+        else:
+            print(f"   ⚠️  Solo {editable_count}/4 primeros productos son editables")
+            print("   🔍 Patrón mixto - investigar productos específicos")
+            investigation_results['position_pattern'] = True
+        
+        # 8. Final summary and recommendations
+        print("\n" + "="*100)
+        print("🎯 RESUMEN EJECUTIVO - INVESTIGACIÓN ESPECÍFICA")
+        print("="*100)
+        
+        print(f"\n📊 PRODUCTOS ESPECÍFICOS:")
+        print(f"   • Imperio encontrado: {'✅ SÍ' if investigation_results['imperio_found'] else '❌ NO'}")
+        print(f"   • Imperio imágenes funcionan: {'✅ SÍ' if investigation_results['imperio_images_working'] else '❌ NO'}")
+        print(f"   • Velvet encontrado: {'✅ SÍ' if investigation_results['velvet_found'] else '❌ NO'}")
+        print(f"   • Velvet imágenes funcionan: {'✅ SÍ' if investigation_results['velvet_images_working'] else '❌ NO'}")
+        
+        print(f"\n📊 PRIMEROS 4 PRODUCTOS:")
+        for product_info in investigation_results['first_4_products']:
+            editable_info = next((e for e in investigation_results['first_4_editable'] if e['name'] == product_info['name']), None)
+            editable_status = "✅ EDITABLE" if editable_info and editable_info.get('editable') else "❌ NO EDITABLE"
+            print(f"   {product_info['position']}. {product_info['name']} - {editable_status}")
+        
+        print(f"\n📊 PROBLEMAS DE IMÁGENES IDENTIFICADOS:")
+        if investigation_results['image_issues']:
+            for issue in investigation_results['image_issues']:
+                print(f"   ❌ {issue['product']}: {issue['url'][:50]}... - {issue.get('status', issue.get('error', 'Unknown'))}")
+        else:
+            print(f"   ✅ No se encontraron problemas de imágenes en productos analizados")
+        
+        print(f"\n🎯 DIAGNÓSTICO FINAL:")
+        if not investigation_results['backend_editability']:
+            print("   ❌ PROBLEMA EN BACKEND: Algunos productos no son editables desde API")
+        else:
+            print("   ✅ BACKEND FUNCIONAL: Todos los productos son editables desde API")
+            print("   🔍 PROBLEMA EN FRONTEND: Issue de edición por posición es del lado cliente")
+        
+        if investigation_results['image_issues']:
+            print(f"   ❌ IMÁGENES ROTAS: {len(investigation_results['image_issues'])} URLs problemáticas identificadas")
+        else:
+            print("   ✅ IMÁGENES OK: No se detectaron problemas de imágenes")
+        
+        print(f"\n📋 ACCIONES RECOMENDADAS:")
+        if investigation_results['image_issues']:
+            print("   1. REEMPLAZAR imágenes rotas usando /api/admin/upload-images con ImgBB")
+            print("   2. Actualizar productos Imperio y Velvet con nuevas URLs")
+        
+        if investigation_results['backend_editability']:
+            print("   3. INVESTIGAR frontend - problema de edición por posición es del lado cliente")
+            print("   4. Verificar JavaScript, event handlers, y renderizado de botones de edición")
+        else:
+            print("   3. INVESTIGAR backend - problema de autenticación o permisos")
+        
+        return investigation_results
+
 def main():
     tester = HannuClothesAPITester()
     
