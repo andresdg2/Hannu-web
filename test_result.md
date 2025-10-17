@@ -309,7 +309,8 @@ metadata:
 
 test_plan:
   current_focus:
-    - "CRÍTICO: Primeros 4 productos no editables - Investigación completa"
+    - "CRÍTICO: Reemplazar 2 imágenes rotas Imperio/Velvet con ImgBB"
+    - "MENOR: Verificar JWT_SECRET_KEY configuración en .env"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
