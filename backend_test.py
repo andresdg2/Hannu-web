@@ -2618,6 +2618,297 @@ class HannuClothesAPITester:
         
         return investigation_results
 
+    def test_first_4_products_editing_issue(self):
+        """CRITICAL INVESTIGATION: First 4 products not editable"""
+        print("\n🚨 INVESTIGACIÓN CRÍTICA - PRIMEROS 4 PRODUCTOS NO EDITABLES")
+        print("="*80)
+        print("PROBLEMA REPORTADO: Usuario NO puede editar ni eliminar primeros 4 productos")
+        print("PERO SÍ puede editar desde el producto 5 en adelante")
+        print("="*80)
+        
+        investigation_results = {
+            'products_retrieved': False,
+            'total_products': 0,
+            'first_4_products': [],
+            'product_5': None,
+            'first_4_editable': [],
+            'product_5_editable': False,
+            'pattern_identified': False,
+            'root_cause': 'unknown'
+        }
+        
+        # 1. Get all products in order of appearance
+        print("\n1️⃣ OBTENIENDO PRIMEROS PRODUCTOS EN ORDEN:")
+        success, products = self.run_test("Get All Products in Order", "GET", "products?limit=1000", 200)
+        
+        if not success or not isinstance(products, list):
+            print("❌ CRÍTICO: No se pueden obtener productos")
+            return investigation_results
+        
+        investigation_results['products_retrieved'] = True
+        investigation_results['total_products'] = len(products)
+        print(f"   📦 Total productos obtenidos: {len(products)}")
+        
+        if len(products) < 5:
+            print(f"   ❌ INSUFICIENTES PRODUCTOS: Solo {len(products)} productos (necesitamos al menos 5)")
+            return investigation_results
+        
+        # 2. Identify first 4 products and product 5
+        first_4 = products[:4]
+        product_5 = products[4] if len(products) > 4 else None
+        
+        investigation_results['first_4_products'] = first_4
+        investigation_results['product_5'] = product_5
+        
+        print(f"\n📋 PRIMEROS 4 PRODUCTOS IDENTIFICADOS:")
+        for i, product in enumerate(first_4):
+            print(f"   {i+1}. '{product.get('name', 'Unknown')}' - ID: {product.get('id', 'No ID')[:8]}...")
+            print(f"      Categoría: {product.get('category', 'Unknown')}")
+            print(f"      Precios: Retail ${product.get('retail_price', 0):,} | Mayorista ${product.get('wholesale_price', 0):,}")
+            print(f"      Creado: {product.get('created_at', 'Unknown')}")
+        
+        if product_5:
+            print(f"\n📋 PRODUCTO 5 (CONTROL - DEBERÍA SER EDITABLE):")
+            print(f"   5. '{product_5.get('name', 'Unknown')}' - ID: {product_5.get('id', 'No ID')[:8]}...")
+            print(f"      Categoría: {product_5.get('category', 'Unknown')}")
+            print(f"      Precios: Retail ${product_5.get('retail_price', 0):,} | Mayorista ${product_5.get('wholesale_price', 0):,}")
+            print(f"      Creado: {product_5.get('created_at', 'Unknown')}")
+        
+        # 3. Test editing each of the first 4 products
+        print(f"\n2️⃣ PROBANDO EDICIÓN DE PRIMEROS 4 PRODUCTOS:")
+        
+        if not self.token:
+            print("❌ No hay token de admin para probar edición")
+            return investigation_results
+        
+        for i, product in enumerate(first_4):
+            product_id = product.get('id')
+            product_name = product.get('name', f'Producto {i+1}')
+            
+            print(f"\n   🔍 PROBANDO PRODUCTO {i+1}: '{product_name}'")
+            print(f"      ID: {product_id}")
+            
+            # Test update with minimal change
+            test_update = {
+                "description": f"Test edit {datetime.now().strftime('%H:%M:%S')} - Producto {i+1}"
+            }
+            
+            success, response = self.run_test(
+                f"Edit Product {i+1} ({product_name[:20]}...)",
+                "PUT",
+                f"products/{product_id}",
+                200,
+                data=test_update
+            )
+            
+            investigation_results['first_4_editable'].append({
+                'position': i+1,
+                'name': product_name,
+                'id': product_id,
+                'editable': success,
+                'response': response if not success else 'Success'
+            })
+            
+            if success:
+                print(f"      ✅ EDITABLE: Producto {i+1} se puede editar correctamente")
+                
+                # Verify the change was applied
+                verify_success, updated_product = self.run_test(
+                    f"Verify Product {i+1} Update",
+                    "GET",
+                    f"products/{product_id}",
+                    200
+                )
+                
+                if verify_success and isinstance(updated_product, dict):
+                    if test_update["description"] in updated_product.get("description", ""):
+                        print(f"      ✅ VERIFICADO: Cambio aplicado correctamente")
+                    else:
+                        print(f"      ⚠️  ADVERTENCIA: Cambio no se aplicó correctamente")
+            else:
+                print(f"      ❌ NO EDITABLE: Producto {i+1} falló al editar")
+                print(f"         Error: {response}")
+        
+        # 4. Test editing product 5 (control)
+        print(f"\n3️⃣ PROBANDO EDICIÓN DE PRODUCTO 5 (CONTROL):")
+        
+        if product_5:
+            product_5_id = product_5.get('id')
+            product_5_name = product_5.get('name', 'Producto 5')
+            
+            print(f"   🔍 PROBANDO PRODUCTO 5: '{product_5_name}'")
+            print(f"      ID: {product_5_id}")
+            
+            test_update_5 = {
+                "description": f"Test edit {datetime.now().strftime('%H:%M:%S')} - Producto 5 (Control)"
+            }
+            
+            success, response = self.run_test(
+                f"Edit Product 5 ({product_5_name[:20]}...)",
+                "PUT",
+                f"products/{product_5_id}",
+                200,
+                data=test_update_5
+            )
+            
+            investigation_results['product_5_editable'] = success
+            
+            if success:
+                print(f"      ✅ EDITABLE: Producto 5 se puede editar correctamente")
+                
+                # Verify the change was applied
+                verify_success, updated_product = self.run_test(
+                    f"Verify Product 5 Update",
+                    "GET",
+                    f"products/{product_5_id}",
+                    200
+                )
+                
+                if verify_success and isinstance(updated_product, dict):
+                    if test_update_5["description"] in updated_product.get("description", ""):
+                        print(f"      ✅ VERIFICADO: Cambio aplicado correctamente")
+            else:
+                print(f"      ❌ NO EDITABLE: Producto 5 también falló al editar")
+                print(f"         Error: {response}")
+        
+        # 5. Analyze patterns and differences
+        print(f"\n4️⃣ ANÁLISIS DE PATRONES Y DIFERENCIAS:")
+        
+        # Count how many of first 4 are actually not editable
+        non_editable_count = sum(1 for result in investigation_results['first_4_editable'] if not result['editable'])
+        editable_count = len(investigation_results['first_4_editable']) - non_editable_count
+        
+        print(f"   📊 RESULTADOS DE EDICIÓN:")
+        print(f"      Primeros 4 productos editables: {editable_count}/4")
+        print(f"      Primeros 4 productos NO editables: {non_editable_count}/4")
+        print(f"      Producto 5 editable: {'✅ SÍ' if investigation_results['product_5_editable'] else '❌ NO'}")
+        
+        # Check for patterns in non-editable products
+        if non_editable_count > 0:
+            print(f"\n   🔍 PRODUCTOS NO EDITABLES IDENTIFICADOS:")
+            for result in investigation_results['first_4_editable']:
+                if not result['editable']:
+                    print(f"      ❌ Producto {result['position']}: '{result['name']}'")
+                    print(f"         ID: {result['id']}")
+                    print(f"         Error: {result['response']}")
+        
+        # Compare data structures
+        print(f"\n   🔍 COMPARACIÓN DE ESTRUCTURAS DE DATOS:")
+        
+        # Check creation dates
+        first_4_dates = [p.get('created_at', 'Unknown') for p in first_4]
+        product_5_date = product_5.get('created_at', 'Unknown') if product_5 else 'N/A'
+        
+        print(f"      📅 Fechas de creación:")
+        for i, date in enumerate(first_4_dates):
+            print(f"         Producto {i+1}: {date}")
+        print(f"         Producto 5: {product_5_date}")
+        
+        # Check for data corruption or missing fields
+        print(f"\n      🔍 VERIFICACIÓN DE INTEGRIDAD DE DATOS:")
+        required_fields = ['id', 'name', 'category', 'retail_price', 'wholesale_price']
+        
+        for i, product in enumerate(first_4):
+            missing_fields = []
+            corrupted_fields = []
+            
+            for field in required_fields:
+                value = product.get(field)
+                if value is None or value == '':
+                    missing_fields.append(field)
+                elif field in ['retail_price', 'wholesale_price']:
+                    try:
+                        price = float(value)
+                        if price <= 0:
+                            corrupted_fields.append(f"{field}={price}")
+                    except (ValueError, TypeError):
+                        corrupted_fields.append(f"{field}={value}")
+            
+            status = "✅ OK"
+            if missing_fields or corrupted_fields:
+                status = "❌ PROBLEMAS"
+            
+            print(f"         Producto {i+1}: {status}")
+            if missing_fields:
+                print(f"            Campos faltantes: {', '.join(missing_fields)}")
+            if corrupted_fields:
+                print(f"            Campos corruptos: {', '.join(corrupted_fields)}")
+        
+        # 6. Determine root cause and pattern
+        print(f"\n5️⃣ DIAGNÓSTICO Y CAUSA RAÍZ:")
+        
+        if non_editable_count == 0:
+            investigation_results['root_cause'] = 'no_issue_found'
+            print(f"   ✅ NO SE ENCONTRÓ EL PROBLEMA: Todos los primeros 4 productos SON editables")
+            print(f"      Posibles causas del reporte del usuario:")
+            print(f"      • Problema temporal que ya se resolvió")
+            print(f"      • Problema en el frontend, no en el backend")
+            print(f"      • Usuario probando productos diferentes")
+            print(f"      • Problema de permisos/autenticación temporal")
+        elif non_editable_count == 4 and not investigation_results['product_5_editable']:
+            investigation_results['root_cause'] = 'general_edit_issue'
+            print(f"   ❌ PROBLEMA GENERAL: NINGÚN producto es editable (incluido producto 5)")
+            print(f"      Causa probable: Problema de autenticación o permisos generales")
+        elif non_editable_count == 4 and investigation_results['product_5_editable']:
+            investigation_results['root_cause'] = 'first_4_specific_issue'
+            investigation_results['pattern_identified'] = True
+            print(f"   🎯 PROBLEMA CONFIRMADO: Solo los primeros 4 productos NO son editables")
+            print(f"      Producto 5 SÍ es editable - confirma el patrón reportado")
+            print(f"      Posibles causas específicas:")
+            print(f"      • Productos más antiguos con estructura de datos diferente")
+            print(f"      • Problema de índices o ordenamiento en base de datos")
+            print(f"      • Corrupción de datos en productos específicos")
+            print(f"      • Problema de migración de datos históricos")
+        else:
+            investigation_results['root_cause'] = 'partial_issue'
+            print(f"   ⚠️  PROBLEMA PARCIAL: {non_editable_count}/4 primeros productos no editables")
+            print(f"      Patrón no completamente consistente con reporte del usuario")
+        
+        # 7. Recommendations
+        print(f"\n6️⃣ RECOMENDACIONES:")
+        
+        if investigation_results['root_cause'] == 'no_issue_found':
+            print(f"   📋 ACCIONES RECOMENDADAS:")
+            print(f"      1. Verificar problema en frontend/interfaz de usuario")
+            print(f"      2. Revisar logs de errores JavaScript en navegador")
+            print(f"      3. Confirmar con usuario qué productos específicos están probando")
+            print(f"      4. Verificar que usuario tenga permisos de admin correctos")
+        elif investigation_results['root_cause'] == 'general_edit_issue':
+            print(f"   📋 ACCIONES RECOMENDADAS:")
+            print(f"      1. Verificar configuración de autenticación admin")
+            print(f"      2. Revisar permisos de base de datos")
+            print(f"      3. Verificar configuración de CORS y headers")
+            print(f"      4. Revisar logs del servidor backend")
+        elif investigation_results['root_cause'] == 'first_4_specific_issue':
+            print(f"   📋 ACCIONES RECOMENDADAS:")
+            print(f"      1. INVESTIGAR estructura de datos de primeros 4 productos")
+            print(f"      2. Comparar campos y tipos de datos con productos editables")
+            print(f"      3. Verificar si son productos migrados de sistema anterior")
+            print(f"      4. Considerar recrear productos problemáticos")
+            print(f"      5. Revisar logs específicos de errores de estos productos")
+        
+        # 8. Final summary
+        print("\n" + "="*80)
+        print("🎯 RESUMEN EJECUTIVO - INVESTIGACIÓN PRIMEROS 4 PRODUCTOS")
+        print("="*80)
+        
+        print(f"📊 RESULTADOS:")
+        print(f"   • Total productos analizados: {investigation_results['total_products']}")
+        print(f"   • Primeros 4 productos editables: {editable_count}/4")
+        print(f"   • Producto 5 (control) editable: {'✅ SÍ' if investigation_results['product_5_editable'] else '❌ NO'}")
+        print(f"   • Patrón identificado: {'✅ SÍ' if investigation_results['pattern_identified'] else '❌ NO'}")
+        print(f"   • Causa raíz: {investigation_results['root_cause'].replace('_', ' ').upper()}")
+        
+        if investigation_results['pattern_identified']:
+            print(f"\n🚨 CONFIRMACIÓN: El problema reportado por el usuario ES REAL")
+            print(f"   Los primeros 4 productos específicamente no son editables")
+            print(f"   Requiere investigación técnica inmediata")
+        else:
+            print(f"\n🔍 ESTADO: Problema no reproducido exactamente como se reportó")
+            print(f"   Requiere más investigación o verificación con usuario")
+        
+        return investigation_results
+
 def main():
     tester = HannuClothesAPITester()
     
