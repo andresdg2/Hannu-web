@@ -437,10 +437,25 @@ const ProductCard = ({ product, onView, isAdmin, onEdit, onDelete }) => {
         )}
         {isAdmin && (
           <div className="admin-controls">
-            <button className="control-btn edit" onClick={() => onEdit(product)}>
+            <button 
+              className="control-btn edit" 
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onEdit(product);
+              }}
+            >
               <Edit size={16} />
             </button>
-            <button className="control-btn delete" onClick={() => onDelete(product.id)}>
+            <button 
+              className="control-btn delete" 
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Click en botón eliminar detectado');
+                onDelete(product.id);
+              }}
+            >
               <Trash2 size={16} />
             </button>
           </div>
