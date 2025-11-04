@@ -1503,8 +1503,22 @@ const Home = () => {
   };
 
   const handleDeleteProduct = async (productId) => {
-    if (window.confirm('¿Estás seguro de que quieres eliminar este producto?')) {
+    console.log('🗑️ Botón de eliminar clickeado para producto:', productId);
+    
+    // Encontrar el producto para mostrar su nombre en la confirmación
+    const productToDelete = products.find(p => p.id === productId);
+    const productName = productToDelete ? productToDelete.name : 'este producto';
+    
+    const confirmMessage = `¿Estás seguro de que quieres eliminar "${productName}"?\n\nEsta acción no se puede deshacer.`;
+    
+    // Mostrar confirmación
+    const confirmed = window.confirm(confirmMessage);
+    console.log('Confirmación del usuario:', confirmed);
+    
+    if (confirmed) {
       try {
+        console.log('✅ Usuario confirmó eliminación');
+        
         // Asegurar autenticación antes de eliminar
         let token = localStorage.getItem('adminToken');
         if (!token) {
@@ -1520,28 +1534,29 @@ const Home = () => {
           'Authorization': `Bearer ${token}`
         };
 
-        console.log(`🗑️ Eliminando producto: ${productId}`);
-        await axios.delete(`${API}/products/${productId}`, { headers });
+        console.log(`🗑️ Eliminando producto desde API: ${productId}`);
+        const deleteResponse = await axios.delete(`${API}/products/${productId}`, { headers });
+        console.log('Respuesta de eliminación:', deleteResponse.data);
         
         // Actualizar lista local inmediatamente
         const updatedProducts = products.filter(p => p.id !== productId);
         setProducts(updatedProducts);
         
-        alert('✅ Producto eliminado correctamente');
+        alert(`✅ Producto "${productName}" eliminado correctamente`);
         
         // Recargar para confirmar sincronización
         setTimeout(async () => {
           try {
             const refreshResponse = await axios.get(`${API}/products?limit=1000`);
             setProducts(refreshResponse.data);
-            console.log('🔄 Lista actualizada después de eliminación');
+            console.log('🔄 Lista actualizada después de eliminación. Total productos:', refreshResponse.data.length);
           } catch (error) {
             console.error('Error recargando después de eliminar:', error);
           }
         }, 500);
         
       } catch (error) {
-        console.error('Error deleting product:', error);
+        console.error('❌ Error deleting product:', error);
         if (error.response?.status === 401) {
           alert('❌ Error: Sesión de administrador expirada. Reintentando...');
           localStorage.removeItem('adminToken');
@@ -1554,6 +1569,8 @@ const Home = () => {
           alert(`❌ Error al eliminar el producto: ${error.response?.data?.detail || error.message}`);
         }
       }
+    } else {
+      console.log('❌ Usuario canceló la eliminación');
     }
   };
 
