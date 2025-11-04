@@ -102,6 +102,19 @@ class Product(BaseModel):
         if 'description' not in cleaned_data:
             cleaned_data['description'] = ""
         
+        # Handle specifications field - convert dict to empty string if needed
+        if 'specifications' in cleaned_data:
+            if isinstance(cleaned_data['specifications'], dict):
+                cleaned_data['specifications'] = ""
+        
+        # Handle care_instructions field - convert dict to empty string if needed
+        if 'care_instructions' in cleaned_data:
+            if isinstance(cleaned_data['care_instructions'], dict):
+                cleaned_data['care_instructions'] = ""
+            # Map to 'care' field if needed
+            if 'care' not in cleaned_data:
+                cleaned_data['care'] = cleaned_data.get('care_instructions', "")
+        
         return cls(**cleaned_data)
 
 class ProductCreate(BaseModel):
